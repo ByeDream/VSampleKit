@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="System">
+      <UniqueIdentifier>{4a48a01f-b523-4066-994e-01827dba9810}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphic">
+      <UniqueIdentifier>{fbc9dfab-d4e2-4755-9b47-5a56e2c8168b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphic\Memory">
+      <UniqueIdentifier>{dc6c7c4d-f9ad-4a9c-b825-15b793c093c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{40fb2626-a16f-42ee-b26f-08a0002cdff4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{e11e2ef7-4b19-4279-b021-48e2cc61522f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\Geommath">
+      <UniqueIdentifier>{833e7a29-9639-47ba-b0aa-e1c577bf165f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="System\Application.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Graphic\Memory\StackAllocator.cpp">
+      <Filter>Graphic\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Memory\Allocators.cpp">
+      <Filter>Graphic\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GraphicDevice.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="dataformat_interpreter.cpp" />
+    <ClCompile Include="floating_point.cpp" />
+    <ClCompile Include="Utils\simple_mesh.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="System\Application.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Graphic\Memory\IAllocator.h">
+      <Filter>Graphic\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Memory\StackAllocator.h">
+      <Filter>Graphic\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Memory\Allocators.h">
+      <Filter>Graphic\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GraphicDevice.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="System\ConfigData.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="Framework.h" />
+    <ClInclude Include="Platform\Platform.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\PlatformDefine.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\PlatformInclude.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Geommath\geommath.h">
+      <Filter>Utils\Geommath</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Geommath\matrix4unaligned.h">
+      <Filter>Utils\Geommath</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Geommath\vector2unaligned.h">
+      <Filter>Utils\Geommath</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Geommath\vector3unaligned.h">
+      <Filter>Utils\Geommath</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Geommath\vector4unaligned.h">
+      <Filter>Utils\Geommath</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="std_cbuffer.h" />
+    <ClInclude Include="shader_base.h" />
+    <ClInclude Include="dataformat_interpreter.h" />
+    <ClInclude Include="floating_point.h" />
+    <ClInclude Include="Utils\simple_mesh.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <OrbisWavePsslc Include="shader_p.pssl" />
+    <OrbisWavePsslc Include="shader_vv.pssl" />
+    <OrbisWavePsslc Include="cs_set_uint_c.pssl" />
+    <OrbisWavePsslc Include="cs_set_uint_fast_c.pssl" />
+    <OrbisWavePsslc Include="pix_clear_p.pssl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vsoutput.hs" />
+    <None Include="illum.hs" />
+  </ItemGroup>
+</Project>

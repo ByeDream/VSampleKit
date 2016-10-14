@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Framework", "Framework\Framework.vcxproj", "{724AF8D7-0760-49A0-8D88-6CA82D7A7DDA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicSample", "BasicSample\BasicSample.vcxproj", "{B15C1CE4-34F4-4C6C-9A9B-4700A442448A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{724AF8D7-0760-49A0-8D88-6CA82D7A7DDA} = {724AF8D7-0760-49A0-8D88-6CA82D7A7DDA}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ORBIS = Debug|ORBIS
+		Release|ORBIS = Release|ORBIS
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{724AF8D7-0760-49A0-8D88-6CA82D7A7DDA}.Debug|ORBIS.ActiveCfg = Debug|ORBIS
+		{724AF8D7-0760-49A0-8D88-6CA82D7A7DDA}.Debug|ORBIS.Build.0 = Debug|ORBIS
+		{724AF8D7-0760-49A0-8D88-6CA82D7A7DDA}.Release|ORBIS.ActiveCfg = Release|ORBIS
+		{724AF8D7-0760-49A0-8D88-6CA82D7A7DDA}.Release|ORBIS.Build.0 = Release|ORBIS
+		{B15C1CE4-34F4-4C6C-9A9B-4700A442448A}.Debug|ORBIS.ActiveCfg = Debug|ORBIS
+		{B15C1CE4-34F4-4C6C-9A9B-4700A442448A}.Debug|ORBIS.Build.0 = Debug|ORBIS
+		{B15C1CE4-34F4-4C6C-9A9B-4700A442448A}.Release|ORBIS.ActiveCfg = Release|ORBIS
+		{B15C1CE4-34F4-4C6C-9A9B-4700A442448A}.Release|ORBIS.Build.0 = Release|ORBIS
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

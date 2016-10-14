@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ORBIS">
+      <Configuration>Debug</Configuration>
+      <Platform>ORBIS</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ORBIS">
+      <Configuration>Release</Configuration>
+      <Platform>ORBIS</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{724AF8D7-0760-49A0-8D88-6CA82D7A7DDA}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(DebuggerFlavor)'=='ORBISDebugger'" Label="OverrideDebuggerDefaults">
+    <!--LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand-->
+    <!--LocalDebuggerCommandArguments></LocalDebuggerCommandArguments-->
+    <!--LocalDebuggerTarget></LocalDebuggerTarget-->
+    <!--LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory-->
+    <!--LocalRunCommandLine></LocalRunCommandLine-->
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\OrbisWavePsslc.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\SCU.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;SCE_GNM_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Platform;$(ProjectDir)Utils;$(ProjectDir)System;$(ProjectDir)Graphic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningsAsErrors>true</WarningsAsErrors>
+      <DisableSpecificWarnings>unused-private-field;unused-variable;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <OptimizationLevel>Level2</OptimizationLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Platform;$(ProjectDir)Utils;$(ProjectDir)System;$(ProjectDir)Graphic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningsAsErrors>true</WarningsAsErrors>
+      <DisableSpecificWarnings>unused-private-field;unused-variable;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="dataformat_interpreter.cpp" />
+    <ClCompile Include="floating_point.cpp" />
+    <ClCompile Include="Graphic\GraphicDevice.cpp" />
+    <ClCompile Include="Graphic\Memory\Allocators.cpp" />
+    <ClCompile Include="Graphic\Memory\StackAllocator.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="System\Application.cpp" />
+    <ClCompile Include="Utils\simple_mesh.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dataformat_interpreter.h" />
+    <ClInclude Include="floating_point.h" />
+    <ClInclude Include="Framework.h" />
+    <ClInclude Include="Graphic\GraphicDevice.h" />
+    <ClInclude Include="Graphic\Memory\Allocators.h" />
+    <ClInclude Include="Graphic\Memory\IAllocator.h" />
+    <ClInclude Include="Graphic\Memory\StackAllocator.h" />
+    <ClInclude Include="Platform\Platform.h" />
+    <ClInclude Include="Platform\PlatformDefine.h" />
+    <ClInclude Include="Platform\PlatformInclude.h" />
+    <ClInclude Include="shader_base.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="std_cbuffer.h" />
+    <ClInclude Include="System\Application.h" />
+    <ClInclude Include="System\ConfigData.h" />
+    <ClInclude Include="Utils\Geommath\geommath.h" />
+    <ClInclude Include="Utils\Geommath\matrix4unaligned.h" />
+    <ClInclude Include="Utils\Geommath\vector2unaligned.h" />
+    <ClInclude Include="Utils\Geommath\vector3unaligned.h" />
+    <ClInclude Include="Utils\Geommath\vector4unaligned.h" />
+    <ClInclude Include="Utils\simple_mesh.h" />
+    <ClInclude Include="Utils\Utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <OrbisWavePsslc Include="cs_set_uint_c.pssl" />
+    <OrbisWavePsslc Include="cs_set_uint_fast_c.pssl" />
+    <OrbisWavePsslc Include="pix_clear_p.pssl" />
+    <OrbisWavePsslc Include="shader_p.pssl" />
+    <OrbisWavePsslc Include="shader_vv.pssl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="illum.hs" />
+    <None Include="vsoutput.hs" />
+  </ItemGroup>
+  <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\OrbisWavePsslc.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\SCU.targets" />
+  </ImportGroup>
+</Project>
