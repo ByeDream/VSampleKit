@@ -230,10 +230,10 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 // 	trilinearSampler.setXyFilterMode(Gnm::kFilterModeBilinear, Gnm::kFilterModeBilinear);
 // 
 	m_mesh = new SimpleMesh;
-	BuildCubeMesh(mAllocators, "Cube", m_mesh, 1.5f);
- 	//BuildTorusMesh(mAllocators, "Torus", m_mesh, 0.8f, 0.2f, 64, 32, 4, 1);
+	//BuildCubeMesh(mAllocators, "Cube", m_mesh, 1.5f);
+ 	BuildTorusMesh(mAllocators, "Torus", m_mesh, 0.8f, 0.2f, 64, 32, 4, 1);
 	//BuildQuadMesh(mAllocators, "Quad", m_mesh, 1.5f);
-	//BuildSphereMesh(mAllocators, "Sphere", m_mesh, 0.8f, 64, 64);
+//	BuildSphereMesh(mAllocators, "Sphere", m_mesh, 0.8f, 64, 64);
 // 
 
 // 
