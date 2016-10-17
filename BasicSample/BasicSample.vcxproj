@@ -54,7 +54,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Framework;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceGnm;-lSceGnmx;-lSceGnmDriver_stub_weak;-lSceVideoOut_stub_weak;-lSceGpuAddress;-lSceShaderBinary</AdditionalDependencies>
+      <AdditionalDependencies>-lSceGnm;-lSceGnmx;-lSceGnmDriver_stub_weak;-lSceVideoOut_stub_weak;-lSceGpuAddress;-lSceShaderBinary;-lSceGnf</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
@@ -65,7 +65,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Framework;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceGnm;-lSceGnmx;-lSceGnmDriver_stub_weak;-lSceVideoOut_stub_weak;-lSceGpuAddress;-lSceShaderBinary</AdditionalDependencies>
+      <AdditionalDependencies>-lSceGnm;-lSceGnmx;-lSceGnmDriver_stub_weak;-lSceVideoOut_stub_weak;-lSceGpuAddress;-lSceShaderBinary;-lSceGnf</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -39,6 +39,7 @@
     <ClCompile Include="Utils\simple_mesh.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="gnf_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="System\Application.h">
@@ -95,6 +96,7 @@
     <ClInclude Include="Utils\simple_mesh.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="gnf_loader.h" />
   </ItemGroup>
   <ItemGroup>
     <OrbisWavePsslc Include="shader_p.pssl" />

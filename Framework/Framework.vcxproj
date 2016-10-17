@@ -69,6 +69,7 @@
   <ItemGroup>
     <ClCompile Include="dataformat_interpreter.cpp" />
     <ClCompile Include="floating_point.cpp" />
+    <ClCompile Include="gnf_loader.cpp" />
     <ClCompile Include="Graphic\GraphicDevice.cpp" />
     <ClCompile Include="Graphic\Memory\Allocators.cpp" />
     <ClCompile Include="Graphic\Memory\StackAllocator.cpp" />
@@ -83,6 +84,7 @@
     <ClInclude Include="dataformat_interpreter.h" />
     <ClInclude Include="floating_point.h" />
     <ClInclude Include="Framework.h" />
+    <ClInclude Include="gnf_loader.h" />
     <ClInclude Include="Graphic\GraphicDevice.h" />
     <ClInclude Include="Graphic\Memory\Allocators.h" />
     <ClInclude Include="Graphic\Memory\IAllocator.h" />

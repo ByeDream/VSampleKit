@@ -13,6 +13,8 @@
 
 #include "dataformat_interpreter.h"
 
+#include "gnf_loader.h"
+
 // Set default heap size
 size_t sceLibcHeapSize = 512 * 1024 * 1024; // 512MB for Razor GPU
 unsigned int sceLibcHeapExtendedAlloc = 1; // Enable
@@ -214,24 +216,23 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 	set_uint = LoadCsShader("/app0/cs_set_uint_c.sb", mAllocators);
 	set_uint_fast = LoadCsShader("/app0/cs_set_uint_fast_c.sb", mAllocators);
 	pix_clear_p = LoadPsShader("/app0/pix_clear_p.sb", mAllocators);
-// 	Gnm::Texture textures[2];
-// 	Framework::GnfError loadError = Framework::kGnfErrorNone;
-// 	loadError = Framework::loadTextureFromGnf(&textures[0], "/app0/assets/icelogo-color.gnf", 0, &framework.m_allocators);
-// 	SCE_GNM_ASSERT(loadError == Framework::kGnfErrorNone);
-// 	loadError = Framework::loadTextureFromGnf(&textures[1], "/app0/assets/icelogo-normal.gnf", 0, &framework.m_allocators);
-// 	SCE_GNM_ASSERT(loadError == Framework::kGnfErrorNone);
-// 
-// 	textures[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
-// 	textures[1].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
-// 
-// 	Gnm::Sampler trilinearSampler;
-// 	trilinearSampler.init();
-// 	trilinearSampler.setMipFilterMode(Gnm::kMipFilterModeLinear);
-// 	trilinearSampler.setXyFilterMode(Gnm::kFilterModeBilinear, Gnm::kFilterModeBilinear);
-// 
+ 	
+ 	Framework::GnfError loadError = Framework::kGnfErrorNone;
+ 	loadError = Framework::loadTextureFromGnf(&textures[0], "/app0/icelogo-color.gnf", 0, mAllocators);
+ 	SCE_GNM_ASSERT(loadError == Framework::kGnfErrorNone);
+ 	loadError = Framework::loadTextureFromGnf(&textures[1], "/app0/icelogo-normal.gnf", 0, mAllocators);
+ 	SCE_GNM_ASSERT(loadError == Framework::kGnfErrorNone);
+ 
+ 	textures[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
+ 	textures[1].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
+ 
+ 	trilinearSampler.init();
+ 	trilinearSampler.setMipFilterMode(Gnm::kMipFilterModeLinear);
+ 	trilinearSampler.setXyFilterMode(Gnm::kFilterModeBilinear, Gnm::kFilterModeBilinear);
+ 
 	m_mesh = new SimpleMesh;
-	//BuildCubeMesh(mAllocators, "Cube", m_mesh, 1.5f);
- 	BuildTorusMesh(mAllocators, "Torus", m_mesh, 0.8f, 0.2f, 64, 32, 4, 1);
+	BuildCubeMesh(mAllocators, "Cube", m_mesh, 1.5f);
+// 	BuildTorusMesh(mAllocators, "Torus", m_mesh, 0.8f, 0.2f, 64, 32, 4, 1);
 	//BuildQuadMesh(mAllocators, "Quad", m_mesh, 1.5f);
 //	BuildSphereMesh(mAllocators, "Sphere", m_mesh, 0.8f, 64, 64);
 // 
@@ -332,8 +333,8 @@ bool Framework::Application::frame()
 	 		gfxc->setConstantBuffers(Gnm::kShaderStageVs, 0, 1, &constantBuffer);
 	 		gfxc->setConstantBuffers(Gnm::kShaderStagePs, 0, 1, &constantBuffer);
 	// 
-	// 		gfxc->setTextures(Gnm::kShaderStagePs, 0, 2, textures);
-	// 		gfxc->setSamplers(Gnm::kShaderStagePs, 0, 1, &trilinearSampler);
+	 		gfxc->setTextures(Gnm::kShaderStagePs, 0, 2, textures);
+	 		gfxc->setSamplers(Gnm::kShaderStagePs, 0, 1, &trilinearSampler);
 	// 
 	 		gfxc->setPrimitiveType(m_mesh->m_primitiveType);
 	 		gfxc->setIndexSize(m_mesh->m_indexType);

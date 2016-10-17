@@ -185,5 +185,7 @@ namespace Framework
 		void SetViewToWorldMatrix(const Matrix4&);
 		void UpdateMatrices();
 	
+		sce::Gnm::Texture textures[2];
+		sce::Gnm::Sampler trilinearSampler;
 	};
 }
