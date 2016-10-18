@@ -69,7 +69,6 @@
   <ItemGroup>
     <ClCompile Include="dataformat_interpreter.cpp" />
     <ClCompile Include="floating_point.cpp" />
-    <ClCompile Include="gnf_loader.cpp" />
     <ClCompile Include="Graphic\GraphicDevice.cpp" />
     <ClCompile Include="Graphic\Memory\Allocators.cpp" />
     <ClCompile Include="Graphic\Memory\StackAllocator.cpp" />
@@ -78,13 +77,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="System\Application.cpp" />
+    <ClCompile Include="tga_reader.cpp" />
+    <ClCompile Include="tga_texture_loader.cpp" />
     <ClCompile Include="Utils\simple_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dataformat_interpreter.h" />
     <ClInclude Include="floating_point.h" />
     <ClInclude Include="Framework.h" />
-    <ClInclude Include="gnf_loader.h" />
     <ClInclude Include="Graphic\GraphicDevice.h" />
     <ClInclude Include="Graphic\Memory\Allocators.h" />
     <ClInclude Include="Graphic\Memory\IAllocator.h" />
@@ -97,6 +97,8 @@
     <ClInclude Include="std_cbuffer.h" />
     <ClInclude Include="System\Application.h" />
     <ClInclude Include="System\ConfigData.h" />
+    <ClInclude Include="tga_reader.h" />
+    <ClInclude Include="tga_texture_loader.h" />
     <ClInclude Include="Utils\Geommath\geommath.h" />
     <ClInclude Include="Utils\Geommath\matrix4unaligned.h" />
     <ClInclude Include="Utils\Geommath\vector2unaligned.h" />

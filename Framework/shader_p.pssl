@@ -12,13 +12,7 @@ PlayStation(R)4 Programmer Tool Runtime Library Release 03.508.201
 SamplerState samp0 : register(s0);
 
 Texture2D colorMap : register( t0 );
-//Texture2D bumpGlossMap : register( t1 );
-/*
-float4 main( VS_OUTPUT In ) : S_TARGET_OUTPUT
-{
-	return In.Color;
-}
-*/
+Texture2D bumpGlossMap : register( t1 );
 
 float4 main( VS_OUTPUT In ) : S_TARGET_OUTPUT
 {
@@ -35,19 +29,19 @@ float4 main( VS_OUTPUT In ) : S_TARGET_OUTPUT
 	float d = length(vL); vL = normalize(vL);
 	float attenuation = saturate(1.0f/(lightAtten.x + lightAtten.y * d + lightAtten.z * d * d) - lightAtten.w);
 
-//	float4 normalGloss = bumpGlossMap.Sample(samp0, In.TextureUV.xy);
-//	normalGloss.xyz = normalGloss.xyz * 2.0f - 1.0f;
-//	normalGloss.y = -normalGloss.y;		// normal map has green channel inverted
+	float4 normalGloss = bumpGlossMap.Sample(samp0, In.TextureUV.xy);
+	normalGloss.xyz = normalGloss.xyz * 2.0f - 1.0f;
+	normalGloss.y = -normalGloss.y;		// normal map has green channel inverted
 
-//	float3 vBumpNorm = normalize(normalGloss.x*vT+normalGloss.y*vB+normalGloss.z*vN);
-	float3 vBumpNorm = normalize(vN); //@@LRF, use bump normal as geometry normal at the moment as we don't have normal mapping yet.
+	float3 vBumpNorm = normalize(normalGloss.x*vT+normalGloss.y*vB+normalGloss.z*vN);
+	//float3 vBumpNorm = normalize(vN); //@@LRF, use bump normal as geometry normal at the moment as we don't have normal mapping yet.
 	float3 vGeomNorm = normalize(vN);
 	
 
 	float3 diff_col = colorMap.Sample(samp0, In.TextureUV.xy).xyz;
 //	float3 diff_col = In.Color.rgb; // use vertex color as meterial diffuse color at the moment before I add texturing.
-//	float3 spec_col = 0.4*normalGloss.w+0.1; 
-	float3 spec_col = float3(0.5f, 0.5f, 0.5f); // hard code the meterial specular color at the moment as well.
+	float3 spec_col = 0.4*normalGloss.w+0.1; 
+	//float3 spec_col = float3(0.5f, 0.5f, 0.5f); // hard code the meterial specular color at the moment as well.
 	
 	float3 vLightInts = attenuation*lightRgb*BRDF2_ts_nphong_nofr(vBumpNorm, vGeomNorm, vL, vV, diff_col, spec_col, specPow);
 	

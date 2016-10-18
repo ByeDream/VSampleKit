@@ -13,7 +13,7 @@
 
 #include "dataformat_interpreter.h"
 
-#include "gnf_loader.h"
+#include "tga_texture_loader.h"
 
 // Set default heap size
 size_t sceLibcHeapSize = 512 * 1024 * 1024; // 512MB for Razor GPU
@@ -216,12 +216,12 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 	set_uint = LoadCsShader("/app0/cs_set_uint_c.sb", mAllocators);
 	set_uint_fast = LoadCsShader("/app0/cs_set_uint_fast_c.sb", mAllocators);
 	pix_clear_p = LoadPsShader("/app0/pix_clear_p.sb", mAllocators);
- 	
- 	Framework::GnfError loadError = Framework::kGnfErrorNone;
- 	loadError = Framework::loadTextureFromGnf(&textures[0], "/app0/icelogo-color.gnf", 0, mAllocators);
- 	SCE_GNM_ASSERT(loadError == Framework::kGnfErrorNone);
- 	loadError = Framework::loadTextureFromGnf(&textures[1], "/app0/icelogo-normal.gnf", 0, mAllocators);
- 	SCE_GNM_ASSERT(loadError == Framework::kGnfErrorNone);
+
+ 	Framework::TgaError loadError = Framework::kTgaErrorNone;
+ 	loadError = Framework::loadTextureFromTga(&textures[0], "/app0/pab_ground_soil_001_c.tga", mAllocators);
+ 	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
+ 	loadError = Framework::loadTextureFromTga(&textures[1], "/app0/pab_ground_soil_001_n.tga", mAllocators);
+ 	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
  
  	textures[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
  	textures[1].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
@@ -231,10 +231,10 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
  	trilinearSampler.setXyFilterMode(Gnm::kFilterModeBilinear, Gnm::kFilterModeBilinear);
  
 	m_mesh = new SimpleMesh;
-	BuildCubeMesh(mAllocators, "Cube", m_mesh, 1.5f);
-// 	BuildTorusMesh(mAllocators, "Torus", m_mesh, 0.8f, 0.2f, 64, 32, 4, 1);
-	//BuildQuadMesh(mAllocators, "Quad", m_mesh, 1.5f);
-//	BuildSphereMesh(mAllocators, "Sphere", m_mesh, 0.8f, 64, 64);
+//	BuildCubeMesh(mAllocators, "Cube", m_mesh, 1.5f);
+ //	BuildTorusMesh(mAllocators, "Torus", m_mesh, 0.8f, 0.2f, 64, 32, 4, 1);
+//	BuildQuadMesh(mAllocators, "Quad", m_mesh, 1.5f);
+	BuildSphereMesh(mAllocators, "Sphere", m_mesh, 0.8f, 64, 64);
 // 
 
 // 
@@ -322,7 +322,7 @@ bool Framework::Application::frame()
 			Vector4 lightPosition_V = m_worldToViewMatrix * lightPosition_W;
 	 		constants->m_lightPosition = lightPosition_V; // use view space in this case, whatever using view/world space, the inputs of illum computation should be in the same space.
 	 		constants->m_lightColor = Vector4(0.5f, 0.5f, 0.5f, 0.5f); // combines the diffuse color and specular color for simplified modeling 
-	 		constants->m_ambientColor = Vector4(0.0f, 0.0f, 0.78f, 0.78f); // global ambient, instead of computation with contribution component of each light, thus we only compute it once per pixel instead of per light.
+	 		constants->m_ambientColor = Vector4(0.0f, 0.0f, 0.0078f, 0.0078f); // global ambient, instead of computation with contribution component of each light, thus we only compute it once per pixel instead of per light.
 	 		
 			//float attenuation = saturate(1.0f / (lightAtten.x + lightAtten.y * d + lightAtten.z * d * d) - lightAtten.w);
 			constants->m_lightAttenuation = Vector4(1, 0, 0, 0);
