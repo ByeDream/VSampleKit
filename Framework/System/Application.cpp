@@ -73,7 +73,7 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 	float m_depthFar = 100.f;
  	const float aspect = (float)m_targetWidth / (float)m_targetHeight;
  	m_projectionMatrix = Matrix4::frustum(-aspect, aspect, -1, 1, m_depthNear, m_depthFar);
-	Vector3 m_lookAtPosition(0, 0, 2.5);
+	Vector3 m_lookAtPosition(0, 0, 1.8f);
 	Vector3 m_lookAtTarget(0, 0, 0);
 	Vector3 m_lookAtUp(0, 1, 0);
  	SetViewToWorldMatrix(inverse(Matrix4::lookAt((Point3)m_lookAtPosition, (Point3)m_lookAtTarget, m_lookAtUp)));
@@ -222,10 +222,14 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
  	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
  	loadError = Framework::loadTextureFromTga(&textures[1], "/app0/pab_ground_soil_001_n.tga", mAllocators);
  	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
+	//loadError = Framework::loadTextureFromTga(&textures[2], "/app0/pab_ground_soil_001_s.tga", mAllocators);
+	loadError = Framework::loadTextureFromTga(&textures[2], "/app0/pab_ground_soil_001_gloss.tga", mAllocators);
+	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
  
  	textures[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
  	textures[1].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
- 
+	textures[2].setResourceMemoryType(Gnm::kResourceMemoryTypeRO);
+
  	trilinearSampler.init();
  	trilinearSampler.setMipFilterMode(Gnm::kMipFilterModeLinear);
  	trilinearSampler.setXyFilterMode(Gnm::kFilterModeBilinear, Gnm::kFilterModeBilinear);
@@ -333,7 +337,7 @@ bool Framework::Application::frame()
 	 		gfxc->setConstantBuffers(Gnm::kShaderStageVs, 0, 1, &constantBuffer);
 	 		gfxc->setConstantBuffers(Gnm::kShaderStagePs, 0, 1, &constantBuffer);
 	// 
-	 		gfxc->setTextures(Gnm::kShaderStagePs, 0, 2, textures);
+	 		gfxc->setTextures(Gnm::kShaderStagePs, 0, 3, textures);
 	 		gfxc->setSamplers(Gnm::kShaderStagePs, 0, 1, &trilinearSampler);
 	// 
 	 		gfxc->setPrimitiveType(m_mesh->m_primitiveType);
