@@ -73,7 +73,7 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 	float m_depthFar = 100.f;
  	const float aspect = (float)m_targetWidth / (float)m_targetHeight;
  	m_projectionMatrix = Matrix4::frustum(-aspect, aspect, -1, 1, m_depthNear, m_depthFar);
-	Vector3 m_lookAtPosition(0, 0, 1.8f);
+	Vector3 m_lookAtPosition(0, 0, 2.3f);
 	Vector3 m_lookAtTarget(0, 0, 0);
 	Vector3 m_lookAtUp(0, 1, 0);
  	SetViewToWorldMatrix(inverse(Matrix4::lookAt((Point3)m_lookAtPosition, (Point3)m_lookAtTarget, m_lookAtUp)));
@@ -219,11 +219,13 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 
  	Framework::TgaError loadError = Framework::kTgaErrorNone;
  	loadError = Framework::loadTextureFromTga(&textures[0], "/app0/pab_ground_soil_001_c.tga", mAllocators);
+	//loadError = Framework::loadTextureFromTga(&textures[0], "/app0/pro_metal_checker_plate_001_c.tga", mAllocators);
  	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
  	loadError = Framework::loadTextureFromTga(&textures[1], "/app0/pab_ground_soil_001_n.tga", mAllocators);
+	//loadError = Framework::loadTextureFromTga(&textures[1], "/app0/pro_metal_checker_plate_001_n.tga", mAllocators);
  	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
-	//loadError = Framework::loadTextureFromTga(&textures[2], "/app0/pab_ground_soil_001_s.tga", mAllocators);
-	loadError = Framework::loadTextureFromTga(&textures[2], "/app0/pab_ground_soil_001_gloss.tga", mAllocators);
+	loadError = Framework::loadTextureFromTga(&textures[2], "/app0/pab_ground_soil_001_s.tga", mAllocators);
+	//loadError = Framework::loadTextureFromTga(&textures[2], "/app0/pro_metal_checker_plate_001_s.tga", mAllocators);
 	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
  
  	textures[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
@@ -236,11 +238,9 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
  
 	m_mesh = new SimpleMesh;
 //	BuildCubeMesh(mAllocators, "Cube", m_mesh, 1.5f);
- //	BuildTorusMesh(mAllocators, "Torus", m_mesh, 0.8f, 0.2f, 64, 32, 4, 1);
-//	BuildQuadMesh(mAllocators, "Quad", m_mesh, 1.5f);
-	BuildSphereMesh(mAllocators, "Sphere", m_mesh, 0.8f, 64, 64);
-// 
-
+//	BuildTorusMesh(mAllocators, "Torus", m_mesh, 1.0f, 0.3f, 64, 32, 4, 1);
+//	BuildQuadMesh(mAllocators, "Quad", m_mesh, 2.0f);
+	BuildSphereMesh(mAllocators, "Sphere", m_mesh, 1.2f, 64, 64);
 // 
 // 	Frame *frame = m_frames + framework.getIndexOfBufferCpuIsWriting();
 // 	Gnmx::GnmxGfxContext *gfxc = &frame->m_commandBuffer;
