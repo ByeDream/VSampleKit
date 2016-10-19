@@ -73,7 +73,7 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 	float m_depthFar = 100.f;
  	const float aspect = (float)m_targetWidth / (float)m_targetHeight;
  	m_projectionMatrix = Matrix4::frustum(-aspect, aspect, -1, 1, m_depthNear, m_depthFar);
-	Vector3 m_lookAtPosition(0, 0, 2.3f);
+	Vector3 m_lookAtPosition(0, 0, 2.5f);
 	Vector3 m_lookAtTarget(0, 0, 0);
 	Vector3 m_lookAtUp(0, 1, 0);
  	SetViewToWorldMatrix(inverse(Matrix4::lookAt((Point3)m_lookAtPosition, (Point3)m_lookAtTarget, m_lookAtUp)));
@@ -206,8 +206,16 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 		frame->m_commandBuffer.init(constantUpdateEngine, kNumRingEntries, drawCommandBuffer, kCommandBufferSizeInBytes, constantCommandBuffer, kCommandBufferSizeInBytes);
 
 		//createCommandBuffer(&frame->m_commandBuffer, &framework, buffer);
-		Gnm::ResourceHandle constantsHandle;
-		mAllocators->allocate((void**)&frame->m_constants, SCE_KERNEL_WB_ONION, sizeof(*frame->m_constants), 4, Gnm::kResourceTypeConstantBufferBaseAddress, &constantsHandle, "Buffer %d Command Buffer", buffer);
+		Gnm::ResourceHandle constantsHandle0;
+		mAllocators->allocate((void**)&frame->m_constants[0], SCE_KERNEL_WB_ONION, sizeof(Constants), 4, Gnm::kResourceTypeConstantBufferBaseAddress, &constantsHandle0, "Buffer %d Command Buffer 0", buffer);
+		frame->m_constantBuffer[0].initAsConstantBuffer(frame->m_constants[0], sizeof(Constants));
+		frame->m_constantBuffer[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // it's a constant buffer, so read-only is OK
+		
+		Gnm::ResourceHandle constantsHandle1;
+		mAllocators->allocate((void**)&frame->m_constants[1], SCE_KERNEL_WB_ONION, sizeof(Constants), 4, Gnm::kResourceTypeConstantBufferBaseAddress, &constantsHandle1, "Buffer %d Command Buffer 1", buffer);
+		frame->m_constantBuffer[1].initAsConstantBuffer(frame->m_constants[1], sizeof(Constants));
+		frame->m_constantBuffer[1].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // it's a constant buffer, so read-only is OK
+
 	}
 
 	vertexShader = LoadVsShader("/app0/shader_vv.sb", mAllocators);
@@ -218,29 +226,40 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 	pix_clear_p = LoadPsShader("/app0/pix_clear_p.sb", mAllocators);
 
  	Framework::TgaError loadError = Framework::kTgaErrorNone;
- 	loadError = Framework::loadTextureFromTga(&textures[0], "/app0/pab_ground_soil_001_c.tga", mAllocators);
-	//loadError = Framework::loadTextureFromTga(&textures[0], "/app0/pro_metal_checker_plate_001_c.tga", mAllocators);
+ 	loadError = Framework::loadTextureFromTga(&texturesEarth[0], "/app0/pab_ground_soil_001_c.tga", mAllocators);
  	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
- 	loadError = Framework::loadTextureFromTga(&textures[1], "/app0/pab_ground_soil_001_n.tga", mAllocators);
-	//loadError = Framework::loadTextureFromTga(&textures[1], "/app0/pro_metal_checker_plate_001_n.tga", mAllocators);
+ 	loadError = Framework::loadTextureFromTga(&texturesEarth[1], "/app0/pab_ground_soil_001_n.tga", mAllocators);
  	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
-	loadError = Framework::loadTextureFromTga(&textures[2], "/app0/pab_ground_soil_001_s.tga", mAllocators);
-	//loadError = Framework::loadTextureFromTga(&textures[2], "/app0/pro_metal_checker_plate_001_s.tga", mAllocators);
+	loadError = Framework::loadTextureFromTga(&texturesEarth[2], "/app0/pab_ground_soil_001_s.tga", mAllocators);
 	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
  
- 	textures[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
- 	textures[1].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
-	textures[2].setResourceMemoryType(Gnm::kResourceMemoryTypeRO);
+	texturesEarth[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
+	texturesEarth[1].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
+	texturesEarth[2].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
+
+
+	loadError = Framework::loadTextureFromTga(&texturesMetal[0], "/app0/pro_metal_checker_plate_001_c.tga", mAllocators);
+	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
+	loadError = Framework::loadTextureFromTga(&texturesMetal[1], "/app0/pro_metal_checker_plate_001_n.tga", mAllocators);
+	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
+	loadError = Framework::loadTextureFromTga(&texturesMetal[2], "/app0/pro_metal_checker_plate_001_s.tga", mAllocators);
+	SCE_GNM_ASSERT(loadError == Framework::kTgaErrorNone);
+
+	texturesMetal[0].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
+	texturesMetal[1].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
+	texturesMetal[2].setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // this texture is never bound as an RWTexture, so it's OK to mark it as read-only.
 
  	trilinearSampler.init();
  	trilinearSampler.setMipFilterMode(Gnm::kMipFilterModeLinear);
  	trilinearSampler.setXyFilterMode(Gnm::kFilterModeBilinear, Gnm::kFilterModeBilinear);
  
-	m_mesh = new SimpleMesh;
+	m_mesh0 = new SimpleMesh;
 //	BuildCubeMesh(mAllocators, "Cube", m_mesh, 1.5f);
 //	BuildTorusMesh(mAllocators, "Torus", m_mesh, 1.0f, 0.3f, 64, 32, 4, 1);
 //	BuildQuadMesh(mAllocators, "Quad", m_mesh, 2.0f);
-	BuildSphereMesh(mAllocators, "Sphere", m_mesh, 1.2f, 64, 64);
+	BuildSphereMesh(mAllocators, "Sphere", m_mesh0, 1.2f, 64, 64);
+	m_mesh1 = new SimpleMesh;
+	BuildSphereMesh(mAllocators, "Sphere", m_mesh1, 1.2f, 64, 64);
 // 
 // 	Frame *frame = m_frames + framework.getIndexOfBufferCpuIsWriting();
 // 	Gnmx::GnmxGfxContext *gfxc = &frame->m_commandBuffer;
@@ -310,16 +329,20 @@ bool Framework::Application::frame()
 	 		gfxc->setVsShader(vertexShader->m_shader, 0, vertexShader->m_fetchShader, &vertexShader->m_offsetsTable);
 	 		gfxc->setPsShader(pixelShader->m_shader, &pixelShader->m_offsetsTable);
 	 
-			m_mesh->SetVertexBuffer(*gfxc, Gnm::kShaderStageVs);
+			m_mesh0->SetVertexBuffer(*gfxc, Gnm::kShaderStageVs);
 	 
 
 			static float radians = 0;
-			radians += 0.005f;
+			radians += 0.001f;
 	 		//const float radians = framework.GetSecondsElapsedApparent() * 0.5f;
-	 		const Matrix4 m = Matrix4::rotationZYX(Vector3(radians, radians, 0.f));
-	 		Constants *constants = frame->m_constants;
-			constants->m_modelView = transpose(m_worldToViewMatrix*m);
-	 		constants->m_modelViewProjection = transpose(m_viewProjectionMatrix*m);
+	 		const Matrix4 r = Matrix4::rotationZYX(Vector3(radians, radians, 0.f));
+			const Matrix4 t0 = Matrix4::translation(Vector3(-1.2f, 0.0f, 0.0f));
+			const Matrix4 t1 = Matrix4::translation(Vector3(1.2f, 0.0f, 0.0f));
+			const Matrix4 m0 = t0 * r;
+			const Matrix4 m1 = t1 * r;
+	 		Constants *constants = frame->m_constants[0];
+			constants->m_modelView = transpose(m_worldToViewMatrix*m0);
+	 		constants->m_modelViewProjection = transpose(m_viewProjectionMatrix*m0);
 			// a sample point light
 			Vector4 lightPosition(0.f, 0.f, 0.f, 1.f);
 			Vector4 lightPosition_W = m_lightToWorldMatrix * lightPosition;
@@ -327,23 +350,39 @@ bool Framework::Application::frame()
 	 		constants->m_lightPosition = lightPosition_V; // use view space in this case, whatever using view/world space, the inputs of illum computation should be in the same space.
 	 		constants->m_lightColor = Vector4(0.5f, 0.5f, 0.5f, 0.5f); // combines the diffuse color and specular color for simplified modeling 
 	 		constants->m_ambientColor = Vector4(0.0f, 0.0f, 0.0078f, 0.0078f); // global ambient, instead of computation with contribution component of each light, thus we only compute it once per pixel instead of per light.
-	 		
 			//float attenuation = saturate(1.0f / (lightAtten.x + lightAtten.y * d + lightAtten.z * d * d) - lightAtten.w);
 			constants->m_lightAttenuation = Vector4(1, 0, 0, 0);
 	
-	 		Gnm::Buffer constantBuffer;
-	 		constantBuffer.initAsConstantBuffer(constants, sizeof(Constants));
-	 		constantBuffer.setResourceMemoryType(Gnm::kResourceMemoryTypeRO); // it's a constant buffer, so read-only is OK
-	 		gfxc->setConstantBuffers(Gnm::kShaderStageVs, 0, 1, &constantBuffer);
-	 		gfxc->setConstantBuffers(Gnm::kShaderStagePs, 0, 1, &constantBuffer);
+	 		gfxc->setConstantBuffers(Gnm::kShaderStageVs, 0, 1, &frame->m_constantBuffer[0]);
+	 		gfxc->setConstantBuffers(Gnm::kShaderStagePs, 0, 1, &frame->m_constantBuffer[0]);
 	// 
-	 		gfxc->setTextures(Gnm::kShaderStagePs, 0, 3, textures);
+	 		gfxc->setTextures(Gnm::kShaderStagePs, 0, 3, texturesEarth);
 	 		gfxc->setSamplers(Gnm::kShaderStagePs, 0, 1, &trilinearSampler);
 	// 
-	 		gfxc->setPrimitiveType(m_mesh->m_primitiveType);
-	 		gfxc->setIndexSize(m_mesh->m_indexType);
-	 		gfxc->drawIndex(m_mesh->m_indexCount, m_mesh->m_indexBuffer);
+	 		gfxc->setPrimitiveType(m_mesh0->m_primitiveType);
+	 		gfxc->setIndexSize(m_mesh0->m_indexType);
+	 		gfxc->drawIndex(m_mesh0->m_indexCount, m_mesh0->m_indexBuffer);
 	// 		framework.EndFrame(*gfxc);
+
+
+			constants = frame->m_constants[1];
+			constants->m_modelView = transpose(m_worldToViewMatrix*m1);
+			constants->m_modelViewProjection = transpose(m_viewProjectionMatrix*m1);
+			// a sample point light
+			constants->m_lightPosition = lightPosition_V; // use view space in this case, whatever using view/world space, the inputs of illum computation should be in the same space.
+			constants->m_lightColor = Vector4(0.5f, 0.5f, 0.5f, 0.5f); // combines the diffuse color and specular color for simplified modeling 
+			constants->m_ambientColor = Vector4(0.0f, 0.0f, 0.0078f, 0.0078f); // global ambient, instead of computation with contribution component of each light, thus we only compute it once per pixel instead of per light.
+																			   //float attenuation = saturate(1.0f / (lightAtten.x + lightAtten.y * d + lightAtten.z * d * d) - lightAtten.w);
+			constants->m_lightAttenuation = Vector4(1, 0, 0, 0);
+
+			gfxc->setConstantBuffers(Gnm::kShaderStageVs, 0, 1, &frame->m_constantBuffer[1]);
+			gfxc->setConstantBuffers(Gnm::kShaderStagePs, 0, 1, &frame->m_constantBuffer[1]);
+
+			gfxc->setTextures(Gnm::kShaderStagePs, 0, 3, texturesMetal);
+			m_mesh1->SetVertexBuffer(*gfxc, Gnm::kShaderStageVs);
+			gfxc->setPrimitiveType(m_mesh1->m_primitiveType);
+			gfxc->setIndexSize(m_mesh1->m_indexType);
+			gfxc->drawIndex(m_mesh1->m_indexCount, m_mesh1->m_indexBuffer);
 
 #ifdef ENABLE_RAZOR_GPU_THREAD_TRACE
 	// end trace of this frame.

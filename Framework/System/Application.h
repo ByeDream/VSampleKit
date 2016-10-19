@@ -70,7 +70,8 @@ namespace Framework
 	{
 	public:
 		sce::Gnmx::GnmxGfxContext m_commandBuffer;
-		Constants *m_constants;
+		Constants *m_constants[2];
+		sce::Gnm::Buffer m_constantBuffer[2];
 	};
 	//------------------------------------
 	
@@ -174,7 +175,8 @@ namespace Framework
 		EmbeddedCsShader *set_uint_fast;
 		EmbeddedPsShader *pix_clear_p;
 
-		SimpleMesh *m_mesh;
+		SimpleMesh *m_mesh0;
+		SimpleMesh *m_mesh1;
 
 		Matrix4 m_worldToLightMatrix;
 		Matrix4 m_lightToWorldMatrix;
@@ -185,7 +187,8 @@ namespace Framework
 		void SetViewToWorldMatrix(const Matrix4&);
 		void UpdateMatrices();
 	
-		sce::Gnm::Texture textures[3];
+		sce::Gnm::Texture texturesEarth[3];
+		sce::Gnm::Texture texturesMetal[3];
 		sce::Gnm::Sampler trilinearSampler;
 	};
 }
