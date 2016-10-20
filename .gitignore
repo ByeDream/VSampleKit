@@ -27,3 +27,10 @@
 *.exe
 *.out
 *.app
+
+*.vcxproj.user
+*.opensdf
+*.sdf
+/.vs
+*_Debug/
+/ipch/

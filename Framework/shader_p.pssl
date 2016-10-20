@@ -44,7 +44,7 @@ float4 main( VS_OUTPUT In ) : S_TARGET_OUTPUT
 //	float3 diff_col = In.Color.rgb; // use vertex color as meterial diffuse color at the moment before I add texturing.
 	
 	float4 specGloss = specGlossMap.Sample(samp0, In.TextureUV.xy);
-	float3 spec_col = 0.48*specGloss.x + 0.02; 
+	float3 spec_col = 0.45*specGloss.x + 0.05; 
 	//float3 spec_col = float3(0.5f, 0.5f, 0.5f); // hard code the meterial specular color at the moment as well.
 	
 	float3 vLightInts = attenuation*lightRgb*BRDF2_ts_nphong_nofr(vBumpNorm, vGeomNorm, vL, vV, diff_col, spec_col, specPow);
