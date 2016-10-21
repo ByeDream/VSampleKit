@@ -22,16 +22,20 @@ float4 main( VS_OUTPUT In ) : S_TARGET_OUTPUT
 	float3 ambientRgb = m_ambientColor.xyz;
 	float specPow = 30; // hardcode the specular power for simplified modeling 
 
-	const float3 vN = In.vNorm;
-	const float3 vT = In.vTang.xyz;
-	const float3 vB = In.vTang.w * cross(vN, vT);
+	// to fix the value after iterpolation
+	//const float3 vN = In.vNorm;
+	const float3 vN = normalize(In.vNorm);
+	//const float3 vT = In.vTang.xyz;
+	const float3 vT = normalize(In.vTang.xyz - dot(In.vTang.xyz, vN) * vN);
+	
+	const float3 vB = In.vTang.w * cross(vN, vT); // why multiply by vT.w? I can't understand
 	float3 vL = m_lightPosition.xyz - In.vPosInView;
 	const float3 vV = normalize(float3(0,0,0) - In.vPosInView);
 	float d = length(vL); vL = normalize(vL);
 	float attenuation = saturate(1.0f/(lightAtten.x + lightAtten.y * d + lightAtten.z * d * d) - lightAtten.w);
 
 	float4 normalGloss = bumpGlossMap.Sample(samp0, In.TextureUV.xy);
-	
+	// Uncompress each component from [0,1] to [1,1]
 	normalGloss.xyz = normalGloss.xyz * 2.0f - 1.0f;
 	normalGloss.y = -normalGloss.y;		// normal map has green channel inverted
 
