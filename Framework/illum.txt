@@ -1,0 +1,55 @@
+BRDF fr(wi, wr)  是一个用来定义光如何在一个不透明表面反射的四元函数， 它广泛适用于光学、真实世界光照、计算机图形学算法、计算机视觉算法。 函数以光源的入射方向wi和出射方向wr为参数，返回被沿着wr方向从表面反射的光辐射度相对于沿着wi方向入射的光幅度比值， 每个方向参数w又是以一个方位角（Azimuth）和一个天顶角组成。因此完整地看BRDF是一个四元函数。 BRDF的单位为sr-1, 以球面度（steradians sr）作为天顶角的单位。
+
+============================================================================================
+
+Lambertian model, representing perfectly diffuse (matte) surfaces by a constant BRDF
+
+Idiff = Kd * Ld * cosθ = Kd * Ld * dot(l, n)
+
+Kd 	表面对diffuse的反射系数
+Ld 	灯光对diffuse的贡献
+θ  	光源方向和表面法线夹角
+l  	normalize光源方向（指向光源）
+n 	normalize表面法线
+
+Note : 
+实现时需处理θ为钝角时无diffuse， 即saturate或max(0)
+
+============================================================================================
+
+Phong reflectance model, a phenomenological model akin to plastic-like specularity.
+
+Ispec = Ks * Is * pow(cos α， p) = Ks * Is * pow(dot(v, r), p)
+r = normalize（2 * dot(n, l) * n - l）
+
+litColor = Iambi + ∑nlight（Idiff + Ispec）
+
+Iambi = Ka * Ia
+
+Ks 	表面对specular的反射系数
+Is 	灯光对specular的贡献
+α 	镜面反射方向和视点方向夹角
+v	normalize视点方向（指向视点）
+r 	normalize镜面反射方向
+p   镜面发射指数
+Ka	表面对ambient的反射系数
+Ia 	灯光对ambient的贡献
+
+Note : 
+镜面反射方向以可用内置function reflect求取
+实现时需处理θ | α为钝角时无specular， 即saturate或max(0)
+简化模型为Id == Is == Ia, 统一为光源三通道intensity.  Kd == Ka， 统一为diffuse贴图采样， 或diffuse贴图采样 * vertex color,  Ks为高光贴图采样
+
+============================================================================================
+
+Blinn–Phong model, resembling Phong, but allowing for certain quantities to be interpolated, reducing computational overhead
+
+Ispec = Ks * Is * pow(cos β， n) = Ks * Is * pow(dot(h, n), p)
+r = normalize（l + v）
+
+β 	半角向量与表面法线的夹角
+h  	normalize l, v半角向量
+
+============================================================================================
+
+Torrance–Sparrow model, a general model representing surfaces as distributions of perfectly specular microfacets
