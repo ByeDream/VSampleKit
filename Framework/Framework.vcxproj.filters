@@ -19,6 +19,9 @@
     <Filter Include="Utils\Geommath">
       <UniqueIdentifier>{833e7a29-9639-47ba-b0aa-e1c577bf165f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\IO">
+      <UniqueIdentifier>{73178eeb-3133-43fa-8c0a-7639148e2f0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="System\Application.cpp">
@@ -39,8 +42,48 @@
     <ClCompile Include="Utils\simple_mesh.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="tga_reader.cpp" />
-    <ClCompile Include="tga_texture_loader.cpp" />
+    <ClCompile Include="Graphic\Swapchain.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\OutputDevice.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\RenderSurface.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUResourceViews.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\RenderStateMgr.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\RenderContext.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUFence.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Texture.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ShaderManager.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GraphicHelpers.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\VertexDescription.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\RenderableTexture.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\IO\FileIO.cpp">
+      <Filter>Utils\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\IO\tga_reader.cpp">
+      <Filter>Utils\IO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="System\Application.h">
@@ -97,8 +140,51 @@
     <ClInclude Include="Utils\simple_mesh.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="tga_reader.h" />
-    <ClInclude Include="tga_texture_loader.h" />
+    <ClInclude Include="Graphic\Swapchain.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\OutputDevice.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderSurface.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResourceViews.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderStateMgr.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderContext.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUFence.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Texture.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ShaderManager.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\IncludedShaders.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GraphicHelpers.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\VertexDescription.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderableTexture.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\IO\FileIO.h">
+      <Filter>Utils\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\IO\tga_reader.h">
+      <Filter>Utils\IO</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <OrbisWavePsslc Include="shader_p.pssl" />

@@ -69,26 +69,51 @@
   <ItemGroup>
     <ClCompile Include="dataformat_interpreter.cpp" />
     <ClCompile Include="floating_point.cpp" />
+    <ClCompile Include="Graphic\GPUFence.cpp" />
+    <ClCompile Include="Graphic\GPUResourceViews.cpp" />
     <ClCompile Include="Graphic\GraphicDevice.cpp" />
+    <ClCompile Include="Graphic\GraphicHelpers.cpp" />
     <ClCompile Include="Graphic\Memory\Allocators.cpp" />
     <ClCompile Include="Graphic\Memory\StackAllocator.cpp" />
+    <ClCompile Include="Graphic\OutputDevice.cpp" />
+    <ClCompile Include="Graphic\RenderableTexture.cpp" />
+    <ClCompile Include="Graphic\RenderContext.cpp" />
+    <ClCompile Include="Graphic\RenderStateMgr.cpp" />
+    <ClCompile Include="Graphic\RenderSurface.cpp" />
+    <ClCompile Include="Graphic\ShaderManager.cpp" />
+    <ClCompile Include="Graphic\Swapchain.cpp" />
+    <ClCompile Include="Graphic\Texture.cpp" />
+    <ClCompile Include="Graphic\VertexDescription.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="System\Application.cpp" />
-    <ClCompile Include="tga_reader.cpp" />
-    <ClCompile Include="tga_texture_loader.cpp" />
+    <ClCompile Include="Utils\IO\FileIO.cpp" />
+    <ClCompile Include="Utils\IO\tga_reader.cpp" />
     <ClCompile Include="Utils\simple_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dataformat_interpreter.h" />
     <ClInclude Include="floating_point.h" />
     <ClInclude Include="Framework.h" />
+    <ClInclude Include="Graphic\GPUFence.h" />
+    <ClInclude Include="Graphic\GPUResourceViews.h" />
     <ClInclude Include="Graphic\GraphicDevice.h" />
+    <ClInclude Include="Graphic\GraphicHelpers.h" />
+    <ClInclude Include="Graphic\IncludedShaders.h" />
     <ClInclude Include="Graphic\Memory\Allocators.h" />
     <ClInclude Include="Graphic\Memory\IAllocator.h" />
     <ClInclude Include="Graphic\Memory\StackAllocator.h" />
+    <ClInclude Include="Graphic\OutputDevice.h" />
+    <ClInclude Include="Graphic\RenderableTexture.h" />
+    <ClInclude Include="Graphic\RenderContext.h" />
+    <ClInclude Include="Graphic\RenderStateMgr.h" />
+    <ClInclude Include="Graphic\RenderSurface.h" />
+    <ClInclude Include="Graphic\ShaderManager.h" />
+    <ClInclude Include="Graphic\Swapchain.h" />
+    <ClInclude Include="Graphic\Texture.h" />
+    <ClInclude Include="Graphic\VertexDescription.h" />
     <ClInclude Include="Platform\Platform.h" />
     <ClInclude Include="Platform\PlatformDefine.h" />
     <ClInclude Include="Platform\PlatformInclude.h" />
@@ -97,13 +122,13 @@
     <ClInclude Include="std_cbuffer.h" />
     <ClInclude Include="System\Application.h" />
     <ClInclude Include="System\ConfigData.h" />
-    <ClInclude Include="tga_reader.h" />
-    <ClInclude Include="tga_texture_loader.h" />
     <ClInclude Include="Utils\Geommath\geommath.h" />
     <ClInclude Include="Utils\Geommath\matrix4unaligned.h" />
     <ClInclude Include="Utils\Geommath\vector2unaligned.h" />
     <ClInclude Include="Utils\Geommath\vector3unaligned.h" />
     <ClInclude Include="Utils\Geommath\vector4unaligned.h" />
+    <ClInclude Include="Utils\IO\FileIO.h" />
+    <ClInclude Include="Utils\IO\tga_reader.h" />
     <ClInclude Include="Utils\simple_mesh.h" />
     <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>

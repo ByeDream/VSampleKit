@@ -1,7 +1,5 @@
 #include "Framework.h"
 
-#include "Graphic/Memory/StackAllocator.h"
-
 using namespace Framework;
 
 Application g_app;

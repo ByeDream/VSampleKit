@@ -33,7 +33,7 @@ void Framework::StackAllocator::init(SceKernelMemoryType type, U32 size)
 
 	// Direct memory assigned to application programs exists in consecutive areas in a physical address space. In addition, the beginning of these areas is guaranteed to be aligned to a 2 MiB boundary.
 	// Direct memory comprises a single consecutive area beginning from physical address 0. The size is defined with the SCE_KERNEL_MAIN_DMEM_SIZE macro.
-	int ret = sceKernelAllocateDirectMemory(0,
+	Result ret = sceKernelAllocateDirectMemory(0,
 		SCE_KERNEL_MAIN_DMEM_SIZE,
 		mSize,
 		mAlignment, // alignment
@@ -58,7 +58,7 @@ void Framework::StackAllocator::init(SceKernelMemoryType type, U32 size)
 void Framework::StackAllocator::deinit()
 {
 	SCE_GNM_ASSERT(true == mIsInitialized);
-	int ret = sceKernelReleaseDirectMemory(mOffset, mSize);
+	Result ret = sceKernelReleaseDirectMemory(mOffset, mSize);
 	SCE_GNM_ASSERT(SCE_OK == ret);
 	mIsInitialized = false;
 }

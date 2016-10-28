@@ -33,6 +33,8 @@
 #include <gnm.h>
 #include <gnmx.h>
 
+#include <video_out.h>
+
 #ifdef _MSC_VER
 #             pragma warning(push)
 #             pragma warning(disable:4996) // use deprecated class

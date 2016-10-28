@@ -106,6 +106,7 @@ Framework::S32 Framework::Allocators::release(void *memory, SceKernelMemoryType 
 	if (resourceHandle != nullptr)
 	{
 		Gnm::unregisterResource(*resourceHandle);
+		*resourceHandle = Gnm::kInvalidResourceHandle;
 	}
 
 	return 0;

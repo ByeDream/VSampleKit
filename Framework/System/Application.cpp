@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "Application.h"
 
-#include "Memory/Allocators.h"
-#include "Memory/StackAllocator.h"
+#include "Application.h"
+#include "GraphicDevice.h"
+
 
 
 
@@ -27,10 +27,7 @@ using namespace sce;
 Framework::Application::Application()
 : m_eopEventQueue("Framework Main Thread Queue")
 {
-	mOnionStackAllocator = new StackAllocator();
-	mGarlicStackAllocator = new StackAllocator();
-
-	mAllocators = new Allocators(GetInterface(mOnionStackAllocator), GetInterface(mGarlicStackAllocator));
+	
 }
 
 Framework::Application::~Application()
@@ -40,30 +37,30 @@ Framework::Application::~Application()
 
 bool Framework::Application::initialize(const char *name, int argc, const char* argv[])
 {
+	mName = name;
 	processCommandLine(argc, argv);
 
-	mName = name;
-	Gnm::registerOwner(&(mAllocators->mOwner), mName);
+	mGraphicDevice = new GraphicDevice(this);
+	mGraphicDevice->init();
 
-	mOnionStackAllocator->init(SCE_KERNEL_WB_ONION, mConifg.m_onionMemoryInBytes);
-	mGarlicStackAllocator->init(SCE_KERNEL_WC_GARLIC, mConifg.m_garlicMemoryInBytes);
+	
+
+	
 
 	// TODO swapchian
-	uint32_t m_targetWidth = 1920;
-	uint32_t m_targetHeight = 1080;
-	m_videoInfo.handle = sceVideoOutOpen(SCE_USER_SERVICE_USER_ID_SYSTEM, SCE_VIDEO_OUT_BUS_TYPE_MAIN, 0, NULL);
-	SCE_GNM_ASSERT_MSG(m_videoInfo.handle >= 0, "sceVideoOutOpen() returned error code %d.", m_videoInfo.handle);
+	
+	
 
 	SceVideoOutResolutionStatus status;
 	if (SCE_OK == sceVideoOutGetResolutionStatus(m_videoInfo.handle, &status) && status.fullHeight > 1080)
 	{
- 		m_targetWidth = 3840;
+		m_targetWidth = 3840;
 		m_targetHeight = 2160;
 	}
 
 	const U32 m_buffers = 3;
 
-	int32_t ret = SCE_GNM_OK;
+	Result ret = SCE_GNM_OK;
 
 	Vector3 m_lightPositionX(1.5f, 4.0f, 9.0f);
 	Vector3 m_lightTargetX(0.0f, 0.0f, 0.0f);
@@ -443,8 +440,10 @@ bool Framework::Application::terminate()
 void Framework::Application::processCommandLine(int argc, const char* argv[])
 {
 	//TODO
-	mConifg.m_onionMemoryInBytes		= 256 * 1024 * 1024;
-	mConifg.m_garlicMemoryInBytes		= 512 * 1024 * 1024;
+	mConfig.m_onionMemoryInBytes		= 256 * 1024 * 1024;
+	mConfig.m_garlicMemoryInBytes		= 512 * 1024 * 1024;
+	mConfig.m_targetWidth				= 1920;
+	mConfig.m_targetHeight				= 1080;
 }
 
 Framework::EmbeddedVsShader * Framework::Application::LoadVsShader(const char* filename, Allocators *allocators)
@@ -828,7 +827,7 @@ void Framework::Application::WaitForBufferAndFlip()
 		StallUntilGPUIsNotUsingBuffer(&m_eopEventQueue, m_indexOfBufferCpuIsWriting);
 // 		if (kCpuMainThread == m_config.m_whoQueuesFlips)
 // 		{
-// 			const int32_t ret = sceVideoOutSubmitFlip(m_videoInfo.handle, m_videoInfo.flip_index_base + getIndexOfBufferCpuIsWriting(), m_config.m_flipMode, 0);
+// 			const Result ret = sceVideoOutSubmitFlip(m_videoInfo.handle, m_videoInfo.flip_index_base + getIndexOfBufferCpuIsWriting(), m_config.m_flipMode, 0);
 // 			SCE_GNM_ASSERT(ret >= 0);
 // 		}
 		advanceCpuToNextBuffer();
@@ -840,7 +839,7 @@ void Framework::Application::WaitForBufferAndFlip()
 		StallUntilGPUIsNotUsingBuffer(&m_eopEventQueue, m_indexOfBufferCpuIsWriting);
 // 		if ((kCpuMainThread == m_config.m_whoQueuesFlips) && (m_frameCount >= m_config.m_buffers))
 // 		{
-// 			const int32_t ret = sceVideoOutSubmitFlip(m_videoInfo.handle, m_videoInfo.flip_index_base + getIndexOfBufferCpuIsWriting(), m_config.m_flipMode, 0);
+// 			const Result ret = sceVideoOutSubmitFlip(m_videoInfo.handle, m_videoInfo.flip_index_base + getIndexOfBufferCpuIsWriting(), m_config.m_flipMode, 0);
 // 			SCE_GNM_ASSERT(ret >= 0);
 // 		}
 	}
@@ -896,7 +895,7 @@ void Framework::Application::UpdateMatrices()
 
 Framework::Application::EopEventQueue::EopEventQueue(const char *name)
 {
-	int32_t ret = 0;
+	Result ret = 0;
 	ret = sceKernelCreateEqueue(&m_equeue, name);
 	SCE_GNM_ASSERT_MSG(ret >= 0, "sceKernelCreateEqueue returned error code %d.", ret);
 	m_name = name;
@@ -913,7 +912,7 @@ void Framework::Application::EopEventQueue::waitForEvent()
 {
 	SceKernelEvent ev;
 	int num;
-	const int32_t error = sceKernelWaitEqueue(m_equeue, &ev, 1, &num, nullptr);
+	Result error = sceKernelWaitEqueue(m_equeue, &ev, 1, &num, nullptr);
 	SCE_GNM_ASSERT(error == SCE_OK);
 }
 

@@ -7,8 +7,8 @@ struct Constants;
 
 namespace Framework
 {
-	class Allocators;
-	class StackAllocator;
+	
+	
 	//------------------------------------
 
 	struct EmbeddedVsShader
@@ -74,7 +74,9 @@ namespace Framework
 		sce::Gnm::Buffer m_constantBuffer[2];
 	};
 	//------------------------------------
-	
+	class GraphicDevice;
+	struct ConfigData;
+
 	class Application
 	{
 	public:
@@ -85,17 +87,23 @@ namespace Framework
 		bool frame();
 		bool terminate();
 
+		inline const char *getTitleName() const { return mName; }
+		inline const ConfigData *getConfig() const { return &mConfig; }
+
 	private:
 		void processCommandLine(int argc, const char* argv[]);
 
 	private:
-		const char *mName{nullptr};
+		const char *						mName{ nullptr };
+		ConfigData							mConfig;
+
+		GraphicDevice *						mGraphicDevice{ nullptr };
 
 		Allocators *mAllocators{ nullptr };
 		StackAllocator *mGarlicStackAllocator{ nullptr };
 		StackAllocator *mOnionStackAllocator{ nullptr };
 
-		ConfigData mConifg;
+		
 
 		/////////////////////////////////////
 
@@ -105,7 +113,6 @@ namespace Framework
 			uint32_t flip_index_base;
 			uint32_t buffer_num;
 		};
-		VideoInfo m_videoInfo;
 
 		EmbeddedVsShader *LoadVsShader(const char* filename, Allocators *allocators);
 		EmbeddedPsShader *LoadPsShader(const char* filename, Allocators *allocators);
