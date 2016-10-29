@@ -23,7 +23,7 @@ namespace Framework
 		INTERNAL_OBJ(sce::Gnm::Texture);
 
 	public:
-		struct Desciption
+		struct Description
 		{
 			U32 mWidth{ 0 };
 			U32 mHeight{ 0 };
@@ -31,76 +31,76 @@ namespace Framework
 			U32 mMipLevels{ 1 };
 			U32 mPitch{ 0 };
 			U32 mNumSlices{ 1 };
+			sce::Gnm::NumFragments mFragments{ sce::Gnm::kNumFragments1 };
 			sce::Gnm::DataFormat mFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::TextureType mTexType{ sce::Gnm::kTextureType2d };
 			bool mIsDynamic{ false };
-			AntiAliasingType mAAType{ AA_NONE };
 		};
 
-		TextureView(const Desciption &desc);
+		TextureView(const Description &desc);
 		void assignAddress(void *baseAddr);
+
+		inline sce::Gnm::SizeAlign getSizeAlign() const { return mObject.getSizeAlign(); }
 	};
 
-	class RenderTargetView : public GPUResourceView
+	class BaseTargetView : public GPUResourceView
+	{
+	public:
+		struct Description
+		{
+			U32							mWidth{ 0 };
+			U32							mHeight{ 0 };
+			U32							mPitch{ 0 };
+			U32							mNumSlices{ 1 };
+			sce::Gnm::NumSamples		mSamples{ sce::Gnm::kNumSamples1 };
+			sce::Gnm::NumFragments		mFragments{ sce::Gnm::kNumFragments1 };
+			sce::Gnm::DataFormat		mColorFormat{ sce::Gnm::kDataFormatInvalid };
+			sce::Gnm::ZFormat			mDepthFormat{ sce::Gnm::kZFormatInvalid };
+			sce::Gnm::StencilFormat		mStencilFormat{ sce::Gnm::kStencilInvalid };
+			bool						mIsDynamic{ false };
+			bool						mIsDisplayable{ false };
+			bool						mUseCMask{ false };
+			bool						mUseFMask{ false };
+			bool						mUseHTile{ false };
+		};
+	};
+
+	class RenderTargetView : public BaseTargetView
 	{
 		INTERNAL_OBJ(sce::Gnm::RenderTarget);
 
 	public:
-		struct Desciption
-		{
-			U32 mWidth{ 0 };
-			U32 mHeight{ 0 };
-			U32 mPitch{ 0 };
-			U32 mNumSlices{ 1 };
-			sce::Gnm::DataFormat mFormat{ sce::Gnm::kDataFormatInvalid };
-			bool mIsDynamic{ false };
-			bool mIsDisplayable{ false };
-			AntiAliasingType mAAType{ AA_NONE };
-		};
-
-		RenderTargetView(const Desciption &desc);
+		RenderTargetView(const BaseTargetView::Description &desc);
 		void assignAddress(void *colorAddr, void *cMaskAddr = nullptr, void *fMaskAddr = nullptr);
 
-		inline bool				IsUsingCMask() const { return mUseCMask; }
-		inline bool				IsUsingFMask() const { return mUseFMask; }
+		inline bool				isUsingCMask() const { return mUseCMask; }
+		inline bool				isUsingFMask() const { return mUseFMask; }
 
-		inline sce::Gnm::SizeAlign GetColorSizeAlign() const { return mObject.getColorSizeAlign(); }
-		inline sce::Gnm::SizeAlign GetCMaskSizeAlign() const { return mObject.getCmaskSizeAlign(); }
-		inline sce::Gnm::SizeAlign GetFMaskSizeAlign() const { return mObject.getFmaskSizeAlign(); }
+		inline sce::Gnm::SizeAlign getColorSizeAlign() const { return mObject.getColorSizeAlign(); }
+		inline sce::Gnm::SizeAlign getCMaskSizeAlign() const { return mObject.getCmaskSizeAlign(); }
+		inline sce::Gnm::SizeAlign getFMaskSizeAlign() const { return mObject.getFmaskSizeAlign(); }
 
-	private:
+	protected:
 		bool					mUseCMask{ false };
 		bool					mUseFMask{ false };
 	};
 
-	class DepthStencilView : public GPUResourceView
+	class DepthStencilView : public BaseTargetView
 	{
 		INTERNAL_OBJ(sce::Gnm::DepthRenderTarget);
 
 	public:
-		struct Desciption
-		{
-			U32 mWidth{ 0 };
-			U32 mHeight{ 0 };
-			U32 mPitch{ 0 };
-			U32 mNumSlices{ 1 };
-			sce::Gnm::ZFormat mZFormat{sce::Gnm::kZFormatInvalid};
-			sce::Gnm::StencilFormat mSFormat{ sce::Gnm::kStencilInvalid };
-			bool mUseHTile{ true };
-			AntiAliasingType mAAType{ AA_NONE };
-		};
+		DepthStencilView(const BaseTargetView::Description &desc);
+		void assignAddress(void *depthAddr, void *stencilAddr = nullptr, void *hTileAddr = nullptr);
 
-		DepthStencilView(const Desciption &desc);
-		void assignAddress(void *depthAddr, void *hTileAddr, void *stencilAddr = nullptr);
+		inline bool				isUsingStencil() const { return mUseStencil; }
+		inline bool				isUsingeHTile() const { return mUseHTile; }
 
-		inline bool				IsUsingStencil() const { return mUseStencil; }
-		inline bool				IsUsingeHTile() const { return mUseHTile; }
+		inline sce::Gnm::SizeAlign getDepthSizeAlign() const { return mObject.getZSizeAlign(); }
+		inline sce::Gnm::SizeAlign getStencilSizeAlign() const { return mObject.getStencilSizeAlign(); }
+		inline sce::Gnm::SizeAlign getHTileSizeAlign() const { return mObject.getHtileSizeAlign(); }
 
-		inline sce::Gnm::SizeAlign GetDepthSizeAlign() const { return mObject.getZSizeAlign(); }
-		inline sce::Gnm::SizeAlign GetStencilSizeAlign() const { return mObject.getStencilSizeAlign(); }
-		inline sce::Gnm::SizeAlign GetHTileSizeAlign() const { return mObject.getHtileSizeAlign(); }
-
-	private:
+	protected:
 		bool					mUseStencil{ false };
 		bool					mUseHTile{ false };
 	};

@@ -4,6 +4,7 @@
 
 #include "Memory/Allocators.h"
 #include "GPUResourceViews.h"
+#include "GraphicHelpers.h"
 
 using namespace sce;
 
@@ -14,10 +15,10 @@ Framework::Texture::Texture()
 
 Framework::Texture::~Texture()
 {
-	SCE_GNM_ASSERT_MSG(mShaderResourceView == nullptr && mHandle == sce::Gnm::kInvalidResourceHandle && mGpuBaseAddr == nullptr, "deinit texture[%s] before destory it", mDesc.mName);
+	SCE_GNM_ASSERT_MSG(mGpuBaseAddr == nullptr, "deinit me[%s] before destroy me", mDesc.mName);
 }
 
-void Framework::Texture::init(const Desciption& desc, Allocators *allocators, const U8 *pData)
+void Framework::Texture::init(const Description& desc, Allocators *allocators, const U8 *pData)
 {
 	mDesc = desc;
 	
@@ -37,7 +38,7 @@ void Framework::Texture::deinit(Allocators *allocators)
 	SAFE_DELETE(mShaderResourceView);
 }
 
-Framework::Texture * Framework::Texture::createTexture(const Desciption& desc, Allocators *allocators, const U8 *pData /*= nullptr*/)
+Framework::Texture * Framework::Texture::createTexture(const Description& desc, Allocators *allocators, const U8 *pData /*= nullptr*/)
 {
 	Texture *_texture = new Texture;
 	_texture->init(desc, allocators, pData);
@@ -49,7 +50,7 @@ Framework::Texture * Framework::Texture::createTextureFromFile(const char *fileP
 	FileIO _file(filePath);
 	_file.load();
 
-	Desciption _desc;
+	Description _desc;
 	U8 *_pixelData = nullptr;
 	
 	parseTexture(_file.getBuffer(), &_desc, &_pixelData);
@@ -69,18 +70,20 @@ void Framework::Texture::createShaderResourceView()
 	SCE_GNM_ASSERT(mDesc.mWidth > 0 && mDesc.mHeight > 0 && mDesc.mDepth > 0);
 	SCE_GNM_ASSERT(mDesc.mMipLevels > 0);
 
+	Gnm::NumFragments _fragments = getFragmentsFromAAType(mDesc.mAAType);
+
 	// create shader resource view
-	TextureView::Desciption _desc;
+	TextureView::Description _desc;
 	_desc.mWidth		= mDesc.mWidth;
 	_desc.mHeight		= mDesc.mHeight;
 	_desc.mDepth		= mDesc.mDepth;
 	_desc.mMipLevels	= mDesc.mMipLevels;
 	_desc.mPitch		= 0;
 	_desc.mNumSlices	= 1;
+	_desc.mFragments	= _fragments;
 	_desc.mFormat		= mDesc.mFormat;
 	_desc.mTexType		= mDesc.mTexType;
 	_desc.mIsDynamic	= mDesc.mIsDynamic;
-	_desc.mAAType		= mDesc.mAAType;
 
 	mShaderResourceView = new TextureView(_desc);
 }
@@ -90,9 +93,8 @@ void Framework::Texture::allocMemory(Allocators *allocators)
 	SCE_GNM_ASSERT(mShaderResourceView != nullptr);
 	SCE_GNM_ASSERT(allocators != nullptr);
 
-	Gnm::SizeAlign _gpuMemAlign = mShaderResourceView->getInternalObj()->getSizeAlign();
+	Gnm::SizeAlign _gpuMemAlign = mShaderResourceView->getSizeAlign();
 
-	void *mGpuBaseAddr = nullptr;
 	mGpuMemType = mDesc.mIsDynamic ? SCE_KERNEL_WB_ONION : SCE_KERNEL_WC_GARLIC;
 	allocators->allocate(&mGpuBaseAddr, mGpuMemType, _gpuMemAlign, Gnm::kResourceTypeTextureBaseAddress, &mHandle, mDesc.mName);
 	SCE_GNM_ASSERT_MSG(mGpuBaseAddr != nullptr, "Out of memory");
@@ -129,7 +131,7 @@ void Framework::Texture::transferData(const U8 *pData)
 	}
 }
 
-void Framework::Texture::parseTexture(const U8 *fileBuffer, Desciption *out_desc, U8 **out_pixelData)
+void Framework::Texture::parseTexture(const U8 *fileBuffer, Description *out_desc, U8 **out_pixelData)
 {
 	SCE_GNM_ASSERT(fileBuffer != nullptr && out_desc != nullptr && out_pixelData != nullptr);
 

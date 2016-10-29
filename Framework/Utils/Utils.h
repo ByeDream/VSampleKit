@@ -5,3 +5,14 @@
 
 #include "Utils/Geommath/geommath.h"
 #include "Utils/simple_mesh.h"
+
+namespace Framework
+{
+	template<typename Source, typename Dest>
+	Dest *typeCast(Source *type)
+	{
+		Dest *_type = dynamic_cast<Source *>(type);
+		SCE_GNM_ASSERT_MSG(_type != nullptr, "Invalid type casting");
+		return _type;
+	}
+}

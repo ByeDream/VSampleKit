@@ -9,7 +9,7 @@ namespace Framework
 	{
 	public:
 
-		struct Desciption
+		struct Description
 		{
 			U32 mWidth{ 0 };
 			U32 mHeight{ 0 };
@@ -27,10 +27,13 @@ namespace Framework
 		Texture();
 		virtual ~Texture();
 
-		void						init(const Desciption& desc, Allocators *allocators, const U8 *pData);
+		void						init(const Description& desc, Allocators *allocators, const U8 *pData);
 		void						deinit(Allocators *allocators);
 
-		static Texture *			createTexture(const Desciption& desc, Allocators *allocators, const U8 *pData = nullptr);
+		inline const Description &	getDescription() const { return mDesc; }
+		inline TextureView *		getShaderResourceView() const { return mShaderResourceView; }
+
+		static Texture *			createTexture(const Description& desc, Allocators *allocators, const U8 *pData = nullptr);
 		static Texture *			createTextureFromFile(const char *filePath, Allocators *allocators);
 
 		static bool					saveTextureToFile(const char *filePath, Texture *texture);
@@ -39,10 +42,10 @@ namespace Framework
 		void						allocMemory(Allocators *allocators);
 		void						transferData(const U8 *pData);
 
-		static void					parseTexture(const U8 *fileBuffer, Desciption *out_desc, U8 **out_pixelData);
+		static void					parseTexture(const U8 *fileBuffer, Description *out_desc, U8 **out_pixelData);
 
 	protected:
-		Desciption					mDesc;
+		Description					mDesc;
 		TextureView *				mShaderResourceView{ nullptr };
 		sce::Gnm::ResourceHandle	mHandle{ sce::Gnm::kInvalidResourceHandle };
 		SceKernelMemoryType			mGpuMemType{ SCE_KERNEL_WC_GARLIC };
