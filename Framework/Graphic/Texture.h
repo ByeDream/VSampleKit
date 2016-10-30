@@ -17,9 +17,9 @@ namespace Framework
 			U32 mMipLevels{ 1 };
 			sce::Gnm::DataFormat mFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::TextureType mTexType{ sce::Gnm::kTextureType2d };
+			sce::Gnm::TileMode mTileMode{ sce::Gnm::kInvaildTileMode };
 			bool mIsDynamic{ false };
 			AntiAliasingType mAAType{ AA_NONE };
-			//RESOURCE_BIND_FLAG mBindFlag{ BIND_SHADER_RESOURCE };
 
 			const char *mName{ nullptr };
 		};
@@ -27,8 +27,8 @@ namespace Framework
 		Texture();
 		virtual ~Texture();
 
-		void						init(const Description& desc, Allocators *allocators, const U8 *pData);
-		void						deinit(Allocators *allocators);
+		virtual void				init(const Description& desc, Allocators *allocators, const U8 *pData);
+		virtual void				deinit(Allocators *allocators);
 
 		inline const Description &	getDescription() const { return mDesc; }
 		inline TextureView *		getShaderResourceView() const { return mShaderResourceView; }

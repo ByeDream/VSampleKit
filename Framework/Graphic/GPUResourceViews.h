@@ -5,6 +5,7 @@ public: inline _typename *getInternalObj() { return &mObject; } \
 inline const _typename *getInternalObj() const { return &mObject; } \
 private: _typename mObject
 
+//TODO ptr
 #define INTERNAL_OBJ_PTR(_typename) _typename *mObject{ nullptr }; \
 inline _typename *getInternalObj() const { SCE_GNM_ASSERT(mObject != nullptr); return mObject; } \
 //inline _typename** GetGNMObjectInputPtr() { return &m_GNMResource; }
@@ -34,6 +35,7 @@ namespace Framework
 			sce::Gnm::NumFragments mFragments{ sce::Gnm::kNumFragments1 };
 			sce::Gnm::DataFormat mFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::TextureType mTexType{ sce::Gnm::kTextureType2d };
+			sce::Gnm::TileMode mTileMode{ sce::Gnm::kInvaildTileMode };
 			bool mIsDynamic{ false };
 		};
 
@@ -57,6 +59,7 @@ namespace Framework
 			sce::Gnm::DataFormat		mColorFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::ZFormat			mDepthFormat{ sce::Gnm::kZFormatInvalid };
 			sce::Gnm::StencilFormat		mStencilFormat{ sce::Gnm::kStencilInvalid };
+			sce::Gnm::TileMode			mTileMode{ sce::Gnm::kInvaildTileMode };
 			bool						mIsDynamic{ false };
 			bool						mIsDisplayable{ false };
 			bool						mUseCMask{ false };

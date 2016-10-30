@@ -8,9 +8,9 @@
 
 using namespace sce;
 
-void Framework::RenderableTexture::init(const Texture::Description &desc, Allocators *allocators)
+void Framework::RenderableTexture::init(const Texture::Description &desc, Allocators *allocators, const U8 *pData)
 {
-	super::init(desc, allocators, nullptr);
+	super::init(desc, allocators, pData);
 	createTargetView();
 	allocMemory(allocators);
 }
@@ -21,12 +21,12 @@ void Framework::RenderableTexture::deinit(Allocators *allocators)
 	super::deinit(allocators);
 }
 
-Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTextureColor(const Texture::Description &desc, Allocators *allocators, bool isSwapChain /*= false*/)
+Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTextureColor(const Texture::Description &desc, Allocators *allocators, bool isDisplayable /*= false*/)
 {
 	bool _useCMask = (desc.mAAType != AA_NONE);
 	bool _useFMask = (desc.mAAType != AA_NONE);
 
-	RenderableTexture *_texture = new RenderableTextureColor(isSwapChain, _useCMask, _useFMask);
+	RenderableTexture *_texture = new RenderableTextureColor(isDisplayable, _useCMask, _useFMask);
 	_texture->init(desc, allocators);
 	return _texture;
 }
@@ -38,8 +38,8 @@ Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTex
 	return _texture;
 }
 
-Framework::RenderableTextureColor::RenderableTextureColor(bool isSwapChain, bool isUsingCMask, bool isUsingFMask)
-	: mIsSwapChain(isSwapChain)
+Framework::RenderableTextureColor::RenderableTextureColor(bool isDisplayable, bool isUsingCMask, bool isUsingFMask)
+	: mIsDisplayable(isDisplayable)
 	, mIsUsingCMask(isUsingCMask)
 	, mIsUsingFMask(isUsingFMask)
 {
@@ -63,7 +63,6 @@ void Framework::RenderableTextureColor::deinit(Allocators *allocators)
 
 void Framework::RenderableTextureColor::createTargetView()
 {
-	SCE_GNM_ASSERT_MSG(mDesc.mDepth == 1 && mDesc.mTexType == Gnm::kTextureType2d, "Support 2D texture only");
 	SCE_GNM_ASSERT(mTargetView == nullptr);
 
 	Gnm::NumSamples _samples = getSamplesFromAAType(mDesc.mAAType);
@@ -75,8 +74,9 @@ void Framework::RenderableTextureColor::createTargetView()
 	_desc.mSamples				= _samples;
 	_desc.mFragments			= _fragments;
 	_desc.mColorFormat			= mDesc.mFormat;
+	_desc.mTileMode				= mDesc.mTileMode;
 	_desc.mIsDynamic			= mDesc.mIsDynamic;
-	_desc.mIsDisplayable		= mIsSwapChain;
+	_desc.mIsDisplayable		= mIsDisplayable;
 	_desc.mUseCMask				= mIsUsingCMask;
 	_desc.mUseFMask				= mIsUsingFMask;
 
@@ -143,7 +143,6 @@ void Framework::RenderableTextureDepthStencil::deinit(Allocators *allocators)
 
 void Framework::RenderableTextureDepthStencil::createTargetView()
 {
-	SCE_GNM_ASSERT_MSG(mDesc.mDepth == 1 && mDesc.mTexType == Gnm::kTextureType2d, "Support 2D texture only");
 	SCE_GNM_ASSERT(mTargetView == nullptr);
 
 	Gnm::NumFragments _fragments = getFragmentsFromAAType(mDesc.mAAType);
@@ -152,8 +151,9 @@ void Framework::RenderableTextureDepthStencil::createTargetView()
 	_desc.mWidth				= mDesc.mWidth;
 	_desc.mHeight				= mDesc.mHeight;
 	_desc.mFragments			= _fragments;
-	_desc.mDepthFormat			= mDesc.mFormat;
+	_desc.mDepthFormat			= Gnm::ZFormat::build(mDesc.mFormat);
 	_desc.mStencilFormat		= mIsUsingStencil ? Gnm::kStencil8 : Gnm::kStencilInvalid;
+	_desc.mTileMode				= mDesc.mTileMode;
 	_desc.mIsDynamic			= mDesc.mIsDynamic;
 	_desc.mUseHTile				= mIsUsingHTile;
 

@@ -17,11 +17,11 @@ namespace Framework
 		RenderableTexture() {}
 		virtual ~RenderableTexture() {}
 
-		virtual void						init(const Texture::Description &desc, Allocators *allocators);
+		virtual void						init(const Texture::Description& desc, Allocators *allocators, const U8 *pData);
 		virtual void						deinit(Allocators *allocators);
 		inline BaseTargetView *				getTargetView() const { return mTargetView; }
 
-		static RenderableTexture *			CreateRenderableTextureColor(const Texture::Description &desc, Allocators *allocators, bool isSwapChain = false);
+		static RenderableTexture *			CreateRenderableTextureColor(const Texture::Description &desc, Allocators *allocators, bool isDisplayable = false);
 		static RenderableTexture *			CreateRenderableTextureDepthStencil(const Texture::Description &desc, Allocators *allocators, bool isUsingHTile = true, bool isUsingStencil = true);
 	
 	protected:
@@ -38,12 +38,12 @@ namespace Framework
 		using super = RenderableTexture;
 
 	public:
-		RenderableTextureColor(bool isSwapChain, bool isUsingCMask, bool isUsingFMask);
+		RenderableTextureColor(bool isDisplayable, bool isUsingCMask, bool isUsingFMask);
 		virtual ~RenderableTextureColor();
 
 		virtual void						deinit(Allocators *allocators);
 
-		inline bool							isSwapChain() const { return mIsSwapChain; }
+		inline bool							isDisplayable() const { return mIsDisplayable; }
 		inline bool							isUsingCMask() const { return mIsUsingCMask; }
 		inline bool							isUsingFMask() const { return mIsUsingFMask; }
 
@@ -52,7 +52,7 @@ namespace Framework
 		virtual void						allocMemory(Allocators *allocators);
 
 	protected:
-		bool								mIsSwapChain{ false };
+		bool								mIsDisplayable{ false };
 		bool								mIsUsingCMask{ false };
 		bool								mIsUsingFMask{ false };
 		void *								mCMaskGpuMemAddr{ nullptr };

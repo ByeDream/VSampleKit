@@ -82,6 +82,7 @@ void Framework::Texture::createShaderResourceView()
 	_desc.mNumSlices	= 1;
 	_desc.mFragments	= _fragments;
 	_desc.mFormat		= mDesc.mFormat;
+	_desc.mTileMode		= mDesc.mTileMode;
 	_desc.mTexType		= mDesc.mTexType;
 	_desc.mIsDynamic	= mDesc.mIsDynamic;
 

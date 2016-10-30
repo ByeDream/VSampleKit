@@ -110,26 +110,26 @@ namespace Framework
 		}
 		return ret;
 	}
-
-	inline sce::GpuAddress::SurfaceType getSurfaceTypeFromTextureType(sce::Gnm::TextureType type, bool isDynamic)
-	{
-		sce::GpuAddress::SurfaceType ret = sce::GpuAddress::kSurfaceTypeTextureFlat;
-		switch (type)
-		{
-		case sce::Gnm::kTextureType1d:
-		case sce::Gnm::kTextureType2d:
-			ret = isDynamic ? sce::GpuAddress::kSurfaceTypeRwTextureFlat : sce::GpuAddress::kSurfaceTypeTextureFlat;
-			break;
-		case sce::Gnm::kTextureType3d:
-			ret = isDynamic ? sce::GpuAddress::kSurfaceTypeRwTextureVolume : sce::GpuAddress::kSurfaceTypeTextureVolume;
-			break;
-		case sce::Gnm::kTextureTypeCubemap:
-			ret = isDynamic ? sce::GpuAddress::kSurfaceTypeRwTextureCubemap : sce::GpuAddress::kSurfaceTypeTextureCubemap;
-			break;
-		default:
-			SCE_GNM_ASSERT_MSG(false, "Not support yet");
-			break;
-		}
-		return ret;
-	}
+// 
+// 	inline sce::GpuAddress::SurfaceType getSurfaceTypeFromTextureType(sce::Gnm::TextureType type, bool isDynamic)
+// 	{
+// 		sce::GpuAddress::SurfaceType ret = sce::GpuAddress::kSurfaceTypeTextureFlat;
+// 		switch (type)
+// 		{
+// 		case sce::Gnm::kTextureType1d:
+// 		case sce::Gnm::kTextureType2d:
+// 			ret = isDynamic ? sce::GpuAddress::kSurfaceTypeRwTextureFlat : sce::GpuAddress::kSurfaceTypeTextureFlat;
+// 			break;
+// 		case sce::Gnm::kTextureType3d:
+// 			ret = isDynamic ? sce::GpuAddress::kSurfaceTypeRwTextureVolume : sce::GpuAddress::kSurfaceTypeTextureVolume;
+// 			break;
+// 		case sce::Gnm::kTextureTypeCubemap:
+// 			ret = isDynamic ? sce::GpuAddress::kSurfaceTypeRwTextureCubemap : sce::GpuAddress::kSurfaceTypeTextureCubemap;
+// 			break;
+// 		default:
+// 			SCE_GNM_ASSERT_MSG(false, "Not support yet");
+// 			break;
+// 		}
+// 		return ret;
+// 	}
 }
