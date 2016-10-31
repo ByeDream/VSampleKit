@@ -1,5 +1,8 @@
 #pragma once
 
+#include "DesignPattern/Factory.h"
+#include "DesignPattern/Singleton.h"
+
 #include "Utils/IO/FileIO.h"
 #include "Utils/IO/tga_reader.h"
 
