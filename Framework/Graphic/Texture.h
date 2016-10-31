@@ -4,6 +4,7 @@ namespace Framework
 {
 	class Allocators;
 	class TextureView;
+	class BaseTargetView;
 
 	class Texture
 	{
@@ -30,8 +31,10 @@ namespace Framework
 		virtual void				init(const Description& desc, Allocators *allocators, const U8 *pData);
 		virtual void				deinit(Allocators *allocators);
 
+		virtual TextureView *		getShaderResourceView() const { return mShaderResourceView; }
+		virtual BaseTargetView *	getTargetView() const { return nullptr; }
+
 		inline const Description &	getDescription() const { return mDesc; }
-		inline TextureView *		getShaderResourceView() const { return mShaderResourceView; }
 
 		static Texture *			createTexture(const Description& desc, Allocators *allocators, const U8 *pData = nullptr);
 		static Texture *			createTextureFromFile(const char *filePath, Allocators *allocators);

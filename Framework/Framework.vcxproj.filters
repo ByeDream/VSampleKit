@@ -84,6 +84,9 @@
     <ClCompile Include="Utils\IO\tga_reader.cpp">
       <Filter>Utils\IO</Filter>
     </ClCompile>
+    <ClCompile Include="Graphic\RenderSet.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="System\Application.h">
@@ -184,6 +187,9 @@
     </ClInclude>
     <ClInclude Include="Utils\IO\tga_reader.h">
       <Filter>Utils\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderSet.h">
+      <Filter>Graphic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
