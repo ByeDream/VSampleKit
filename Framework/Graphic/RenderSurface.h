@@ -16,7 +16,6 @@ namespace Framework
 			U32								mDepth{ 1 };
 			U32								mMipLevels{ 1 };
 
-			bool							mIsDynamic{ false };
 			bool							mEnableCMask{ false };
 			bool							mEnableFMask{ false };
 			bool							mEnableHTile{ true };
@@ -37,6 +36,6 @@ namespace Framework
 
 	protected:
 		Texture *							mTexture{ nullptr };
-		sce::Gnm::TileMode					mTileMode{ sce::Gnm::kInvaildTileMode };
+		sce::Gnm::TileMode					mTileMode{ sce::Gnm::kTileModeThin_2dThin };
 	};
 }

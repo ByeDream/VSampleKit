@@ -54,6 +54,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Platform;$(ProjectDir)Utils;$(ProjectDir)System;$(ProjectDir)Graphic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningsAsErrors>true</WarningsAsErrors>
       <DisableSpecificWarnings>unused-private-field;unused-variable;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
@@ -64,6 +65,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Platform;$(ProjectDir)Utils;$(ProjectDir)System;$(ProjectDir)Graphic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningsAsErrors>true</WarningsAsErrors>
       <DisableSpecificWarnings>unused-private-field;unused-variable;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

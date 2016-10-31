@@ -4,7 +4,6 @@
 
 #include "Memory/Allocators.h"
 #include "GPUResourceViews.h"
-#include "GraphicHelpers.h"
 
 using namespace sce;
 
@@ -21,27 +20,28 @@ void Framework::RenderableTexture::deinit(Allocators *allocators)
 	super::deinit(allocators);
 }
 
-Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTextureColor(const Texture::Description &desc, Allocators *allocators, bool isDisplayable /*= false*/)
-{
-	bool _useCMask = (desc.mAAType != AA_NONE);
-	bool _useFMask = (desc.mAAType != AA_NONE);
+// Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTextureColor(const Texture::Description &desc, Allocators *allocators, bool isDisplayable /*= false*/)
+// {
+// 	bool _useCMask = (desc.mAAType != AA_NONE);
+// 	bool _useFMask = (desc.mAAType != AA_NONE);
+// 
+// 	RenderableTexture *_texture = new RenderableTextureColor(isDisplayable, _useCMask, _useFMask);
+// 	_texture->init(desc, allocators);
+// 	return _texture;
+// }
 
-	RenderableTexture *_texture = new RenderableTextureColor(isDisplayable, _useCMask, _useFMask);
-	_texture->init(desc, allocators);
-	return _texture;
-}
+// Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTextureDepthStencil(const Texture::Description &desc, Allocators *allocators, bool isUsingHTile /*= true*/, bool isUsingStencil /*= true*/)
+// {
+// 	RenderableTexture *_texture = new RenderableTextureDepthStencil(isUsingHTile, isUsingStencil);
+// 	_texture->init(desc, allocators);
+// 	return _texture;
+// }
 
-Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTextureDepthStencil(const Texture::Description &desc, Allocators *allocators, bool isUsingHTile /*= true*/, bool isUsingStencil /*= true*/)
-{
-	RenderableTexture *_texture = new RenderableTextureDepthStencil(isUsingHTile, isUsingStencil);
-	_texture->init(desc, allocators);
-	return _texture;
-}
-
-Framework::RenderableTextureColor::RenderableTextureColor(bool isDisplayable, bool isUsingCMask, bool isUsingFMask)
+Framework::RenderableTextureColor::RenderableTextureColor(bool isDisplayable, bool isUsingCMask, bool isUsingFMask, sce::Gnm::NumSamples samples)
 	: mIsDisplayable(isDisplayable)
 	, mIsUsingCMask(isUsingCMask)
 	, mIsUsingFMask(isUsingFMask)
+	, mSamples(samples)
 {
 
 }
@@ -65,17 +65,13 @@ void Framework::RenderableTextureColor::createTargetView()
 {
 	SCE_GNM_ASSERT(mTargetView == nullptr);
 
-	Gnm::NumSamples _samples = getSamplesFromAAType(mDesc.mAAType);
-	Gnm::NumFragments _fragments = getFragmentsFromAAType(mDesc.mAAType);
-	
 	BaseTargetView::Description _desc;
 	_desc.mWidth				= mDesc.mWidth;
 	_desc.mHeight				= mDesc.mHeight;
-	_desc.mSamples				= _samples;
-	_desc.mFragments			= _fragments;
+	_desc.mSamples				= mSamples;
+	_desc.mFragments			= mDesc.mFragments;
 	_desc.mColorFormat			= mDesc.mFormat;
 	_desc.mTileMode				= mDesc.mTileMode;
-	_desc.mIsDynamic			= mDesc.mIsDynamic;
 	_desc.mIsDisplayable		= mIsDisplayable;
 	_desc.mUseCMask				= mIsUsingCMask;
 	_desc.mUseFMask				= mIsUsingFMask;
@@ -100,19 +96,19 @@ void Framework::RenderableTextureColor::allocMemory(Allocators *allocators)
 	Gnm::SizeAlign _shaderResourceSizeAlign = mShaderResourceView->getSizeAlign();
 	Gnm::SizeAlign _colorSizeAlign = _renderTargetView->getColorSizeAlign();
 
-	SCE_GNM_ASSERT(_colorSizeAlign.mSize == _shaderResourceSizeAlign.mSize && _colorSizeAlign.mAlign == _shaderResourceSizeAlign.mAlign);
+	SCE_GNM_ASSERT(_colorSizeAlign.m_size == _shaderResourceSizeAlign.m_size && _colorSizeAlign.m_align == _shaderResourceSizeAlign.m_align);
 
 	if (_renderTargetView->isUsingCMask())
 	{
 		Gnm::SizeAlign _cMaskSizeAlign = _renderTargetView->getCMaskSizeAlign();
-		allocators->allocate(&mCMaskGpuMemAddr, mGpuMemType, _cMaskSizeAlign, Gnm::kResourceTypeCMaskAddress, &mCMaskHandle, "%s_cmask", mDesc.mName);
+		allocators->allocate(&mCMaskGpuMemAddr, mGpuMemType, _cMaskSizeAlign, Gnm::kResourceTypeRenderTargetCMaskAddress, &mCMaskHandle, "%s_cmask", mDesc.mName);
 		SCE_GNM_ASSERT_MSG(mCMaskGpuMemAddr != nullptr, "Out of memory");
 	}
 
 	if (_renderTargetView->isUsingFMask())
 	{
 		Gnm::SizeAlign _fMaskSizeAlign = _renderTargetView->getFMaskSizeAlign();
-		allocators->allocate(&mFMaskGpuMemAddr, mGpuMemType, _fMaskSizeAlign, Gnm::kResourceTypeFMaskAddress, &mFMaskHandle, "%s_fmask", mDesc.mName);
+		allocators->allocate(&mFMaskGpuMemAddr, mGpuMemType, _fMaskSizeAlign, Gnm::kResourceTypeRenderTargetFMaskAddress, &mFMaskHandle, "%s_fmask", mDesc.mName);
 		SCE_GNM_ASSERT_MSG(mFMaskGpuMemAddr != nullptr, "Out of memory");
 	}
 
@@ -145,16 +141,13 @@ void Framework::RenderableTextureDepthStencil::createTargetView()
 {
 	SCE_GNM_ASSERT(mTargetView == nullptr);
 
-	Gnm::NumFragments _fragments = getFragmentsFromAAType(mDesc.mAAType);
-
 	BaseTargetView::Description _desc;
 	_desc.mWidth				= mDesc.mWidth;
 	_desc.mHeight				= mDesc.mHeight;
-	_desc.mFragments			= _fragments;
-	_desc.mDepthFormat			= Gnm::ZFormat::build(mDesc.mFormat);
+	_desc.mFragments			= mDesc.mFragments;
+	_desc.mDepthFormat			= mDesc.mFormat.getZFormat();
 	_desc.mStencilFormat		= mIsUsingStencil ? Gnm::kStencil8 : Gnm::kStencilInvalid;
 	_desc.mTileMode				= mDesc.mTileMode;
-	_desc.mIsDynamic			= mDesc.mIsDynamic;
 	_desc.mUseHTile				= mIsUsingHTile;
 
 	mTargetView = new DepthStencilView(_desc);
@@ -177,19 +170,19 @@ void Framework::RenderableTextureDepthStencil::allocMemory(Allocators *allocator
 	Gnm::SizeAlign _shaderResourceSizeAlign = mShaderResourceView->getSizeAlign();
 	Gnm::SizeAlign _depthSizeAlign = _depthStencilView->getDepthSizeAlign();
 
-	SCE_GNM_ASSERT(_depthSizeAlign.mSize == _shaderResourceSizeAlign.mSize && _depthSizeAlign.mAlign == _shaderResourceSizeAlign.mAlign);
+	SCE_GNM_ASSERT(_depthSizeAlign.m_size == _shaderResourceSizeAlign.m_size && _depthSizeAlign.m_align == _shaderResourceSizeAlign.m_align);
 
 	if (_depthStencilView->isUsingStencil())
 	{
 		Gnm::SizeAlign _stencilSizeAlign = _depthStencilView->getStencilSizeAlign();
-		allocators->allocate(&mStencilGpuMemAddr, mGpuMemType, _stencilSizeAlign, Gnm::kResourceTypeStencilAddress, &mStencilHandle, "%s_stencil", mDesc.mName);
+		allocators->allocate(&mStencilGpuMemAddr, mGpuMemType, _stencilSizeAlign, Gnm::kResourceTypeDepthRenderTargetStencilAddress, &mStencilHandle, "%s_stencil", mDesc.mName);
 		SCE_GNM_ASSERT_MSG(mStencilGpuMemAddr != nullptr, "Out of memory");
 	}
 
 	if (_depthStencilView->isUsingeHTile())
 	{
 		Gnm::SizeAlign _hTileSizeAlign = _depthStencilView->getHTileSizeAlign();
-		allocators->allocate(&mHTileGpuMemAddr, mGpuMemType, _hTileSizeAlign, Gnm::kResourceTypeHTileAddress, &mHTileHandle, "%s_hTile", mDesc.mName);
+		allocators->allocate(&mHTileGpuMemAddr, mGpuMemType, _hTileSizeAlign, Gnm::kResourceTypeDepthRenderTargetHTileAddress, &mHTileHandle, "%s_hTile", mDesc.mName);
 		SCE_GNM_ASSERT_MSG(mHTileGpuMemAddr != nullptr, "Out of memory");
 	}
 

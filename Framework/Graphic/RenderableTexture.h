@@ -38,7 +38,7 @@ namespace Framework
 		using super = RenderableTexture;
 
 	public:
-		RenderableTextureColor(bool isDisplayable, bool isUsingCMask, bool isUsingFMask);
+		RenderableTextureColor(bool isDisplayable, bool isUsingCMask, bool isUsingFMask, sce::Gnm::NumSamples samples);
 		virtual ~RenderableTextureColor();
 
 		virtual void						deinit(Allocators *allocators);
@@ -59,6 +59,7 @@ namespace Framework
 		void *								mFMaskGpuMemAddr{ nullptr };
 		sce::Gnm::ResourceHandle			mCMaskHandle{ sce::Gnm::kInvalidResourceHandle };
 		sce::Gnm::ResourceHandle			mFMaskHandle{ sce::Gnm::kInvalidResourceHandle };
+		sce::Gnm::NumSamples				mSamples{ sce::Gnm::kNumSamples1 };
 	};
 
 	class RenderableTextureDepthStencil : public RenderableTexture

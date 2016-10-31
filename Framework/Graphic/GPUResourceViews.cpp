@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "GPUResourceViews.h"
+#include "GraphicHelpers.h"
 
 using namespace sce;
 
@@ -20,7 +21,7 @@ Framework::TextureView::TextureView(const Description &desc)
 	spec.m_tileModeHint = desc.mTileMode;
 	spec.m_minGpuMode = Gnm::getGpuMode();
 
-	ret = mObject.init(&spec);
+	Result ret = mObject.init(&spec);
 	SCE_GNM_ASSERT_MSG(ret == SCE_OK, "Create TextureView failed.");
 }
 
@@ -51,7 +52,7 @@ Framework::RenderTargetView::RenderTargetView(const BaseTargetView::Description 
 	spec.m_flags.enableCmaskFastClear = mUseCMask ? 1 : 0;
 	spec.m_flags.enableFmaskCompression = mUseFMask ? 1 : 0;
 
-	ret = mObject.init(&spec);
+	Result ret = mObject.init(&spec);
 	SCE_GNM_ASSERT_MSG(ret == SCE_OK, "Create RenderTargetView failed.");
 }
 
@@ -82,7 +83,7 @@ Framework::DepthStencilView::DepthStencilView(const BaseTargetView::Description 
 	spec.m_numFragments = desc.mFragments;
 	spec.m_flags.enableHtileAcceleration = mUseHTile ? 1 : 0;
 
-	ret = mObject.init(&spec);
+	Result ret = mObject.init(&spec);
 	SCE_GNM_ASSERT_MSG(ret == SCE_OK, "Create DepthStencilView failed.");
 }
 

@@ -17,9 +17,9 @@ namespace Framework
 			U32 mMipLevels{ 1 };
 			sce::Gnm::DataFormat mFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::TextureType mTexType{ sce::Gnm::kTextureType2d };
-			sce::Gnm::TileMode mTileMode{ sce::Gnm::kInvaildTileMode };
+			sce::Gnm::TileMode mTileMode{ sce::Gnm::kTileModeThin_2dThin };
+			sce::Gnm::NumFragments mFragments{ sce::Gnm::kNumFragments1 };
 			bool mIsDynamic{ false };
-			AntiAliasingType mAAType{ AA_NONE };
 
 			const char *mName{ nullptr };
 		};

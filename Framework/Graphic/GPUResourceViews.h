@@ -35,8 +35,7 @@ namespace Framework
 			sce::Gnm::NumFragments mFragments{ sce::Gnm::kNumFragments1 };
 			sce::Gnm::DataFormat mFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::TextureType mTexType{ sce::Gnm::kTextureType2d };
-			sce::Gnm::TileMode mTileMode{ sce::Gnm::kInvaildTileMode };
-			bool mIsDynamic{ false };
+			sce::Gnm::TileMode mTileMode{ sce::Gnm::kTileModeThin_2dThin };
 		};
 
 		TextureView(const Description &desc);
@@ -59,8 +58,7 @@ namespace Framework
 			sce::Gnm::DataFormat		mColorFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::ZFormat			mDepthFormat{ sce::Gnm::kZFormatInvalid };
 			sce::Gnm::StencilFormat		mStencilFormat{ sce::Gnm::kStencilInvalid };
-			sce::Gnm::TileMode			mTileMode{ sce::Gnm::kInvaildTileMode };
-			bool						mIsDynamic{ false };
+			sce::Gnm::TileMode			mTileMode{ sce::Gnm::kTileModeThin_2dThin };
 			bool						mIsDisplayable{ false };
 			bool						mUseCMask{ false };
 			bool						mUseFMask{ false };

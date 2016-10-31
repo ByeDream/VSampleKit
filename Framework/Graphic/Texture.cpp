@@ -4,7 +4,6 @@
 
 #include "Memory/Allocators.h"
 #include "GPUResourceViews.h"
-#include "GraphicHelpers.h"
 
 using namespace sce;
 
@@ -70,8 +69,6 @@ void Framework::Texture::createShaderResourceView()
 	SCE_GNM_ASSERT(mDesc.mWidth > 0 && mDesc.mHeight > 0 && mDesc.mDepth > 0);
 	SCE_GNM_ASSERT(mDesc.mMipLevels > 0);
 
-	Gnm::NumFragments _fragments = getFragmentsFromAAType(mDesc.mAAType);
-
 	// create shader resource view
 	TextureView::Description _desc;
 	_desc.mWidth		= mDesc.mWidth;
@@ -80,11 +77,10 @@ void Framework::Texture::createShaderResourceView()
 	_desc.mMipLevels	= mDesc.mMipLevels;
 	_desc.mPitch		= 0;
 	_desc.mNumSlices	= 1;
-	_desc.mFragments	= _fragments;
+	_desc.mFragments	= mDesc.mFragments;
 	_desc.mFormat		= mDesc.mFormat;
 	_desc.mTileMode		= mDesc.mTileMode;
 	_desc.mTexType		= mDesc.mTexType;
-	_desc.mIsDynamic	= mDesc.mIsDynamic;
 
 	mShaderResourceView = new TextureView(_desc);
 }
