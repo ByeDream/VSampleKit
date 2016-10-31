@@ -6,6 +6,7 @@
 #include "Memory/StackAllocator.h"
 #include "OutputDevice.h"
 #include "Swapchain.h"
+#include "RenderSurfaceManger.h"
 
 using namespace sce;
 
@@ -24,11 +25,11 @@ void Framework::GraphicDevice::init()
 {
 	initMem();
 
+	RenderSurfaceManager::getInstance()->setAllocator(mAllocators);
+
 	OutputDevice::Description _desc;
 	_desc.mWidth = mApp->getConfig()->m_targetWidth;
 	_desc.mHeight = mApp->getConfig()->m_targetHeight;
-
-
 	mOutput = new OutputDevice(_desc);
 	mOutput->startup();
 
@@ -43,6 +44,8 @@ void Framework::GraphicDevice::deinit()
 
 	mOutput->shutdown();
 	SAFE_DELETE(mOutput);
+
+	RenderSurfaceManager::destory();
 
 	deinitMem();
 }

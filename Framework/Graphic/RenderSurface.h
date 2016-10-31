@@ -9,6 +9,11 @@ namespace Framework
 	class RenderSurface
 	{
 	public:
+		typedef U32 Handle;
+		enum
+		{
+			kInvalidRenderSurfaceHandle = MAX_VALUE_32,
+		};
 
 		struct Description
 		{
@@ -41,6 +46,8 @@ namespace Framework
 
 		virtual bool						isFormat32() const;
 
+		inline void							setHandle(Handle handle) { mHandle = handle; }
+		inline Handle						getHandle() const { return mHandle; }
 		inline const Texture *				getTexture() const { return mTexture; }
 		inline Texture *					getTexture() { return mTexture; }
 		inline sce::Gnm::TileMode			getTileMode() const { return mTileMode; }
@@ -49,6 +56,7 @@ namespace Framework
 		//TODO for size override operator > >= < <=
 		//TODO inline SurfaceSet GetSurfaceSet() { return mSet; } // or the name is enough
 	protected:
+		Handle								mHandle{ kInvalidRenderSurfaceHandle };
 		Texture *							mTexture{ nullptr };
 		sce::Gnm::TileMode					mTileMode{ sce::Gnm::kTileModeThin_2dThin };
 		AntiAliasingType					mAAType{ AA_NONE };

@@ -21,9 +21,6 @@ namespace Framework
 		virtual void						deinit(Allocators *allocators);
 		virtual BaseTargetView *			getTargetView() const { return mTargetView; }
 
-		static RenderableTexture *			CreateRenderableTextureColor(const Texture::Description &desc, Allocators *allocators, bool isDisplayable = false);
-		static RenderableTexture *			CreateRenderableTextureDepthStencil(const Texture::Description &desc, Allocators *allocators, bool isUsingHTile = true, bool isUsingStencil = true);
-	
 	protected:
 		virtual void						createTargetView() = 0;
 		virtual void						allocMemory(Allocators *allocators) = 0;

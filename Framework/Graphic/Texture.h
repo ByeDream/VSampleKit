@@ -36,16 +36,10 @@ namespace Framework
 
 		inline const Description &	getDescription() const { return mDesc; }
 
-		static Texture *			createTexture(const Description& desc, Allocators *allocators, const U8 *pData = nullptr);
-		static Texture *			createTextureFromFile(const char *filePath, Allocators *allocators);
-
-		static bool					saveTextureToFile(const char *filePath, Texture *texture);
 	protected:
 		void						createShaderResourceView();
 		void						allocMemory(Allocators *allocators);
 		void						transferData(const U8 *pData);
-
-		static void					parseTexture(const U8 *fileBuffer, Description *out_desc, U8 **out_pixelData);
 
 	protected:
 		Description					mDesc;

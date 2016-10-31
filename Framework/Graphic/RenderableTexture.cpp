@@ -20,23 +20,6 @@ void Framework::RenderableTexture::deinit(Allocators *allocators)
 	super::deinit(allocators);
 }
 
-// Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTextureColor(const Texture::Description &desc, Allocators *allocators, bool isDisplayable /*= false*/)
-// {
-// 	bool _useCMask = (desc.mAAType != AA_NONE);
-// 	bool _useFMask = (desc.mAAType != AA_NONE);
-// 
-// 	RenderableTexture *_texture = new RenderableTextureColor(isDisplayable, _useCMask, _useFMask);
-// 	_texture->init(desc, allocators);
-// 	return _texture;
-// }
-
-// Framework::RenderableTexture * Framework::RenderableTexture::CreateRenderableTextureDepthStencil(const Texture::Description &desc, Allocators *allocators, bool isUsingHTile /*= true*/, bool isUsingStencil /*= true*/)
-// {
-// 	RenderableTexture *_texture = new RenderableTextureDepthStencil(isUsingHTile, isUsingStencil);
-// 	_texture->init(desc, allocators);
-// 	return _texture;
-// }
-
 Framework::RenderableTextureColor::RenderableTextureColor(bool isDisplayable, bool isUsingCMask, bool isUsingFMask, sce::Gnm::NumSamples samples)
 	: mIsDisplayable(isDisplayable)
 	, mIsUsingCMask(isUsingCMask)

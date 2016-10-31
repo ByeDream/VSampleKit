@@ -28,5 +28,5 @@ namespace Framework
 	};
 
 	template<class T>
-	Framework::Singleton<T>::mInstance;
+	T * Singleton<T>::mInstance;
 }
