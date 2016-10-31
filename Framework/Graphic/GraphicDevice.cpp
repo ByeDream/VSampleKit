@@ -6,7 +6,7 @@
 #include "Memory/StackAllocator.h"
 #include "OutputDevice.h"
 #include "Swapchain.h"
-#include "RenderSurfaceManger.h"
+#include "RenderSurfaceManager.h"
 
 using namespace sce;
 

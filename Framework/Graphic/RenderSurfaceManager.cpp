@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "RenderSurfaceManger.h"
+#include "RenderSurfaceManager.h"
 
 using namespace sce;
 
