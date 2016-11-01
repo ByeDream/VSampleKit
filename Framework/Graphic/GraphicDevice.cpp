@@ -7,6 +7,7 @@
 #include "OutputDevice.h"
 #include "Swapchain.h"
 #include "RenderSurfaceManager.h"
+#include "RenderSet.h"
 
 using namespace sce;
 
@@ -28,18 +29,18 @@ void Framework::GraphicDevice::init()
 	RenderSurfaceManager::getInstance()->setAllocator(mAllocators);
 
 	OutputDevice::Description _desc;
-	_desc.mWidth = mApp->getConfig()->m_targetWidth;
-	_desc.mHeight = mApp->getConfig()->m_targetHeight;
+	_desc.mWidth = mApp->getConfig()->mTargetWidth;
+	_desc.mHeight = mApp->getConfig()->mTargetHeight;
 	mOutput = new OutputDevice(_desc);
 	mOutput->startup();
 
 	mSwapchain = new Swapchain(this);
-	mSwapchain->init();
+	mSwapchain->init(mAllocators);
 }
 
 void Framework::GraphicDevice::deinit()
 {
-	mSwapchain->deinit();
+	mSwapchain->deinit(mAllocators);
 	SAFE_DELETE(mSwapchain);
 
 	mOutput->shutdown();
@@ -48,6 +49,24 @@ void Framework::GraphicDevice::deinit()
 	RenderSurfaceManager::destory();
 
 	deinitMem();
+}
+
+void Framework::GraphicDevice::createRenderSet(RenderSet *out_renderSet, const RenderSurface::Description *depth, const RenderSurface::Description *color0, const RenderSurface::Description *color1 /*= nullptr*/, const RenderSurface::Description *color2 /*= nullptr*/, const RenderSurface::Description *color3 /*= nullptr*/)
+{
+	RenderSurface *_depth	= nullptr;
+	RenderSurface *_color0	= nullptr;
+	RenderSurface *_color1	= nullptr;
+	RenderSurface *_color2	= nullptr;
+	RenderSurface *_color3	= nullptr;
+
+	RenderSurfaceManager *_mgr = RenderSurfaceManager::getInstance();
+	_mgr->createSurface(&_depth, depth);
+	_mgr->createSurface(&_color0, color0);
+	_mgr->createSurface(&_color1, color1);
+	_mgr->createSurface(&_color2, color2);
+	_mgr->createSurface(&_color3, color3);
+
+	out_renderSet->init(_depth, _color0, _color1, _color2, _color3);
 }
 
 void Framework::GraphicDevice::initMem()
@@ -63,8 +82,8 @@ void Framework::GraphicDevice::initMem()
 
 	mAllocators = new Allocators(GetInterface(mOnionAllocator), GetInterface(mGarlicAllocator), ownerHandle);
 
-	mOnionAllocator->init(SCE_KERNEL_WB_ONION, mApp->getConfig()->m_onionMemoryInBytes);
-	mGarlicAllocator->init(SCE_KERNEL_WC_GARLIC, mApp->getConfig()->m_garlicMemoryInBytes);
+	mOnionAllocator->init(SCE_KERNEL_WB_ONION, mApp->getConfig()->mOnionMemoryInBytes);
+	mGarlicAllocator->init(SCE_KERNEL_WC_GARLIC, mApp->getConfig()->mGarlicMemoryInBytes);
 }
 
 void Framework::GraphicDevice::deinitMem()

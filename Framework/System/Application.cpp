@@ -42,21 +42,9 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 
 	mGraphicDevice = new GraphicDevice(this);
 	mGraphicDevice->init();
-
-	
-
-	
-
-	// TODO swapchian
 	
 	
 
-	SceVideoOutResolutionStatus status;
-	if (SCE_OK == sceVideoOutGetResolutionStatus(m_videoInfo.handle, &status) && status.fullHeight > 1080)
-	{
-		m_targetWidth = 3840;
-		m_targetHeight = 2160;
-	}
 
 	const U32 m_buffers = 3;
 
@@ -440,10 +428,12 @@ bool Framework::Application::terminate()
 void Framework::Application::processCommandLine(int argc, const char* argv[])
 {
 	//TODO
-	mConfig.m_onionMemoryInBytes		= 256 * 1024 * 1024;
-	mConfig.m_garlicMemoryInBytes		= 512 * 1024 * 1024;
-	mConfig.m_targetWidth				= 1920;
-	mConfig.m_targetHeight				= 1080;
+	mConfig.mOnionMemoryInBytes			= 256 * 1024 * 1024;
+	mConfig.mGarlicMemoryInBytes		= 512 * 1024 * 1024;
+	mConfig.mTargetWidth				= 1920;
+	mConfig.mTargetHeight				= 1080;
+
+	mConfig.mNumberOfSwappedBuffers		= 3;
 }
 
 Framework::EmbeddedVsShader * Framework::Application::LoadVsShader(const char* filename, Allocators *allocators)

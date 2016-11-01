@@ -4,16 +4,22 @@
 
 using namespace sce;
 
-Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, const RenderSurface::Description &desc, const U8 *pData /*= nullptr*/)
+Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, const RenderSurface::Description *desc, const U8 *pData /*= nullptr*/)
 {
-	SCE_GNM_ASSERT(mAllocators != nullptr);
-	RenderSurface *_surface = new RenderSurface;
-	_surface->init(desc, mAllocators, pData);
-	RenderSurface::Handle _handle = genSurfaceHandle();
-	_surface->setHandle(_handle);
-	SCE_GNM_ASSERT(getSurface(_handle) == nullptr);
-	mSurfaceTable[_handle] = _surface;
-	*out_surface = _surface;
+	// TODO, mark the status for Surface, first search the one can be reused when create a surface
+	RenderSurface::Handle _handle = RenderSurface::kInvalidRenderSurfaceHandle;
+	if (out_surface != nullptr && desc != nullptr)
+	{
+		RenderSurface::Handle _handle = genSurfaceHandle();
+		SCE_GNM_ASSERT(mAllocators != nullptr);
+		SCE_GNM_ASSERT(getSurface(_handle) == nullptr);
+
+		RenderSurface *_surface = new RenderSurface;
+		_surface->init(*desc, mAllocators, pData);
+		_surface->setHandle(_handle);
+		mSurfaceTable[_handle] = _surface;
+		*out_surface = _surface;
+	}
 	return _handle;
 }
 
@@ -32,7 +38,7 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(
 	_desc.mAAType			= AAType;
 	_desc.mType				= type;
 	_desc.mName				= name;
-	return createSurface(out_surface, _desc, pData);
+	return createSurface(out_surface, &_desc, pData);
 }
 
 Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurfaceFromFile(RenderSurface **out_surface, const char *filePath, RenderSurface::Description *desc /*= nullptr*/)
@@ -42,7 +48,7 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurfaceF
 
 	RenderSurface::Description _defaultDesc;
 	_defaultDesc.mType		= GpuAddress::kSurfaceTypeTextureFlat;
-	_defaultDesc.mAAType	= AA_NONE; // TODO
+	_defaultDesc.mAAType	= AA_NONE; // TODO AA for texture
 
 	RenderSurface::Description *_desc = (desc != nullptr) ? desc : &_defaultDesc;
 	U8 *_pixelData = nullptr;
@@ -50,7 +56,7 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurfaceF
 	parseSurface(_file.getBuffer(), _desc, &_pixelData);
 	SCE_GNM_ASSERT(_pixelData != nullptr);
 	_desc->mName = _file.getName();
-	return createSurface(out_surface, *_desc, _pixelData);
+	return createSurface(out_surface, _desc, _pixelData);
 }
 
 void Framework::RenderSurfaceManager::destorySurface(RenderSurface::Handle handle)

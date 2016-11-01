@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
 #include "RenderSet.h"
-#include "RenderSurface.h"
 #include "RenderContext.h"
 #include "Texture.h"
+#include "RenderSurfaceManager.h"
 
 Framework::RenderSet::RenderSet()
 {
@@ -33,14 +33,31 @@ void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface *surface)
 	}
 	else if(mColorSurfaces[slotID] != nullptr && surface == nullptr)
 	{
+		//TODO free previse surface.
 		mNumColorSurfaces--;
 	}
 	mColorSurfaces[slotID] = surface;
+	mColorHandle[slotID] = (surface != nullptr) ? surface->getHandle() : RenderSurface::kInvalidRenderSurfaceHandle;
+}
+
+void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface::Handle surfaceHandle)
+{
+	RenderSurface *_surface = RenderSurfaceManager::getInstance()->getSurface(surfaceHandle);
+	SCE_GNM_ASSERT(_surface != nullptr);
+	setColorSurface(slotID, _surface);
 }
 
 void Framework::RenderSet::setDepthSurface(RenderSurface *surface)
 {
 	mDepthSurface = surface;
+	mDepthHandle = (surface != nullptr) ? surface->getHandle() : RenderSurface::kInvalidRenderSurfaceHandle;
+}
+
+void Framework::RenderSet::setDepthSurface(RenderSurface::Handle surfaceHandle)
+{
+	RenderSurface *_surface = RenderSurfaceManager::getInstance()->getSurface(surfaceHandle);
+	SCE_GNM_ASSERT(_surface != nullptr);
+	setDepthSurface(_surface);
 }
 
 void Framework::RenderSet::bindToPipeline(RenderContext *context) const

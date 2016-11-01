@@ -14,7 +14,7 @@ namespace Framework
 	public:
 		inline void						setAllocator(Allocators *allocators) { mAllocators = allocators; }
 
-		RenderSurface::Handle			createSurface(RenderSurface **out_surface, const RenderSurface::Description &desc, const U8 *pData = nullptr);
+		RenderSurface::Handle			createSurface(RenderSurface **out_surface, const RenderSurface::Description *desc, const U8 *pData = nullptr);
 		RenderSurface::Handle			createSurface(	RenderSurface **out_surface,
 														U32 width, U32 height, U32 depth,
 														U32 mipLevels,
@@ -40,7 +40,7 @@ namespace Framework
 		RenderSurface::Handle			genSurfaceHandle();
 
 	private:
-		std::map<RenderSurface::Handle, RenderSurface *surface> mSurfaceTable;
+		std::map<RenderSurface::Handle, RenderSurface *> mSurfaceTable;
 		Allocators *					mAllocators{ nullptr };
 	};
 }

@@ -22,6 +22,9 @@
     <Filter Include="Utils\IO">
       <UniqueIdentifier>{73178eeb-3133-43fa-8c0a-7639148e2f0a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\DesignPattern">
+      <UniqueIdentifier>{a4d636e1-6cfc-4f9d-9992-07c2f9f2a6e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="System\Application.cpp">
@@ -85,6 +88,9 @@
       <Filter>Utils\IO</Filter>
     </ClCompile>
     <ClCompile Include="Graphic\RenderSet.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\RenderSurfaceManager.cpp">
       <Filter>Graphic</Filter>
     </ClCompile>
   </ItemGroup>
@@ -189,6 +195,15 @@
       <Filter>Utils\IO</Filter>
     </ClInclude>
     <ClInclude Include="Graphic\RenderSet.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\DesignPattern\Factory.h">
+      <Filter>Utils\DesignPattern</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\DesignPattern\Singleton.h">
+      <Filter>Utils\DesignPattern</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderSurfaceManager.h">
       <Filter>Graphic</Filter>
     </ClInclude>
   </ItemGroup>

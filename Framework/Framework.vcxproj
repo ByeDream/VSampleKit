@@ -83,6 +83,7 @@
     <ClCompile Include="Graphic\RenderSet.cpp" />
     <ClCompile Include="Graphic\RenderStateMgr.cpp" />
     <ClCompile Include="Graphic\RenderSurface.cpp" />
+    <ClCompile Include="Graphic\RenderSurfaceManager.cpp" />
     <ClCompile Include="Graphic\ShaderManager.cpp" />
     <ClCompile Include="Graphic\Swapchain.cpp" />
     <ClCompile Include="Graphic\Texture.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="Graphic\RenderSet.h" />
     <ClInclude Include="Graphic\RenderStateMgr.h" />
     <ClInclude Include="Graphic\RenderSurface.h" />
+    <ClInclude Include="Graphic\RenderSurfaceManager.h" />
     <ClInclude Include="Graphic\ShaderManager.h" />
     <ClInclude Include="Graphic\Swapchain.h" />
     <ClInclude Include="Graphic\Texture.h" />
@@ -126,6 +128,8 @@
     <ClInclude Include="std_cbuffer.h" />
     <ClInclude Include="System\Application.h" />
     <ClInclude Include="System\ConfigData.h" />
+    <ClInclude Include="Utils\DesignPattern\Factory.h" />
+    <ClInclude Include="Utils\DesignPattern\Singleton.h" />
     <ClInclude Include="Utils\Geommath\geommath.h" />
     <ClInclude Include="Utils\Geommath\matrix4unaligned.h" />
     <ClInclude Include="Utils\Geommath\vector2unaligned.h" />
