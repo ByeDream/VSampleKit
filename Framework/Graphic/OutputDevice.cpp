@@ -67,3 +67,9 @@ void Framework::OutputDevice::registerBufferChain(void * const *addresses, U32 b
 	Result ret = sceVideoOutRegisterBuffers(mHandle, 0, addresses, bufferNum, &_attribute);
 	SCE_GNM_ASSERT_MSG(ret >= 0, "sceVideoOutRegisterBuffers() returned error code %d.", ret);
 }
+
+void Framework::OutputDevice::unregisterBufferChain()
+{
+	Result ret = sceVideoOutUnregisterBuffers(mHandle, 0); //TODO check attributeIndex
+	SCE_GNM_ASSERT_MSG(ret >= 0, "sceVideoOutUnregisterBuffers() returned error code %d.", ret);
+}

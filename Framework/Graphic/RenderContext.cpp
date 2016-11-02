@@ -38,7 +38,7 @@ void Framework::RenderContext::reset()
 void Framework::RenderContext::submitAndFlip()
 {
 	OutputDevice::DeviceHandle _handle = mDevice->getOutput()->getHandle();
-	SceVideoOutFlipMode _flipMode = mDevice->getSwapChain()->getFilpMode();
+	SceVideoOutFlipMode _flipMode = mDevice->getSwapChain()->getDescription().mFilpMode;
 	U32 _displayBufferIndex = mDevice->getSwapChain()->getCurrentBufferIndex();
 	// A user - provided argument with no internal meaning.The <c><i>flipArg< / i>< / c> associated with the most recently completed flip is
 	// included in the <c>SceVideoOutFlipStatus< / c> object retrieved by <c>sceVideoOutGetFlipStatus() < / c > ; it could therefore

@@ -26,37 +26,20 @@ Framework::GraphicDevice::~GraphicDevice()
 void Framework::GraphicDevice::init()
 {
 	initMem();
-
 	RenderSurfaceManager::getInstance()->setAllocator(mAllocators);
-
-	OutputDevice::Description _desc;
-	_desc.mWidth = mApp->getConfig()->mTargetWidth;
-	_desc.mHeight = mApp->getConfig()->mTargetHeight;
-	mOutput = new OutputDevice(_desc);
-	mOutput->startup();
-
-	mSwapChain = new SwapChain(this);
-	mSwapChain->init(mAllocators);
-
+	initOutputAndSwapChain();
 	initContexts();
 }
 
 void Framework::GraphicDevice::deinit()
 {
 	deinitContexts();
-
-	mSwapChain->deinit(mAllocators);
-	SAFE_DELETE(mSwapChain);
-
-	mOutput->shutdown();
-	SAFE_DELETE(mOutput);
-
+	deinitOutputAndSwapChain();
 	RenderSurfaceManager::destory();
-
 	deinitMem();
 }
 
-void Framework::GraphicDevice::createRenderSet(RenderSet *out_renderSet, const RenderSurface::Description *depth, const RenderSurface::Description *color0, const RenderSurface::Description *color1 /*= nullptr*/, const RenderSurface::Description *color2 /*= nullptr*/, const RenderSurface::Description *color3 /*= nullptr*/)
+void Framework::GraphicDevice::allocRenderSet(RenderSet *renderSet, const RenderSurface::Description *depth, const RenderSurface::Description *color0, const RenderSurface::Description *color1 /*= nullptr*/, const RenderSurface::Description *color2 /*= nullptr*/, const RenderSurface::Description *color3 /*= nullptr*/)
 {
 	RenderSurface *_depth	= nullptr;
 	RenderSurface *_color0	= nullptr;
@@ -71,7 +54,17 @@ void Framework::GraphicDevice::createRenderSet(RenderSet *out_renderSet, const R
 	_mgr->createSurface(&_color2, color2);
 	_mgr->createSurface(&_color3, color3);
 
-	out_renderSet->init(_depth, _color0, _color1, _color2, _color3);
+	renderSet->init(_depth, _color0, _color1, _color2, _color3);
+}
+
+void Framework::GraphicDevice::releaseRenderSet(RenderSet *renderSet)
+{
+	RenderSurfaceManager *_mgr = RenderSurfaceManager::getInstance();
+	for (auto i = 0; i < RenderSet::MAX_NUM_COLOR_SURFACE; i++)
+	{
+		_mgr->releaseSurface(renderSet->getColorSurfaceHandle(i));
+	}
+	_mgr->releaseSurface(renderSet->getDepthSurfaceHandle());
 }
 
 void Framework::GraphicDevice::rollImmediateContext()
@@ -117,6 +110,46 @@ void Framework::GraphicDevice::deinitMem()
 	SAFE_DELETE(mAllocators);
 	SAFE_DELETE(mOnionAllocator);
 	SAFE_DELETE(mGarlicAllocator);
+}
+
+void Framework::GraphicDevice::initOutputAndSwapChain()
+{
+	{
+		OutputDevice::Description _desc;
+		_desc.mWidth = mApp->getConfig()->mTargetWidth;
+		_desc.mHeight = mApp->getConfig()->mTargetHeight;
+		mOutput = new OutputDevice(_desc);
+		mOutput->startup();
+	}
+
+	{
+		U32 _numSwappedBuffers = mApp->getConfig()->mNumberOfSwappedBuffers;
+		SCE_GNM_ASSERT(_numSwappedBuffers > 0 && _numSwappedBuffers <= SwapChain::MAX_NUMBER_OF_SWAPPED_BUFFERS);
+		bool _asynchronousRendering = mApp->getConfig()->mAsynchronousRendering;
+
+		SwapChain::Description _desc;
+		_desc.mNumSwappedBuffers = _numSwappedBuffers;
+		_desc.mUseDepth = false;
+		_desc.mUseStencil = false;
+		_desc.mColorFormat = Gnm::kDataFormatB8G8R8A8UnormSrgb;
+		_desc.mDepthFormat = sce::Gnm::kZFormat32Float;
+		_desc.mColorAAType = AA_NONE;
+		_desc.mDepthAAType = AA_NONE;
+		_desc.mIsDynamic = false;
+		_desc.mAsynchronous = _asynchronousRendering;
+
+		mSwapChain = new SwapChain(this);
+		mSwapChain->init(_desc, mAllocators);
+	}
+}
+
+void Framework::GraphicDevice::deinitOutputAndSwapChain()
+{
+	mSwapChain->deinit(mAllocators);
+	SAFE_DELETE(mSwapChain);
+
+	mOutput->shutdown();
+	SAFE_DELETE(mOutput);
 }
 
 void Framework::GraphicDevice::initContexts()

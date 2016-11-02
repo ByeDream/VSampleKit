@@ -10,5 +10,6 @@ namespace Framework
 		U32 mTargetHeight{ 1080 };					// 1080p
 
 		U32 mNumberOfSwappedBuffers{ 3 };			// Triple-buffer
+		bool mAsynchronousRendering{ true };		// using asynchronous way between CPU & GPU
 	};
 }

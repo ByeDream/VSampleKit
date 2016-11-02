@@ -26,6 +26,7 @@ namespace Framework
 		void					shutdown();
 
 		void					registerBufferChain(void * const *addresses, U32 bufferNum, RenderTargetView *view);
+		void					unregisterBufferChain();
 
 		inline const Rect &		getWindowRect() const { return mWindowRect; }
 		inline bool				is4K() const { return mIs4K; }

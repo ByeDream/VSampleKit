@@ -298,8 +298,6 @@ bool Framework::Application::frame()
 			gfxc.writeImmediateAtEndOfPipe(Gnm::kEopFlushCbDbCaches, (void*)label, 1, Gnm::kCacheActionNone);
 #endif // #ifdef ENABLE_RAZOR_GPU_THREAD_TRACE
 
-			SubmitCommandBuffer(*gfxc);
-			WaitForBufferAndFlip();
 
 #ifdef ENABLE_RAZOR_GPU_THREAD_TRACE
 			// wait for the trace to finish
@@ -351,6 +349,7 @@ void Framework::Application::processCommandLine(int argc, const char* argv[])
 	mConfig.mTargetHeight				= 1080;
 
 	mConfig.mNumberOfSwappedBuffers		= 3;
+	mConfig.mAsynchronousRendering		= true;
 }
 
 Framework::EmbeddedVsShader * Framework::Application::LoadVsShader(const char* filename, Allocators *allocators)
@@ -759,14 +758,7 @@ void Framework::Application::StallUntilGpuIsIdle()
 
 void Framework::Application::StallUntilGPUIsNotUsingBuffer(EopEventQueue *eopEventQueue, uint32_t bufferIndex)
 {
-	SCE_GNM_ASSERT_MSG(bufferIndex < 3, "bufferIndex must be between 0 and %d.", 3 - 1);
-	while (static_cast<uint32_t>(*m_buffer[bufferIndex].m_label) != m_buffer[bufferIndex].m_expectedLabel)
-		eopEventQueue->waitForEvent();
-// 	if (kGpuEop != m_config.m_whoQueuesFlips)
-// 		return;
-	volatile uint32_t spin = 0;
-	while (static_cast<uint32_t>(*m_buffer[bufferIndex].m_labelForPrepareFlip) != m_buffer[bufferIndex].m_expectedLabel)
-		++spin;
+
 }
 
 void Framework::Application::advanceCpuToNextBuffer()

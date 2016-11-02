@@ -60,14 +60,30 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurfaceF
 	return createSurface(out_surface, _desc, _pixelData);
 }
 
+void Framework::RenderSurfaceManager::releaseSurface(RenderSurface::Handle handle)
+{
+	if (handle != RenderSurface::kInvalidRenderSurfaceHandle)
+	{
+		auto itor = mSurfaceTable.find(handle);
+		if (itor != mSurfaceTable.end())
+		{
+			// TODO, mark the status for Surface as free
+			itor->second;
+		}
+	}
+}
+
 void Framework::RenderSurfaceManager::destorySurface(RenderSurface::Handle handle)
 {
-	auto itor = mSurfaceTable.find(handle);
-	if (itor != mSurfaceTable.end())
+	if (handle != RenderSurface::kInvalidRenderSurfaceHandle)
 	{
-		itor->second->deinit(mAllocators);
-		SAFE_DELETE(itor->second);
-		mSurfaceTable.erase(itor);
+		auto itor = mSurfaceTable.find(handle);
+		if (itor != mSurfaceTable.end())
+		{
+			itor->second->deinit(mAllocators);
+			SAFE_DELETE(itor->second);
+			mSurfaceTable.erase(itor);
+		}
 	}
 }
 

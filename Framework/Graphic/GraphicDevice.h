@@ -22,12 +22,13 @@ namespace Framework
 		void								init();
 		void								deinit();
 
-		void								createRenderSet(RenderSet *out_renderSet,
+		void								allocRenderSet(	RenderSet *renderSet,
 															const RenderSurface::Description *depth,
 															const RenderSurface::Description *color0,
 															const RenderSurface::Description *color1 = nullptr,
 															const RenderSurface::Description *color2 = nullptr,
 															const RenderSurface::Description *color3 = nullptr);
+		void								releaseRenderSet(RenderSet *renderSet);
 
 		inline Application *				getApplication() const { return mApp; }
 
@@ -54,6 +55,8 @@ namespace Framework
 	private:
 		void								initMem();
 		void								deinitMem();
+		void								initOutputAndSwapChain();
+		void								deinitOutputAndSwapChain();
 		void								initContexts();
 		void								deinitContexts();
 

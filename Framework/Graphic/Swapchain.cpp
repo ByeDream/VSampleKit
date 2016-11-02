@@ -42,37 +42,22 @@ Framework::SwapChain::SwapChain(GraphicDevice *device)
 
 Framework::SwapChain::~SwapChain()
 {
-
+	SCE_GNM_ASSERT_MSG(mFrameLabelPool == nullptr, "deinit me before destroy me");
 }
 
-void Framework::SwapChain::init(Allocators *allocators)
+void Framework::SwapChain::init(const Description& desc, Allocators *allocators)
 {
+	mDesc = desc;
+
 	SCE_GNM_ASSERT(mDevice != nullptr);
 	const OutputDevice *_output = mDevice->getOutput();
 	const Rect &_wndRect = _output->getWindowRect();
 	mTargetWidth = _wndRect.right - _wndRect.left;
 	mTargetHeight = _wndRect.bottom - _wndRect.top;
 
-	mUseDepth = true;
-	mUseStencil = false;
-
-	mColorAAType = AA_NONE; // TODO AA for swapchain
-	mDepthAAType = AA_NONE;
-
-	mUseDynamicBuffers = false;
-
-	mColorFormat = Gnm::kDataFormatB8G8R8A8UnormSrgb;
-	mDepthFormat = Gnm::kZFormat32Float;
-
-	mFilpMode = SCE_VIDEO_OUT_FLIP_MODE_VSYNC;
-	mAsynchronous = true;
-
-	mNumSwappedBuffers = mDevice->getApplication()->getConfig()->mNumberOfSwappedBuffers;
-	SCE_GNM_ASSERT(mNumSwappedBuffers > 0 && mNumSwappedBuffers <= MAX_NUMBER_OF_SWAPPED_BUFFERS);
-
 	// alloc label pool
-	allocators->allocate((void**)&mFrameLabelPool, SCE_KERNEL_WB_ONION, sizeof(U64) * MAX_NUMBER_OF_SWAPPED_BUFFERS, sizeof(U64), Gnm::kResourceTypeLabel, &mLabelHandle, "SwapChain frame labels");
-	allocators->allocate((void**)&mFlippingLabelPool, SCE_KERNEL_WB_ONION, sizeof(uint64_t) * MAX_NUMBER_OF_SWAPPED_BUFFERS, sizeof(uint64_t), Gnm::kResourceTypeLabel, &mLabelForPrepareFlipHandle, "SwapChain flipping labels");
+	allocators->allocate((void**)&mFrameLabelPool, SCE_KERNEL_WB_ONION, sizeof(U64) * MAX_NUMBER_OF_SWAPPED_BUFFERS, sizeof(U64), Gnm::kResourceTypeLabel, &mFrameLabellHandle, "SwapChain frame labels");
+	allocators->allocate((void**)&mFlippingLabelPool, SCE_KERNEL_WB_ONION, sizeof(uint64_t) * MAX_NUMBER_OF_SWAPPED_BUFFERS, sizeof(uint64_t), Gnm::kResourceTypeLabel, &mFlippingLabelHandle, "SwapChain flipping labels");
 	SCE_GNM_ASSERT(mFrameLabelPool != nullptr);
 	SCE_GNM_ASSERT(mFlippingLabelPool != nullptr);
 
@@ -83,65 +68,47 @@ void Framework::SwapChain::init(Allocators *allocators)
 
 void Framework::SwapChain::deinit(Allocators *allocators)
 {
+	deinitSwappedBuffers();
+
+	SAFE_DELETE(mEopEventQueue);
+
+	allocators->release((void *)mFlippingLabelPool, SCE_KERNEL_WB_ONION, &mFlippingLabelHandle);
+	mFlippingLabelPool = nullptr;
+	allocators->release((void *)mFrameLabelPool, SCE_KERNEL_WB_ONION, &mFrameLabellHandle);
+	mFrameLabelPool = nullptr;
 }
 
 void Framework::SwapChain::flip()
 {
-	RenderContext *_immediateContext = mDevice->getImmediateContext();
-
-	// For frame synchronization
-	mExpectedLabel[mCurrentBufferIndex] = mFrameCounter;
-	_immediateContext->appendLabelAtEOPWithInterrupt(const_cast<U64 *>(mFrameLabelPool + mCurrentBufferIndex), mExpectedLabel[mCurrentBufferIndex]); //TODO try no interrupt version
-
-	// TODO dump buffer before flip
-	_immediateContext->submitAndFlip(); // TODO CPU flip
-
-	// Signals the system that every graphics and asynchronous compute command buffer for this frame has been submitted.
-	// If the system must hibernate, then it will logically occur at this time.Because of this, any command buffer submitted prior
-	Gnm::submitDone();
-
-	if (mAsynchronous)
-	{
-		// asynchronous, sync with next buffer
-		advance();
-	}
-	else
-	{
-
-	}
-	
-
-	mDevice->rollImmediateContext();
-	mDevice->rollDeferreContext();
-
-// 	g_PhysMemAllocator->Flip();
-// 	OrbisGPUFenceManager::GetInstance().Flip();
+	submitFrame();
+	synchronizeFrameToGPU();
+	prepareFrame();
 }
 
 void Framework::SwapChain::initSwappedBuffers()
 {
-	for (auto i = 0; i < mNumSwappedBuffers; i++)
+	for (auto i = 0; i < mDesc.mNumSwappedBuffers; i++)
 	{
 		RenderSurface::Description _colorSurfaceDesc;
 		_colorSurfaceDesc.mWidth = mTargetWidth;
 		_colorSurfaceDesc.mHeight = mTargetHeight;
-		_colorSurfaceDesc.mFormat = mColorFormat;
-		_colorSurfaceDesc.mAAType = mColorAAType;
+		_colorSurfaceDesc.mFormat = mDesc.mColorFormat;
+		_colorSurfaceDesc.mAAType = mDesc.mColorAAType;
 		_colorSurfaceDesc.mType = GpuAddress::kSurfaceTypeColorTargetDisplayable;
-		_colorSurfaceDesc.mIsDynamicDisplayableColorTarget = mUseDynamicBuffers;
+		_colorSurfaceDesc.mIsDynamicDisplayableColorTarget = mDesc.mIsDynamic;
 		_colorSurfaceDesc.mName = ::sBufferNames[i].mColorBufferName;
 
 		RenderSurface::Description _depthSurfaceDesc;
 		_colorSurfaceDesc.mWidth = mTargetWidth;
 		_colorSurfaceDesc.mHeight = mTargetHeight;
-		_colorSurfaceDesc.mFormat = Gnm::DataFormat::build(mDepthFormat);
-		_colorSurfaceDesc.mAAType = mDepthAAType;
+		_colorSurfaceDesc.mFormat = Gnm::DataFormat::build(mDesc.mDepthFormat);
+		_colorSurfaceDesc.mAAType = mDesc.mDepthAAType;
 		_colorSurfaceDesc.mType = GpuAddress::kSurfaceTypeDepthOnlyTarget;
-		_colorSurfaceDesc.mEnableStencil = mUseStencil;
+		_colorSurfaceDesc.mEnableStencil = mDesc.mUseStencil;
 		_colorSurfaceDesc.mName = ::sBufferNames[i].mDepthBufferName;
 
 		mSwapChainRenderSets[i] = new RenderSet;
-		mDevice->createRenderSet(mSwapChainRenderSets[i], &_depthSurfaceDesc, &_colorSurfaceDesc);
+		mDevice->allocRenderSet(mSwapChainRenderSets[i], (mDesc.mUseDepth ? &_depthSurfaceDesc : nullptr), &_colorSurfaceDesc);
 		mSwappedBuffers[i] = mSwapChainRenderSets[i]->getColorSurface(0)->getBaseAddress();
 
 		mFrameLabelPool[i]			= MAX_VALUE_64;
@@ -150,19 +117,81 @@ void Framework::SwapChain::initSwappedBuffers()
 	}
 
 	mCurrentBufferIndex = 0;
-	mNextBufferIndex = (mCurrentBufferIndex + 1) % mNumSwappedBuffers;
+	mNextBufferIndex = (mCurrentBufferIndex + 1) % mDesc.mNumSwappedBuffers;
 	mCurrentBuffer = mSwapChainRenderSets[mCurrentBufferIndex];
 
 	// register buffer chain to output device
 	RenderTargetView *_view = typeCast<BaseTargetView, RenderTargetView>(mCurrentBuffer->getColorSurface(0)->getTexture()->getTargetView());
-	mDevice->getOutput()->registerBufferChain(mSwappedBuffers, mNumSwappedBuffers, _view);
+	mDevice->getOutput()->registerBufferChain(mSwappedBuffers, mDesc.mNumSwappedBuffers, _view);
+}
+
+void Framework::SwapChain::deinitSwappedBuffers()
+{
+	mDevice->getOutput()->unregisterBufferChain();
+
+	memset(mSwappedBuffers, 0, sizeof(mSwappedBuffers));
+	mCurrentBuffer = nullptr;
+
+	for (auto i = 0; i < mDesc.mNumSwappedBuffers; i++)
+	{
+		mDevice->releaseRenderSet(mSwapChainRenderSets[i]);
+		SAFE_DELETE(mSwapChainRenderSets[i]);
+	}
+}
+
+void Framework::SwapChain::submitFrame()
+{
+	RenderContext *_immediateContext = mDevice->getImmediateContext();
+
+	// For frame synchronization
+	mExpectedLabel[mCurrentBufferIndex] = mFrameCounter;
+	_immediateContext->appendLabelAtEOPWithInterrupt(const_cast<U64 *>(mFrameLabelPool + mCurrentBufferIndex), mExpectedLabel[mCurrentBufferIndex]); //TODO try no interrupt version
+
+																																					 // TODO dump buffer before flip
+	_immediateContext->submitAndFlip(mDesc.mAsynchronous); // TODO CPU flip
+
+	// Signals the system that every graphics and asynchronous compute command buffer for this frame has been submitted.
+	// If the system must hibernate, then it will logically occur at this time.Because of this, any command buffer submitted prior
+	Gnm::submitDone();
+}
+
+void Framework::SwapChain::synchronizeFrameToGPU()
+{
+	U32 _targetSyncBufferIndex = mDesc.mAsynchronous ? mNextBufferIndex : mCurrentBufferIndex;
+	stallUntilGPUIsNotUsingBuffer(mEopEventQueue, _targetSyncBufferIndex);
+}
+
+void Framework::SwapChain::prepareFrame()
+{
+	advance();
+
+	mDevice->rollImmediateContext();
+	mDevice->rollDeferreContext();
+
+	// TODO
+	// 	g_PhysMemAllocator->Flip();
+	// 	GPUFenceManager::GetInstance().Flip();
 }
 
 void Framework::SwapChain::advance()
 {
 	mFrameCounter++;
 
-	mCurrentBufferIndex = (mCurrentBufferIndex + 1) % mNumSwappedBuffers;
-	mNextBufferIndex = (mCurrentBufferIndex + 1) % mNumSwappedBuffers;
+	mCurrentBufferIndex = (mCurrentBufferIndex + 1) % mDesc.mNumSwappedBuffers;
+	mNextBufferIndex = (mCurrentBufferIndex + 1) % mDesc.mNumSwappedBuffers;
 	mCurrentBuffer = mSwapChainRenderSets[mCurrentBufferIndex];
+}
+
+void Framework::SwapChain::stallUntilGPUIsNotUsingBuffer(EopEventQueue *eopEventQueue, U32 bufferIndex)
+{
+	SCE_GNM_ASSERT_MSG(bufferIndex >= 0 && bufferIndex < mDesc.mNumSwappedBuffers, "bufferIndex must be between 0 and %d.", mDesc.mNumSwappedBuffers - 1);
+	while (mFrameLabelPool[bufferIndex] != mExpectedLabel[bufferIndex])
+		eopEventQueue->waitForEvent();
+
+	// if (kGpuEop == m_config.m_whoQueuesFlips)
+	{
+		volatile U32 spin = 0;
+		while (mFlippingLabelPool[bufferIndex] != mExpectedLabel[bufferIndex])
+			++spin;
+	}
 }

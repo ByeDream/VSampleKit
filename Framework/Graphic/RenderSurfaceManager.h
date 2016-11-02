@@ -29,6 +29,7 @@ namespace Framework
 		RenderSurface::Handle			createSurfaceFromFile(RenderSurface **out_surface, const char *filePath, RenderSurface::Description *desc = nullptr);
 		void							saveSurfaceToFile(const char *filePath, RenderSurface::Handle handle);
 
+		void							releaseSurface(RenderSurface::Handle handle);
 		void							destorySurface(RenderSurface::Handle handle);
 
 		RenderSurface *					getSurface(RenderSurface::Handle handle) const;
