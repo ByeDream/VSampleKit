@@ -26,6 +26,7 @@ namespace Framework
 			bool							mEnableFMask{ false };
 			bool							mEnableHTile{ true };
 			bool							mEnableStencil{ true };
+			bool							mIsDynamicDisplayableColorTarget{ false };
 
 			sce::Gnm::DataFormat			mFormat{ sce::Gnm::kDataFormatInvalid };
 			AntiAliasingType				mAAType{ AA_NONE };
@@ -53,6 +54,7 @@ namespace Framework
 		inline sce::Gnm::TileMode			getTileMode() const { return mTileMode; }
 		inline AntiAliasingType				getAAType() const { return mAAType; }
 
+		void *								getBaseAddress() const;
 		//TODO for size override operator > >= < <=
 		//TODO inline SurfaceSet GetSurfaceSet() { return mSet; } // or the name is enough
 	protected:

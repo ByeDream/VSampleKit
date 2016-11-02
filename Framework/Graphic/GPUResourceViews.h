@@ -57,12 +57,12 @@ namespace Framework
 			sce::Gnm::NumFragments		mFragments{ sce::Gnm::kNumFragments1 };
 			sce::Gnm::DataFormat		mColorFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::ZFormat			mDepthFormat{ sce::Gnm::kZFormatInvalid };
-			sce::Gnm::StencilFormat		mStencilFormat{ sce::Gnm::kStencilInvalid };
 			sce::Gnm::TileMode			mTileMode{ sce::Gnm::kTileModeThin_2dThin };
 			bool						mIsDisplayable{ false };
 			bool						mUseCMask{ false };
 			bool						mUseFMask{ false };
 			bool						mUseHTile{ false };
+			bool						mUseStencil{ false };
 		};
 	};
 

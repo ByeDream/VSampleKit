@@ -2,6 +2,7 @@
 
 namespace Framework
 {
+	class RenderTargetView;
 	class OutputDevice
 	{
 	public:
@@ -23,6 +24,8 @@ namespace Framework
 
 		DeviceHandle			startup();
 		void					shutdown();
+
+		void					registerBufferChain(void * const *addresses, U32 bufferNum, RenderTargetView *view);
 
 		inline const Rect &		getWindowRect() const { return mWindowRect; }
 		inline bool				is4K() const { return mIs4K; }

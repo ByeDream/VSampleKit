@@ -67,7 +67,7 @@ Framework::DepthStencilView::DepthStencilView(const BaseTargetView::Description 
 {
 	SCE_GNM_ASSERT(desc.mDepthFormat != Gnm::kZFormatInvalid);
 
-	mUseStencil = (desc.mStencilFormat != Gnm::kStencilInvalid);
+	mUseStencil = desc.mUseStencil;
 	mUseHTile = desc.mUseHTile;
 
 	Gnm::DepthRenderTargetSpec spec;
@@ -77,7 +77,7 @@ Framework::DepthStencilView::DepthStencilView(const BaseTargetView::Description 
 	spec.m_pitch = desc.mPitch;
 	spec.m_numSlices = desc.mNumSlices;
 	spec.m_zFormat = desc.mDepthFormat;
-	spec.m_stencilFormat = desc.mStencilFormat;
+	spec.m_stencilFormat = desc.mUseStencil ? Gnm::kStencil8 : Gnm::kStencilInvalid;
 	spec.m_tileModeHint = desc.mTileMode;
 	spec.m_minGpuMode = Gnm::getGpuMode();
 	spec.m_numFragments = desc.mFragments;

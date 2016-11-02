@@ -1,6 +1,10 @@
 #include "stdafx.h"
 
 #include "OutputDevice.h"
+#include "GraphicHelpers.h"
+#include "GPUResourceViews.h"
+
+using namespace sce;
 
 Framework::OutputDevice::OutputDevice(const Description &desc)
 {
@@ -40,4 +44,26 @@ void Framework::OutputDevice::shutdown()
 	mHandle = INVAILD_DEV_HANDLE;
 
 	memset(&mWindowRect, 0, sizeof(Rect));
+}
+
+void Framework::OutputDevice::registerBufferChain(void * const *addresses, U32 bufferNum, RenderTargetView *view)
+{
+	SCE_GNM_ASSERT(mHandle != INVAILD_DEV_HANDLE);
+
+	Gnm::DataFormat _format = view->getInternalObj()->getDataFormat();
+	Gnm::TileMode _tileMode = view->getInternalObj()->getTileMode();
+	U32 _width = view->getInternalObj()->getWidth();
+	U32 _height = view->getInternalObj()->getHeight();
+	U32 _pitchInPixel = view->getInternalObj()->getPitch();
+
+	SceVideoOutBufferAttribute _attribute;
+	sceVideoOutSetBufferAttribute(&_attribute,
+		getVideoOutFormat(_format),
+		getVideoOutTileMode(_tileMode),
+		SCE_VIDEO_OUT_ASPECT_RATIO_16_9,
+		_width,
+		_height,
+		_pitchInPixel);
+	Result ret = sceVideoOutRegisterBuffers(mHandle, 0, addresses, bufferNum, &_attribute);
+	SCE_GNM_ASSERT_MSG(ret >= 0, "sceVideoOutRegisterBuffers() returned error code %d.", ret);
 }

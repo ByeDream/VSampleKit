@@ -19,6 +19,7 @@ namespace Framework
 														U32 width, U32 height, U32 depth,
 														U32 mipLevels,
 														bool enableCMask, bool enableFMask, bool enableHTile, bool enableStencil,
+														bool isDynamicDisplayableColorTarget,
 														sce::Gnm::DataFormat format,
 														AntiAliasingType AAType,
 														sce::GpuAddress::SurfaceType type,

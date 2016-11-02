@@ -39,9 +39,6 @@ void Framework::RenderSurface::init(const Description& desc, Allocators *allocat
 	_desc.mFragments			= _fragments;
 	_desc.mName					= desc.mName;
 
-	// 	if (desc.mIsDynamic)
-	// 		_tileMode = Gnm::kTileModeDisplay_LinearAligned;
-
 	// TODO check kSurfaceTypeDepthOnlyTarget stencil ?
 	switch (_type)
 	{
@@ -54,7 +51,16 @@ void Framework::RenderSurface::init(const Description& desc, Allocators *allocat
 			}
 			mTexture = new RenderableTextureColor(_type == GpuAddress::kSurfaceTypeColorTargetDisplayable, desc.mEnableCMask, desc.mEnableFMask, _samples);
 			_desc.mTexType = Gnm::kTextureType2d;
-			_desc.mIsDynamic = false;
+			if ((_type == GpuAddress::kSurfaceTypeColorTargetDisplayable) && desc.mIsDynamicDisplayableColorTarget)
+			{
+				mTileMode = Gnm::kTileModeDisplay_LinearAligned;
+				_desc.mTileMode = mTileMode;
+				_desc.mIsDynamic = true;
+			}
+			else
+			{
+				_desc.mIsDynamic = false;
+			}
 		}
 		break;
 	case GpuAddress::kSurfaceTypeDepthOnlyTarget:
@@ -132,4 +138,10 @@ bool Framework::RenderSurface::isFormat32() const
 		fmt == sce::Gnm::kSurfaceFormat32_32_32_32 ||
 		fmt == sce::Gnm::kSurfaceFormat24_8 ||
 		fmt == sce::Gnm::kSurfaceFormatX24_8_32;
+}
+
+void * Framework::RenderSurface::getBaseAddress() const
+{
+	SCE_GNM_ASSERT(mTexture != nullptr);
+	return mTexture->getShaderResourceView()->getInternalObj()->getBaseAddress();
 }

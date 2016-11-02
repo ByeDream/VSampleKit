@@ -5,13 +5,16 @@ namespace sce
 	namespace Gnm
 	{
 		const DataFormat kDataFormatBc1Unorm_Alpha = { { { kSurfaceFormatBc1, kBufferChannelTypeUNorm, kBufferChannelX,  kBufferChannelY,  kBufferChannelZ,  kBufferChannelW } } };
-
+		const DataFormat kDataFormatB10G10R10A2UnormSrgb = { { { kSurfaceFormat2_10_10_10,  kTextureChannelTypeSrgb, kTextureChannelZ,  kTextureChannelY,  kTextureChannelX,  kTextureChannelW, 0 } } };
+		
 		inline bool operator==(const DataFormat &formatA, const DataFormat &formatB) {
-			return (0 == memcmp(&formatA, &formatB, sizeof(DataFormat)));
+			// return (0 == memcmp(&formatA, &formatB, sizeof(DataFormat)));
+			return (formatA.m_asInt == formatB.m_asInt);
 		}
 
 		inline bool operator!=(const DataFormat &formatA, const DataFormat &formatB) {
-			return (0 != memcmp(&formatA, &formatB, sizeof(DataFormat)));
+			// return (0 != memcmp(&formatA, &formatB, sizeof(DataFormat)));
+			return (formatA.m_asInt != formatB.m_asInt);
 		}
 	}
 }
@@ -103,6 +106,64 @@ namespace Framework
 			break;
 		case AA_EQAA_4X:
 			ret = sce::Gnm::kNumSamples8;
+			break;
+		default:
+			SCE_GNM_ASSERT_MSG(false, "Not support yet");
+			break;
+		}
+		return ret;
+	}
+
+	inline SceVideoOutPixelFormat getVideoOutFormat(sce::Gnm::DataFormat format)
+	{
+		SceVideoOutPixelFormat ret = SCE_VIDEO_OUT_PIXEL_FORMAT_B8_G8_R8_A8_SRGB;
+		if (format == sce::Gnm::kDataFormatB8G8R8A8UnormSrgb)
+		{
+			//Format lining 8 bit unsigned int elements from LSB in the B, G, R, A order
+			//The system handles buffers as rendered in a curve with gamma correction based on sRGB, and does not perform gamma correction during video output (however, allows adjustment using a gamma adjustment value)
+			ret = SCE_VIDEO_OUT_PIXEL_FORMAT_A8R8G8B8_SRGB;
+		}
+		else if (format == sce::Gnm::kDataFormatR8G8B8A8UnormSrgb)
+		{
+			//Format lining 8 bit unsigned int elements from LSB in the R, G, B, A order
+			//The system handles buffers as rendered in a curve with gamma correction based on sRGB, and does not perform gamma correction during video output (however, allows adjustment using a gamma adjustment value)
+			ret = SCE_VIDEO_OUT_PIXEL_FORMAT_A8B8G8R8_SRGB;
+		}
+		else if (format == sce::Gnm::kDataFormatB10G10R10A2Unorm)
+		{
+			//Format lining unsigned int elements from LSB in the B 10 bit, G 10 bit, R 10 bit, A 2 bit order
+			//The system handles buffers as rendered in a curve with gamma correction based on sRGB, and does not perform gamma correction during video output (however, allows adjustment using a gamma adjustment value)
+			ret = SCE_VIDEO_OUT_PIXEL_FORMAT_A2R10G10B10;
+		}
+		else if (format == sce::Gnm::kDataFormatB10G10R10A2UnormSrgb)
+		{
+			//Format lining unsigned int elements from LSB in the B 10 bit, G 10 bit, R 10 bit, A 2 bit order
+			//The system handles buffers as rendered in a curve with gamma correction based on sRGB, and does not perform gamma correction during video output (however, allows adjustment using a gamma adjustment value)
+			ret = SCE_VIDEO_OUT_PIXEL_FORMAT_A2R10G10B10_SRGB;
+		}
+		else if (format == sce::Gnm::kDataFormatB16G16R16A16Float)
+		{
+			//Format lining 16 bit float elements from LSB in the B, G, R, A order
+			//The system handles buffers as linearly rendered, and performs gamma correction during video output
+			ret = SCE_VIDEO_OUT_PIXEL_FORMAT_A16R16G16B16_FLOAT;
+		}
+		else
+		{
+			SCE_GNM_ASSERT_MSG(false, "Not support yet");
+		}
+		return ret;
+	}
+
+	inline SceVideoOutTilingMode getVideoOutTileMode(sce::Gnm::TileMode tileMode)
+	{
+		SceVideoOutTilingMode ret = SCE_VIDEO_OUT_TILING_MODE_TILE;
+		switch (tileMode)
+		{
+		case sce::Gnm::kTileModeDisplay_2dThin:
+			ret = SCE_VIDEO_OUT_TILING_MODE_TILE; // Tile mode
+			break;
+		case sce::Gnm::kTileModeDisplay_LinearAligned:
+			ret = SCE_VIDEO_OUT_TILING_MODE_LINEAR; // Linear mode
 			break;
 		default:
 			SCE_GNM_ASSERT_MSG(false, "Not support yet");

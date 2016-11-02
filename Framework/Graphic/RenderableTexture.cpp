@@ -129,7 +129,7 @@ void Framework::RenderableTextureDepthStencil::createTargetView()
 	_desc.mHeight				= mDesc.mHeight;
 	_desc.mFragments			= mDesc.mFragments;
 	_desc.mDepthFormat			= mDesc.mFormat.getZFormat();
-	_desc.mStencilFormat		= mIsUsingStencil ? Gnm::kStencil8 : Gnm::kStencilInvalid;
+	_desc.mUseStencil			= mIsUsingStencil;
 	_desc.mTileMode				= mDesc.mTileMode;
 	_desc.mUseHTile				= mIsUsingHTile;
 

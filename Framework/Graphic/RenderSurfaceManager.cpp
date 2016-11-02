@@ -23,21 +23,22 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(
 	return _handle;
 }
 
-Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, U32 width, U32 height, U32 depth, U32 mipLevels, bool enableCMask, bool enableFMask, bool enableHTile, bool enableStencil, sce::Gnm::DataFormat format, AntiAliasingType AAType, sce::GpuAddress::SurfaceType type, const char *name, const U8 *pData /*= nullptr*/)
+Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, U32 width, U32 height, U32 depth, U32 mipLevels, bool enableCMask, bool enableFMask, bool enableHTile, bool enableStencil, bool isDynamicDisplayableColorTarget, sce::Gnm::DataFormat format, AntiAliasingType AAType, sce::GpuAddress::SurfaceType type, const char *name, const U8 *pData /*= nullptr*/)
 {
 	RenderSurface::Description _desc;
-	_desc.mWidth			= width;
-	_desc.mHeight			= height;
-	_desc.mDepth			= depth;
-	_desc.mMipLevels		= mipLevels;
-	_desc.mEnableCMask		= enableCMask;
-	_desc.mEnableFMask		= enableFMask;
-	_desc.mEnableHTile		= enableHTile;
-	_desc.mEnableStencil	= enableStencil;
-	_desc.mFormat			= format;
-	_desc.mAAType			= AAType;
-	_desc.mType				= type;
-	_desc.mName				= name;
+	_desc.mWidth								= width;
+	_desc.mHeight								= height;
+	_desc.mDepth								= depth;
+	_desc.mMipLevels							= mipLevels;
+	_desc.mEnableCMask							= enableCMask;
+	_desc.mEnableFMask							= enableFMask;
+	_desc.mEnableHTile							= enableHTile;
+	_desc.mEnableStencil						= enableStencil;
+	_desc.mIsDynamicDisplayableColorTarget		= isDynamicDisplayableColorTarget;
+	_desc.mFormat								= format;
+	_desc.mAAType								= AAType;
+	_desc.mType									= type;
+	_desc.mName									= name;
 	return createSurface(out_surface, &_desc, pData);
 }
 

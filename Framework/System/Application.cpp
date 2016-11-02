@@ -44,10 +44,6 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 	mGraphicDevice->init();
 	
 	
-
-
-	const U32 m_buffers = 3;
-
 	Result ret = SCE_GNM_OK;
 
 	Vector3 m_lightPositionX(1.5f, 4.0f, 9.0f);
@@ -77,10 +73,6 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 // 		}
 // 	}
 
-	sce::Gnm::ResourceHandle labelHandle;
-	sce::Gnm::ResourceHandle labelForPrepareFlipHandle;
- 	mAllocators->allocate((void**)&m_label, SCE_KERNEL_WB_ONION, sizeof(uint64_t) * m_buffers, sizeof(uint64_t), Gnm::kResourceTypeLabel, &labelHandle, "Framework Labels");
- 	mAllocators->allocate((void**)&m_labelForPrepareFlip, SCE_KERNEL_WB_ONION, sizeof(uint64_t) * m_buffers, sizeof(uint64_t), Gnm::kResourceTypeLabel, &labelForPrepareFlipHandle, "Framework Labels For PrepareFlip");
  
  	m_buffer = new Buffer[m_buffers];
  	m_backBufferIndex = 0;
