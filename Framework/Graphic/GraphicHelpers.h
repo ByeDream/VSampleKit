@@ -21,6 +21,16 @@ namespace sce
 
 namespace Framework
 {
+	class EopEventQueue
+	{
+		SceKernelEqueue mEqueue;
+		const char *mName;
+	public:
+		EopEventQueue(const char *name);
+		~EopEventQueue();
+		void waitForEvent();
+	};
+
 	inline U32 convertNumFragments(sce::Gnm::NumFragments fragments)
 	{
 		U32 ret = 0;

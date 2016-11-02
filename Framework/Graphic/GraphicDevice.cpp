@@ -8,6 +8,7 @@
 #include "Swapchain.h"
 #include "RenderSurfaceManager.h"
 #include "RenderSet.h"
+#include "RenderContext.h"
 
 using namespace sce;
 
@@ -34,14 +35,18 @@ void Framework::GraphicDevice::init()
 	mOutput = new OutputDevice(_desc);
 	mOutput->startup();
 
-	mSwapchain = new Swapchain(this);
-	mSwapchain->init(mAllocators);
+	mSwapChain = new SwapChain(this);
+	mSwapChain->init(mAllocators);
+
+	initContexts();
 }
 
 void Framework::GraphicDevice::deinit()
 {
-	mSwapchain->deinit(mAllocators);
-	SAFE_DELETE(mSwapchain);
+	deinitContexts();
+
+	mSwapChain->deinit(mAllocators);
+	SAFE_DELETE(mSwapChain);
 
 	mOutput->shutdown();
 	SAFE_DELETE(mOutput);
@@ -67,6 +72,21 @@ void Framework::GraphicDevice::createRenderSet(RenderSet *out_renderSet, const R
 	_mgr->createSurface(&_color3, color3);
 
 	out_renderSet->init(_depth, _color0, _color1, _color2, _color3);
+}
+
+void Framework::GraphicDevice::rollImmediateContext()
+{
+	mContexts[0]->roll();
+	mContexts[0]->reset();
+}
+
+void Framework::GraphicDevice::rollDeferreContext()
+{
+	for (auto itor = mContexts.begin() + 1; itor != mContexts.end(); itor++)
+	{
+		(*itor)->roll();
+		(*itor)->reset();
+	}
 }
 
 void Framework::GraphicDevice::initMem()
@@ -97,4 +117,15 @@ void Framework::GraphicDevice::deinitMem()
 	SAFE_DELETE(mAllocators);
 	SAFE_DELETE(mOnionAllocator);
 	SAFE_DELETE(mGarlicAllocator);
+}
+
+void Framework::GraphicDevice::initContexts()
+{
+	// TODO mContexts
+	
+}
+
+void Framework::GraphicDevice::deinitContexts()
+{
+	// TODO
 }

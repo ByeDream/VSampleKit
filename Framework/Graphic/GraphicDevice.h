@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderSurface.h"
+#include <vector>
 
 namespace Framework
 {
@@ -8,8 +9,9 @@ namespace Framework
 	class Allocators;
 	class StackAllocator;
 	class OutputDevice;
-	class Swapchain;
+	class SwapChain;
 	class RenderSet;
+	class RenderContext;
 
 	class GraphicDevice
 	{
@@ -31,9 +33,29 @@ namespace Framework
 
 		inline const OutputDevice *			getOutput() const { return mOutput; }
 		inline OutputDevice *				getOutput() { return mOutput; }
+		inline const SwapChain *			getSwapChain() const { return mSwapChain; }
+		inline SwapChain *					getSwapChain() { return mSwapChain; }
+
+		inline const RenderContext *		getImmediateContext() const { return mContexts[0]; }
+		inline RenderContext *				getImmediateContext() { return mContexts[0]; }
+		inline const RenderContext *		getDeferredContext(U32 index) const
+		{
+			SCE_GNM_ASSERT(index > 0 && index < mContexts.size());
+			return mContexts[index];
+		}
+		inline RenderContext *				getDeferredContext(U32 index)
+		{
+			SCE_GNM_ASSERT(index > 0 && index < mContexts.size());
+			return mContexts[index];
+		}
+
+		void								rollImmediateContext();
+		void								rollDeferreContext();
 	private:
 		void								initMem();
 		void								deinitMem();
+		void								initContexts();
+		void								deinitContexts();
 
 	private:
 		Application *						mApp{ nullptr };
@@ -45,6 +67,8 @@ namespace Framework
 		StackAllocator *					mOnionAllocator{ nullptr };
 
 		OutputDevice *						mOutput{ nullptr };
-		Swapchain *							mSwapchain{ nullptr };
+		SwapChain *							mSwapChain{ nullptr };
+
+		std::vector<RenderContext *>		mContexts;
 	};
 }

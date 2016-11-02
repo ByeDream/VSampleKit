@@ -29,7 +29,7 @@ namespace Framework
 
 		inline const Rect &		getWindowRect() const { return mWindowRect; }
 		inline bool				is4K() const { return mIs4K; }
-		inline DeviceHandle		getHandle() const { return mHandle; }
+		inline DeviceHandle		getHandle() const { SCE_GNM_ASSERT(mHandle != INVAILD_DEV_HANDLE); return mHandle; }
 
 	private:
 		Rect					mWindowRect;

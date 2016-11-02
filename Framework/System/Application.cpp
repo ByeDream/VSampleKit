@@ -43,8 +43,6 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 	mGraphicDevice = new GraphicDevice(this);
 	mGraphicDevice->init();
 	
-	
-	Result ret = SCE_GNM_OK;
 
 	Vector3 m_lightPositionX(1.5f, 4.0f, 9.0f);
 	Vector3 m_lightTargetX(0.0f, 0.0f, 0.0f);
@@ -72,65 +70,7 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 // 			embeddedVsShader->m_shader->applyFetchShaderModifier(shaderModifier);
 // 		}
 // 	}
-
  
- 	m_buffer = new Buffer[m_buffers];
- 	m_backBufferIndex = 0;
- 	m_backBuffer = &m_buffer[m_backBufferIndex];
- 	m_indexOfLastBufferCpuWrote = m_buffers - 1;
- 	m_indexOfBufferCpuIsWriting = 0;
- 
- 	void* buffer_address[8];
- 	for (unsigned buffer = 0; buffer < m_buffers; ++buffer)
- 	{
- 		m_label[buffer] = 0xFFFFFFFF;
- 		m_buffer[buffer].m_label = m_label + buffer;
- 		m_buffer[buffer].m_expectedLabel = 0xFFFFFFFF;
- 
- 		m_labelForPrepareFlip[buffer] = 0xFFFFFFFF;
- 		m_buffer[buffer].m_labelForPrepareFlip = m_labelForPrepareFlip + buffer;
- 
- 		Gnm::DataFormat format = Gnm::kDataFormatB8G8R8A8UnormSrgb;
- 		Gnm::TileMode tileMode;
- 		GpuAddress::computeSurfaceTileMode(Gnm::getGpuMode(), &tileMode, GpuAddress::kSurfaceTypeColorTargetDisplayable, format, 1);
- 		const Gnm::SizeAlign sizeAlign = InitRenderTarget(&m_buffer[buffer].m_renderTarget, m_targetWidth, m_targetHeight, 1, format, tileMode, Gnm::kNumSamples1, Gnm::kNumFragments1, NULL, NULL);
- 
- 		void *renderTargetPtr = nullptr;
-		sce::Gnm::ResourceHandle renderTargetHandle;
- 		mAllocators->allocate(&renderTargetPtr, SCE_KERNEL_WC_GARLIC, sizeAlign, Gnm::kResourceTypeRenderTargetBaseAddress, &renderTargetHandle, "Framework Buffer %d Color", buffer);
- 
- 		buffer_address[buffer] = renderTargetPtr;
- 		m_buffer[buffer].m_renderTarget.setAddresses(renderTargetPtr, 0, 0);
- 
-		bool m_stencil = false;
-		bool m_htile = true;
- 		Gnm::SizeAlign stencilSizeAlign;
- 		Gnm::SizeAlign htileSizeAlign;
- 		const Gnm::StencilFormat stencilFormat = (m_stencil) ? Gnm::kStencil8 : Gnm::kStencilInvalid;
- 		Gnm::TileMode depthTileMode;
- 		Gnm::DataFormat depthFormat = Gnm::DataFormat::build(Gnm::kZFormat32Float);
- 		GpuAddress::computeSurfaceTileMode(Gnm::getGpuMode(), &depthTileMode, GpuAddress::kSurfaceTypeDepthOnlyTarget, depthFormat, 1);
- 
- 		const Gnm::SizeAlign depthTargetSizeAlign = InitDepthRenderTarget(&m_buffer[buffer].m_depthTarget, m_targetWidth, m_targetHeight, depthFormat.getZFormat(), stencilFormat, depthTileMode, Gnm::kNumFragments1, (m_stencil) ? &stencilSizeAlign : 0, (m_htile) ? &htileSizeAlign : 0);
-
- 		void *stencilPtr = nullptr;
- 		void *htilePtr = nullptr;
-		sce::Gnm::ResourceHandle stencilHandle;
-		sce::Gnm::ResourceHandle HtileHandle;
- 		if (m_stencil)
- 		{
- 			mAllocators->allocate(&stencilPtr, SCE_KERNEL_WC_GARLIC, stencilSizeAlign, Gnm::kResourceTypeDepthRenderTargetStencilAddress, &stencilHandle, "Framework Buffer %d Stencil", buffer);
- 		}
- 		if (m_htile)
- 		{
-			mAllocators->allocate(&htilePtr, SCE_KERNEL_WC_GARLIC, htileSizeAlign, Gnm::kResourceTypeDepthRenderTargetHTileAddress, &HtileHandle, "Framework Buffer %d HTile", buffer);
- 			m_buffer[buffer].m_depthTarget.setHtileAddress(htilePtr);
- 		}
- 
- 		void *depthPtr = nullptr;
-		sce::Gnm::ResourceHandle depthHandle;
-		mAllocators->allocate(&depthPtr, SCE_KERNEL_WC_GARLIC, depthTargetSizeAlign, Gnm::kResourceTypeDepthRenderTargetBaseAddress, &depthHandle, "Framework Buffer %d Depth", buffer);
- 		m_buffer[buffer].m_depthTarget.setAddresses(depthPtr, stencilPtr);
  
 // 		Gnm::SizeAlign screenSizeAlign = m_buffer[buffer].m_screen.calculateRequiredBufferSizeAlign(screenCharactersWide, screenCharactersHigh);
 // 		void *screenPtr = nullptr;
@@ -145,21 +85,6 @@ bool Framework::Application::initialize(const char *name, int argc, const char* 
 // 		m_buffer[buffer].m_timers.initialize(static_cast<uint8_t*>(timerPtr) + timerSizeAlign.m_size / m_config.m_buffers * buffer, kTimers);
 // 
 // 		m_buffer[buffer].m_debugObjects.Init(&m_onionAllocator, &m_sphereMesh, &m_coneMesh, &m_cylinderMesh);
- 	}
-// 
- 	// Create Attribute
- 	m_videoInfo.flip_index_base = 0;
- 	m_videoInfo.buffer_num = m_buffers;
- 
- 	SceVideoOutBufferAttribute attribute;
-	sceVideoOutSetBufferAttribute(&attribute,
-		SCE_VIDEO_OUT_PIXEL_FORMAT_B8_G8_R8_A8_SRGB,
-		SCE_VIDEO_OUT_TILING_MODE_TILE,
-		SCE_VIDEO_OUT_ASPECT_RATIO_16_9,
-		m_buffer[0].m_renderTarget.getWidth(),
-		m_buffer[0].m_renderTarget.getHeight(),
-		m_buffer[0].m_renderTarget.getPitch());
-	ret = sceVideoOutRegisterBuffers(m_videoInfo.handle, 0, buffer_address, m_buffers, &attribute);
 	SCE_GNM_ASSERT_MSG(ret >= 0, "sceVideoOutRegisterBuffers() returned error code %d.", ret);
 
 	enum { kCommandBufferSizeInBytes = 1 * 1024 * 1024 };

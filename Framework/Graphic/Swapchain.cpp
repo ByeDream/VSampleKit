@@ -8,6 +8,8 @@
 #include "RenderSet.h"
 #include "Texture.h"
 #include "GPUResourceViews.h"
+#include "RenderContext.h"
+#include "GraphicHelpers.h"
 
 using namespace sce;
 
@@ -18,32 +20,32 @@ namespace {
 		const char *mDepthBufferName;
 	};
 
-	BufferName sBufferNames[Framework::Swapchain::MAX_NUMBER_OF_SWAPPED_BUFFERS] =
+	BufferName sBufferNames[Framework::SwapChain::MAX_NUMBER_OF_SWAPPED_BUFFERS] =
 	{
-		{ "Swapchain color Buffer 0", "Swapchain depth Buffer 0" },
-		{ "Swapchain color Buffer 1", "Swapchain depth Buffer 1" },
-		{ "Swapchain color Buffer 2", "Swapchain depth Buffer 2" },
-		{ "Swapchain color Buffer 3", "Swapchain depth Buffer 3" },
-		{ "Swapchain color Buffer 4", "Swapchain depth Buffer 4" },
-		{ "Swapchain color Buffer 5", "Swapchain depth Buffer 5" },
-		{ "Swapchain color Buffer 6", "Swapchain depth Buffer 6" },
-		{ "Swapchain color Buffer 7", "Swapchain depth Buffer 7" }
+		{ "SwapChain color Buffer 0", "SwapChain depth Buffer 0" },
+		{ "SwapChain color Buffer 1", "SwapChain depth Buffer 1" },
+		{ "SwapChain color Buffer 2", "SwapChain depth Buffer 2" },
+		{ "SwapChain color Buffer 3", "SwapChain depth Buffer 3" },
+		{ "SwapChain color Buffer 4", "SwapChain depth Buffer 4" },
+		{ "SwapChain color Buffer 5", "SwapChain depth Buffer 5" },
+		{ "SwapChain color Buffer 6", "SwapChain depth Buffer 6" },
+		{ "SwapChain color Buffer 7", "SwapChain depth Buffer 7" }
 	};
 }
 
-Framework::Swapchain::Swapchain(GraphicDevice *device)
+Framework::SwapChain::SwapChain(GraphicDevice *device)
 	: mDevice(device)
 {
 	memset(mSwappedBuffers, 0, sizeof(mSwappedBuffers));
-	memset(mSwapchainRenderSets, 0, sizeof(mSwapchainRenderSets));
+	memset(mSwapChainRenderSets, 0, sizeof(mSwapChainRenderSets));
 }
 
-Framework::Swapchain::~Swapchain()
+Framework::SwapChain::~SwapChain()
 {
 
 }
 
-void Framework::Swapchain::init(Allocators *allocators)
+void Framework::SwapChain::init(Allocators *allocators)
 {
 	SCE_GNM_ASSERT(mDevice != nullptr);
 	const OutputDevice *_output = mDevice->getOutput();
@@ -62,37 +64,61 @@ void Framework::Swapchain::init(Allocators *allocators)
 	mColorFormat = Gnm::kDataFormatB8G8R8A8UnormSrgb;
 	mDepthFormat = Gnm::kZFormat32Float;
 
+	mFilpMode = SCE_VIDEO_OUT_FLIP_MODE_VSYNC;
+	mAsynchronous = true;
+
 	mNumSwappedBuffers = mDevice->getApplication()->getConfig()->mNumberOfSwappedBuffers;
 	SCE_GNM_ASSERT(mNumSwappedBuffers > 0 && mNumSwappedBuffers <= MAX_NUMBER_OF_SWAPPED_BUFFERS);
 
 	// alloc label pool
-	allocators->allocate((void**)&mFrameLabelPool, SCE_KERNEL_WB_ONION, sizeof(U64) * MAX_NUMBER_OF_SWAPPED_BUFFERS, sizeof(U64), Gnm::kResourceTypeLabel, &mLabelHandle, "Swapchain labels");
-	allocators->allocate((void**)&mFlippingLabelPool, SCE_KERNEL_WB_ONION, sizeof(uint64_t) * MAX_NUMBER_OF_SWAPPED_BUFFERS, sizeof(uint64_t), Gnm::kResourceTypeLabel, &mLabelForPrepareFlipHandle, "Swapchain labels for prepare flip");
+	allocators->allocate((void**)&mFrameLabelPool, SCE_KERNEL_WB_ONION, sizeof(U64) * MAX_NUMBER_OF_SWAPPED_BUFFERS, sizeof(U64), Gnm::kResourceTypeLabel, &mLabelHandle, "SwapChain frame labels");
+	allocators->allocate((void**)&mFlippingLabelPool, SCE_KERNEL_WB_ONION, sizeof(uint64_t) * MAX_NUMBER_OF_SWAPPED_BUFFERS, sizeof(uint64_t), Gnm::kResourceTypeLabel, &mLabelForPrepareFlipHandle, "SwapChain flipping labels");
 	SCE_GNM_ASSERT(mFrameLabelPool != nullptr);
 	SCE_GNM_ASSERT(mFlippingLabelPool != nullptr);
+
+	mEopEventQueue = new EopEventQueue("SwapChian main thread queue");
 
 	initSwappedBuffers();
 }
 
-void Framework::Swapchain::deinit(Allocators *allocators)
+void Framework::SwapChain::deinit(Allocators *allocators)
 {
 }
 
-void Framework::Swapchain::flip()
+void Framework::SwapChain::flip()
 {
-	// flip
-// 	gnmContext->KickCommandBuffer(GnmContext::SUBMIT_AND_FLIP,
-// 		m_VideoHandle,
-// 		flipMode,
-// 		m_CurrentPresentBuffer,
-// 		m_FrameIndex);
+	RenderContext *_immediateContext = mDevice->getImmediateContext();
 
-// 	GnmContext* mainContext = GfxexGraphicDevice::GetInstance()->GetDevice()->GetGNMContext();
-// 	mainContext->initializeDefaultHardwareState();
-// 	mainContext->waitUntilSafeForRendering(m_VideoHandle, m_CurrentPresentBuffer);
+	// For frame synchronization
+	mExpectedLabel[mCurrentBufferIndex] = mFrameCounter;
+	_immediateContext->appendLabelAtEOPWithInterrupt(const_cast<U64 *>(mFrameLabelPool + mCurrentBufferIndex), mExpectedLabel[mCurrentBufferIndex]); //TODO try no interrupt version
+
+	// TODO dump buffer before flip
+	_immediateContext->submitAndFlip(); // TODO CPU flip
+
+	// Signals the system that every graphics and asynchronous compute command buffer for this frame has been submitted.
+	// If the system must hibernate, then it will logically occur at this time.Because of this, any command buffer submitted prior
+	Gnm::submitDone();
+
+	if (mAsynchronous)
+	{
+		// asynchronous, sync with next buffer
+		advance();
+	}
+	else
+	{
+
+	}
+	
+
+	mDevice->rollImmediateContext();
+	mDevice->rollDeferreContext();
+
+// 	g_PhysMemAllocator->Flip();
+// 	OrbisGPUFenceManager::GetInstance().Flip();
 }
 
-void Framework::Swapchain::initSwappedBuffers()
+void Framework::SwapChain::initSwappedBuffers()
 {
 	for (auto i = 0; i < mNumSwappedBuffers; i++)
 	{
@@ -114,20 +140,29 @@ void Framework::Swapchain::initSwappedBuffers()
 		_colorSurfaceDesc.mEnableStencil = mUseStencil;
 		_colorSurfaceDesc.mName = ::sBufferNames[i].mDepthBufferName;
 
-		mSwapchainRenderSets[i] = new RenderSet;
-		mDevice->createRenderSet(mSwapchainRenderSets[i], &_depthSurfaceDesc, &_colorSurfaceDesc);
-		mSwappedBuffers[i] = mSwapchainRenderSets[i]->getColorSurface(0)->getBaseAddress();
+		mSwapChainRenderSets[i] = new RenderSet;
+		mDevice->createRenderSet(mSwapChainRenderSets[i], &_depthSurfaceDesc, &_colorSurfaceDesc);
+		mSwappedBuffers[i] = mSwapChainRenderSets[i]->getColorSurface(0)->getBaseAddress();
 
 		mFrameLabelPool[i]			= MAX_VALUE_64;
 		mFlippingLabelPool[i]		= MAX_VALUE_64;
 		mExpectedLabel[i]			= MAX_VALUE_64;
 	}
 
-	mBackBufferIndex = 0;
-	mFrontBufferIndex = (mBackBufferIndex + 1) % mNumSwappedBuffers;
-	mBackBuffer = mSwapchainRenderSets[mBackBufferIndex];
+	mCurrentBufferIndex = 0;
+	mNextBufferIndex = (mCurrentBufferIndex + 1) % mNumSwappedBuffers;
+	mCurrentBuffer = mSwapChainRenderSets[mCurrentBufferIndex];
 
 	// register buffer chain to output device
-	RenderTargetView *_view = typeCast<BaseTargetView, RenderTargetView>(mBackBuffer->getColorSurface(0)->getTexture()->getTargetView());
+	RenderTargetView *_view = typeCast<BaseTargetView, RenderTargetView>(mCurrentBuffer->getColorSurface(0)->getTexture()->getTargetView());
 	mDevice->getOutput()->registerBufferChain(mSwappedBuffers, mNumSwappedBuffers, _view);
+}
+
+void Framework::SwapChain::advance()
+{
+	mFrameCounter++;
+
+	mCurrentBufferIndex = (mCurrentBufferIndex + 1) % mNumSwappedBuffers;
+	mNextBufferIndex = (mCurrentBufferIndex + 1) % mNumSwappedBuffers;
+	mCurrentBuffer = mSwapChainRenderSets[mCurrentBufferIndex];
 }

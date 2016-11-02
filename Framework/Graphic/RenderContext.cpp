@@ -1,11 +1,15 @@
 #include "stdafx.h"
 
 #include "RenderContext.h"
+#include "GraphicDevice.h"
 #include "GPUResourceViews.h"
 #include "RenderSurface.h"
 #include "RenderableTexture.h"
+#include "Swapchain.h"
+#include "OutputDevice.h"
 
-Framework::RenderContext::RenderContext()
+Framework::RenderContext::RenderContext(GraphicDevice *device)
+	: mDevice(device)
 {
 
 }
@@ -13,6 +17,48 @@ Framework::RenderContext::RenderContext()
 Framework::RenderContext::~RenderContext()
 {
 
+}
+
+void Framework::RenderContext::roll()
+{
+	// stall the CPU until the GPU is finished with the context chunk we're entering into
+}
+
+void Framework::RenderContext::reset()
+{
+
+
+	//if (isMainContext)
+	{
+		//->initializeDefaultHardwareState();
+		//->waitUntilSafeForRendering(mDevice->getOutput()->getHandle(), mDevice->getSwapChain()->getCurrentBufferIndex());
+	}
+}
+
+void Framework::RenderContext::submitAndFlip()
+{
+	OutputDevice::DeviceHandle _handle = mDevice->getOutput()->getHandle();
+	SceVideoOutFlipMode _flipMode = mDevice->getSwapChain()->getFilpMode();
+	U32 _displayBufferIndex = mDevice->getSwapChain()->getCurrentBufferIndex();
+	// A user - provided argument with no internal meaning.The <c><i>flipArg< / i>< / c> associated with the most recently completed flip is
+	// included in the <c>SceVideoOutFlipStatus< / c> object retrieved by <c>sceVideoOutGetFlipStatus() < / c > ; it could therefore
+	// be used to uniquely identify each flip.
+	U64 _flipArg = mDevice->getSwapChain()->getFrameCount();
+
+
+
+	// TODO parse and report the validation error
+	//SCE_GNM_ASSERT_MSG(ret == sce::Gnm::kSubmissionSuccess, "Command buffer validation error.");
+}
+
+void Framework::RenderContext::appendLabelAtEOPWithInterrupt(void *dstGpuAddr, U64 value)
+{
+	//->writeImmediateAtEndOfPipeWithInterrupt(Gnm::kEopFlushCbDbCaches, dstGpuAddr, value, Gnm::kCacheActionNone);
+}
+
+void Framework::RenderContext::appendLabelAtEOP(void *dstGpuAddr, U64 value)
+{
+	//->writeImmediateAtEndOfPipe(Gnm::kEopFlushCbDbCaches, dstGpuAddr, value, Gnm::kCacheActionNone);
 }
 
 void Framework::RenderContext::setTextureSurface(U32 soltID, const RenderSurface *surface)
