@@ -1,4 +1,143 @@
-#include "graphic/precomp.h"
+#include "stdafx.h"
+
+#include "RenderContextChunk.h"
+
+using namespace sce;
+
+void Framework::RenderContextChunk::init(RenderContext *context, U32 id)
+{
+	mContext = context;
+	mID = id;
+
+//#ifdef USING_SEPARATE_CUE_HEAP
+	U32 kNumRingEntries = 16;
+//#endif
+
+	// TODO MB(1)
+	mDcbChunkSize = 1 * 1024 * 1024;
+	mCcbChunkSize = 1 * 1024 * 1024;
+
+	m_acb.m_beginptr = m_acb.m_cmdptr = m_acb.m_endptr = nullptr;
+	m_currentAcbSubmissionStart = m_actualAcbEnd = nullptr;
+
+	Gnmx::BaseGfxContext::init(NULL, 0, NULL, 0);
+
+//#ifdef USING_SEPARATE_CUE_HEAP
+	U32 cueHeapSize = Gnmx::ConstantUpdateEngine::computeHeapSize(kNumRingEntries);
+	mCueHeapMemory = g_PhysMemAllocator->Alloc(cueHeapSize, 0x400);
+	m_cue.init(m_CueHeapMemory, kNumRingEntries);
+	m_cue.bindCommandBuffers(&m_dcb, &m_ccb, nullptr);
+//#else
+// 	void *t_cueHeap = m_Device->GetCueHeap();
+// 	m_cue.init(t_cueHeap, m_Device->GetNumRingEntries());
+// 	m_cue.bindCommandBuffers(&m_dcb, &m_ccb, nullptr);
+//#endif
+
+	m_Fence = OrbisGPUFenceManager::GetInstance().AllocFence();
+	m_State = GnmContextState::kFree;
+
+	m_pNextContext = nullptr;
+
+#ifndef POP_OPTIMIZED
+	popSTATIC_ASSERT(GnmContext::SubmitArraySize == (GNMDevice::NumSwapchainBuffers + 1));
+	Gnm::setErrorResponseLevel(Gnm::kErrorResponseLevelPrintAndBreak);
+#endif
+}
+
+void Framework::RenderContextChunk::deinit()
+{
+
+}
+
+void Framework::RenderContextChunk::waitUntilIdle()
+{
+
+}
+
+bool Framework::RenderContextChunk::isBusy() const
+{
+
+}
+
+void Framework::RenderContextChunk::attachFence(GPUFence* fence)
+{
+
+}
+
+bool Framework::RenderContextChunk::isEmpty(bool strictChecking /*= false*/) const
+{
+
+}
+
+void Framework::RenderContextChunk::submit(bool asynchronous)
+{
+
+}
+
+void Framework::RenderContextChunk::submitAndFlip(bool asynchronous)
+{
+
+}
+
+void Framework::RenderContextChunk::beginRecord()
+{
+
+}
+
+Framework::CommandList * Framework::RenderContextChunk::endRecord()
+{
+
+}
+
+ForwardDeclare::Framework::CommandList * Framework::RenderContextChunk::replay(CommandList* cmdList)
+{
+
+}
+
+void Framework::RenderContextChunk::prepareToFill()
+{
+
+}
+
+ForwardDeclare::Framework::CommandList * Framework::RenderContextChunk::prepareToSubmit(bool flip /*= false*/, bool forceRecord /*= false*/)
+{
+
+}
+
+void Framework::RenderContextChunk::updateFenceInCmdBuffer()
+{
+
+}
+
+ForwardDeclare::Framework::CommandList * Framework::RenderContextChunk::recodeComandList()
+{
+
+}
+
+void Framework::RenderContextChunk::stashPendingCommandList(CommandList* cmdList)
+{
+
+}
+
+void Framework::RenderContextChunk::allocCBChunk()
+{
+
+}
+
+void Framework::RenderContextChunk::batchKick(std::vector<CommandList>& cmdListArray, bool flip)
+{
+
+}
+
+bool Framework::RenderContextChunk::cmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes)
+{
+
+}
+
+bool Framework::RenderContextChunk::staticCmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes, void* userData)
+{
+
+}
 
 #ifdef POP_PLATFORM_GNM
 
@@ -42,52 +181,7 @@ ubiU32						GnmContext::ms_CurrentSubmitArrayIndex = 0;
 // --------------------------------------------------------------------------
 void GnmContext::Initialize(GNMDevice *a_device)
 {
-	popAssert(a_device != nullptr);
-	m_Device = a_device;
-
-#ifdef POP_MULTITHREAD_RENDERER
-#ifdef USING_SEPARATE_CUE_HEAP
-	ubiU32 kNumRingEntries = 16;
-#endif
-	m_DcbChunkSize = GEAR_MB(1);  // Draw Command Buffer
-	m_CcbChunkSize = GEAR_MB(1);  // Constant Command Buffer
-#else
-#ifdef USING_SEPARATE_CUE_HEAP
-	ubiU32 kNumRingEntries = 64;
-#endif
-	m_DcbChunkSize = GEAR_MB(8);  // Draw Command Buffer
-	m_CcbChunkSize = GEAR_MB(4);  // Constant Command Buffer
-#endif
-
-								  // adjust the value safe for usage, came from last time I dump it:
-								  //[MainContext DCB : 394256 / 16777216, 383704 / 1048576 CCB : 207528 / 16777216, 196712 / 1048576 Chunks : 13]
-								  //[DeferredContext DCB : 1061552 / 16777216, 225780 / 1048576 CCB : 852904 / 16777216, 239448 / 1048576 Chunks : 54]
-
-	m_acb.m_beginptr = m_acb.m_cmdptr = m_acb.m_endptr = NULL;
-	m_currentAcbSubmissionStart = m_actualAcbEnd = NULL;
-
-	BaseGfxContext::init(NULL, 0, NULL, 0);
-
-#ifdef USING_SEPARATE_CUE_HEAP
-	//@@ Around 600KB for each, we need spend almost 40MB graphic memory in total if we use separate cue heap. 
-	ubiU32 cueHeapSize = Gnmx::ConstantUpdateEngine::computeHeapSize(kNumRingEntries);
-	m_CueHeapMemory = g_PhysMemAllocator->Alloc(cueHeapSize, 0x400);
-	m_cue.init(m_CueHeapMemory, kNumRingEntries);
-	m_cue.bindCommandBuffers(&m_dcb, &m_ccb, nullptr);
-#else
-	void *t_cueHeap = m_Device->GetCueHeap();
-	m_cue.init(t_cueHeap, m_Device->GetNumRingEntries());
-	m_cue.bindCommandBuffers(&m_dcb, &m_ccb, nullptr);
-#endif
-	m_Fence = OrbisGPUFenceManager::GetInstance().AllocFence();
-	m_State = GnmContextState::kFree;
-
-	m_pNextContext = nullptr;
-
-#ifndef POP_OPTIMIZED
-	popSTATIC_ASSERT(GnmContext::SubmitArraySize == (GNMDevice::NumSwapchainBuffers + 1));
-	Gnm::setErrorResponseLevel(Gnm::kErrorResponseLevelPrintAndBreak);
-#endif
+	
 }
 // --------------------------------------------------------------------------
 
@@ -645,3 +739,4 @@ void GnmContext::AllocCBChunk()
 popEND_NAMESPACE
 
 #endif // POP_PLATFORM_GNM
+

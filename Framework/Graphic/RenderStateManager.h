@@ -1,5 +1,17 @@
 #pragma once
 
+namespace Framework
+{
+	class RenderStateManager
+	{
+	public:
+		RenderStateManager();
+		~RenderStateManager();
+
+	};
+}
+
+
 #include "graphic/gfx/gfxExtension/gfxexdefinitions.h"
 
 #ifndef POP_OPTIMIZED //@@LRF logs for gpu submission.
