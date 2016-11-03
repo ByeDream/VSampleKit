@@ -7,9 +7,9 @@
 
 using namespace sce;
 
-void Framework::RenderableTexture::init(const Texture::Description &desc, Allocators *allocators, const U8 *pData)
+void Framework::RenderableTexture::init(const Texture::Description &desc, Allocators *allocators, const TextureSourcePixelData *srcData)
 {
-	super::init(desc, allocators, pData);
+	super::init(desc, allocators, srcData);
 	createTargetView();
 	allocMemory(allocators);
 }
@@ -51,6 +51,8 @@ void Framework::RenderableTextureColor::createTargetView()
 	BaseTargetView::Description _desc;
 	_desc.mWidth				= mDesc.mWidth;
 	_desc.mHeight				= mDesc.mHeight;
+	_desc.mPitch				= mDesc.mPitch;
+	_desc.mNumSlices			= mDesc.mNumSlices;
 	_desc.mSamples				= mSamples;
 	_desc.mFragments			= mDesc.mFragments;
 	_desc.mColorFormat			= mDesc.mFormat;

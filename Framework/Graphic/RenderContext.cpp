@@ -35,7 +35,7 @@ void Framework::RenderContext::reset()
 	}
 }
 
-void Framework::RenderContext::submitAndFlip()
+void Framework::RenderContext::submitAndFlip(bool asynchronous)
 {
 	OutputDevice::DeviceHandle _handle = mDevice->getOutput()->getHandle();
 	SceVideoOutFlipMode _flipMode = mDevice->getSwapChain()->getDescription().mFilpMode;

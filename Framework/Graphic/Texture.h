@@ -5,6 +5,7 @@ namespace Framework
 	class Allocators;
 	class TextureView;
 	class BaseTargetView;
+	struct TextureSourcePixelData;
 
 	class Texture
 	{
@@ -15,6 +16,8 @@ namespace Framework
 			U32 mWidth{ 0 };
 			U32 mHeight{ 0 };
 			U32 mDepth{ 1 };
+			U32	mPitch{ 0 };
+			U32	mNumSlices{ 1 };
 			U32 mMipLevels{ 1 };
 			sce::Gnm::DataFormat mFormat{ sce::Gnm::kDataFormatInvalid };
 			sce::Gnm::TextureType mTexType{ sce::Gnm::kTextureType2d };
@@ -28,18 +31,19 @@ namespace Framework
 		Texture();
 		virtual ~Texture();
 
-		virtual void				init(const Description& desc, Allocators *allocators, const U8 *pData);
+		virtual void				init(const Description& desc, Allocators *allocators, const TextureSourcePixelData *srcData);
 		virtual void				deinit(Allocators *allocators);
 
 		virtual TextureView *		getShaderResourceView() const { return mShaderResourceView; }
 		virtual BaseTargetView *	getTargetView() const { return nullptr; }
 
 		inline const Description &	getDescription() const { return mDesc; }
+		inline U32					getTotalNumSlices() const;
 
 	protected:
 		void						createShaderResourceView();
 		void						allocMemory(Allocators *allocators);
-		void						transferData(const U8 *pData);
+		void						transferData(const TextureSourcePixelData *srcData);
 
 	protected:
 		Description					mDesc;
@@ -47,5 +51,13 @@ namespace Framework
 		sce::Gnm::ResourceHandle	mHandle{ sce::Gnm::kInvalidResourceHandle };
 		SceKernelMemoryType			mGpuMemType{ SCE_KERNEL_WC_GARLIC };
 		void *						mGpuBaseAddr{ nullptr };
+	};
+
+	struct TextureSourcePixelData
+	{
+		typedef U32(*OffsetSolver)(const Texture::Description &desc, U32 mipLevel, U32 arraySlice);
+
+		const U8 *		mDataPtr{ nullptr };
+		OffsetSolver	mOffsetSolver{ nullptr };
 	};
 }

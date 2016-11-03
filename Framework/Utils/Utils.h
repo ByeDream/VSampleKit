@@ -11,8 +11,8 @@
 
 namespace Framework
 {
-	template<typename Source, typename Dest>
-	Dest *typeCast(Source *type)
+	template<typename Src, typename Dest>
+	Dest *typeCast(Src *type)
 	{
 		Dest *_type = dynamic_cast<Dest *>(type);
 		SCE_GNM_ASSERT_MSG(_type != nullptr, "Invalid type casting");

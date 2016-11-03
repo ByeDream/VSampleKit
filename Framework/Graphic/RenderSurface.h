@@ -5,6 +5,7 @@ namespace Framework
 	class Allocators;
 	class Texture;
 	class RenderContext;
+	struct TextureSourcePixelData;
 
 	class RenderSurface
 	{
@@ -38,7 +39,7 @@ namespace Framework
 		RenderSurface();
 		virtual ~RenderSurface();
 
-		virtual void						init(const Description& desc, Allocators *allocators, const U8 *pData);
+		virtual void						init(const Description& desc, Allocators *allocators, const TextureSourcePixelData *srcData);
 		virtual void						deinit(Allocators *allocators);
 
 		virtual void						bindAsSampler(RenderContext *context, U32 soltID) const;

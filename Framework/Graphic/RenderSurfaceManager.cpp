@@ -1,10 +1,11 @@
 #include "stdafx.h"
 
 #include "RenderSurfaceManager.h"
+#include "Texture.h"
 
 using namespace sce;
 
-Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, const RenderSurface::Description *desc, const U8 *pData /*= nullptr*/)
+Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, const RenderSurface::Description *desc, const TextureSourcePixelData *srcData /*= nullptr*/)
 {
 	// TODO, mark the status for Surface, first search the one can be reused when create a surface
 	RenderSurface::Handle _handle = RenderSurface::kInvalidRenderSurfaceHandle;
@@ -15,7 +16,7 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(
 		SCE_GNM_ASSERT(getSurface(_handle) == nullptr);
 
 		RenderSurface *_surface = new RenderSurface;
-		_surface->init(*desc, mAllocators, pData);
+		_surface->init(*desc, mAllocators, srcData);
 		_surface->setHandle(_handle);
 		mSurfaceTable[_handle] = _surface;
 		*out_surface = _surface;
@@ -23,7 +24,7 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(
 	return _handle;
 }
 
-Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, U32 width, U32 height, U32 depth, U32 mipLevels, bool enableCMask, bool enableFMask, bool enableHTile, bool enableStencil, bool isDynamicDisplayableColorTarget, sce::Gnm::DataFormat format, AntiAliasingType AAType, sce::GpuAddress::SurfaceType type, const char *name, const U8 *pData /*= nullptr*/)
+Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, U32 width, U32 height, U32 depth, U32 mipLevels, bool enableCMask, bool enableFMask, bool enableHTile, bool enableStencil, bool isDynamicDisplayableColorTarget, sce::Gnm::DataFormat format, AntiAliasingType AAType, sce::GpuAddress::SurfaceType type, const char *name, const TextureSourcePixelData *srcData /*= nullptr*/)
 {
 	RenderSurface::Description _desc;
 	_desc.mWidth								= width;
@@ -39,7 +40,7 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(
 	_desc.mAAType								= AAType;
 	_desc.mType									= type;
 	_desc.mName									= name;
-	return createSurface(out_surface, &_desc, pData);
+	return createSurface(out_surface, &_desc, srcData);
 }
 
 Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurfaceFromFile(RenderSurface **out_surface, const char *filePath, RenderSurface::Description *desc /*= nullptr*/)
@@ -54,10 +55,12 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurfaceF
 	RenderSurface::Description *_desc = (desc != nullptr) ? desc : &_defaultDesc;
 	U8 *_pixelData = nullptr;
 
-	parseSurface(_file.getBuffer(), _desc, &_pixelData);
+	TextureSourcePixelData _srcData;
+
+	parseSurface(_file.getBuffer(), _desc, &_srcData);
 	SCE_GNM_ASSERT(_pixelData != nullptr);
 	_desc->mName = _file.getName();
-	return createSurface(out_surface, _desc, _pixelData);
+	return createSurface(out_surface, _desc, &_srcData);
 }
 
 void Framework::RenderSurfaceManager::releaseSurface(RenderSurface::Handle handle)
@@ -68,7 +71,7 @@ void Framework::RenderSurfaceManager::releaseSurface(RenderSurface::Handle handl
 		if (itor != mSurfaceTable.end())
 		{
 			// TODO, mark the status for Surface as free
-			itor->second;
+			// itor->second;
 		}
 	}
 }
@@ -119,14 +122,33 @@ Framework::RenderSurfaceManager::~RenderSurfaceManager()
 	mSurfaceTable.clear();
 }
 
-void Framework::RenderSurfaceManager::parseSurface(const U8 *fileBuffer, RenderSurface::Description *out_desc, U8 **out_pixelData)
+namespace
 {
-	SCE_GNM_ASSERT(fileBuffer != nullptr && out_desc != nullptr && out_pixelData != nullptr);
+	Framework::U32 TGAOffsetSolver(const Framework::Texture::Description &desc, Framework::U32 mipLevel, Framework::U32 arraySlice)
+	{
+		SCE_GNM_ASSERT_MSG(mipLevel == 0, "TGA is a quite simple format doesn't sopport it");
+		SCE_GNM_ASSERT_MSG(arraySlice == 0, "TGA is a quite simple format doesn't sopport it");
+
+		return 0;
+	}
+}
+
+void Framework::RenderSurfaceManager::parseSurface(const U8 *fileBuffer, RenderSurface::Description *out_desc, TextureSourcePixelData *out_srcData)
+{
+	SCE_GNM_ASSERT(fileBuffer != nullptr && out_desc != nullptr && out_srcData != nullptr);
 
 	// TODO support other format, only support TGA at the moment.
-	out_desc->mWidth			= (U32)tgaGetWidth(fileBuffer);
-	out_desc->mHeight			= (U32)tgaGetHeight(fileBuffer);
-	*out_pixelData				= (U8 *)tgaRead(fileBuffer, TGA_READER_ABGR);
+	{
+		// Simple TGA file
+		out_desc->mWidth				= (U32)tgaGetWidth(fileBuffer);
+		out_desc->mHeight				= (U32)tgaGetHeight(fileBuffer);
+		out_desc->mDepth				= 1;
+		out_desc->mMipLevels			= 1;
+		out_desc->mFormat				= Gnm::kDataFormatR8G8B8A8Unorm;
+
+		out_srcData->mDataPtr			= (const U8 *)tgaRead(fileBuffer, TGA_READER_ABGR);
+		out_srcData->mOffsetSolver		= TGAOffsetSolver;
+	}
 }
 
 Framework::RenderSurface::Handle Framework::RenderSurfaceManager::genSurfaceHandle()

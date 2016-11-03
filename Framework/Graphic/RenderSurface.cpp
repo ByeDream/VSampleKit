@@ -18,7 +18,7 @@ Framework::RenderSurface::~RenderSurface()
 	SCE_GNM_ASSERT_MSG(mTexture == nullptr, "deinit me[%s] before destroy me", mTexture->getDescription().mName);
 }
 
-void Framework::RenderSurface::init(const Description& desc, Allocators *allocators, const U8 *pData)
+void Framework::RenderSurface::init(const Description& desc, Allocators *allocators, const TextureSourcePixelData *srcData)
 {
 	mAAType = desc.mAAType;
 
@@ -33,13 +33,32 @@ void Framework::RenderSurface::init(const Description& desc, Allocators *allocat
 	_desc.mWidth				= desc.mWidth;
 	_desc.mHeight				= desc.mHeight;
 	_desc.mDepth				= desc.mDepth;
+	_desc.mPitch				= 0;
+	_desc.mNumSlices			= 1; // TODO support texture array
 	_desc.mMipLevels			= desc.mMipLevels;
 	_desc.mFormat				= desc.mFormat;
 	_desc.mTileMode				= mTileMode;
 	_desc.mFragments			= _fragments;
 	_desc.mName					= desc.mName;
 
+	sce::Gnm::TextureType _2DTextureType;
+	if (_desc.mNumSlices == 1)
+	{
+		_2DTextureType = (_desc.mFragments == Gnm::kNumFragments1) ? Gnm::kTextureType2d : Gnm::kTextureType2dMsaa;
+	}
+	else if (_desc.mNumSlices > 1)
+	{
+		_2DTextureType = (_desc.mFragments == Gnm::kNumFragments1) ? Gnm::kTextureType2dArray : Gnm::kTextureType2dArrayMsaa;
+	}
+	else
+	{
+		SCE_GNM_ASSERT(false);
+	}
+		
+
 	// TODO check kSurfaceTypeDepthOnlyTarget stencil ?
+
+	//TODO  kTextureType1d 
 	switch (_type)
 	{
 	case GpuAddress::kSurfaceTypeColorTarget:
@@ -50,7 +69,7 @@ void Framework::RenderSurface::init(const Description& desc, Allocators *allocat
 				SCE_GNM_ASSERT_MSG(desc.mEnableCMask && desc.mEnableFMask, "Enable cmask & fmask if you need msaa");
 			}
 			mTexture = new RenderableTextureColor(_type == GpuAddress::kSurfaceTypeColorTargetDisplayable, desc.mEnableCMask, desc.mEnableFMask, _samples);
-			_desc.mTexType = Gnm::kTextureType2d;
+			_desc.mTexType = _2DTextureType;
 			if ((_type == GpuAddress::kSurfaceTypeColorTargetDisplayable) && desc.mIsDynamicDisplayableColorTarget)
 			{
 				mTileMode = Gnm::kTileModeDisplay_LinearAligned;
@@ -66,7 +85,7 @@ void Framework::RenderSurface::init(const Description& desc, Allocators *allocat
 	case GpuAddress::kSurfaceTypeDepthOnlyTarget:
 		{
 			mTexture = new RenderableTextureDepthStencil(desc.mEnableHTile, desc.mEnableStencil);
-			_desc.mTexType = Gnm::kTextureType2d;
+			_desc.mTexType = _2DTextureType;
 			_desc.mIsDynamic = false;
 		}
 		break;
@@ -74,7 +93,7 @@ void Framework::RenderSurface::init(const Description& desc, Allocators *allocat
 	case GpuAddress::kSurfaceTypeRwTextureFlat:
 		{
 			mTexture = new Texture();
-			_desc.mTexType = Gnm::kTextureType2d; //TODO ignore 1D texture at the moment
+			_desc.mTexType = _2DTextureType;
 			_desc.mIsDynamic = (_type == GpuAddress::kSurfaceTypeRwTextureFlat);
 		}
 		break;
@@ -99,8 +118,9 @@ void Framework::RenderSurface::init(const Description& desc, Allocators *allocat
 		break;
 	}
 
-	mTexture->init(_desc, allocators, pData);
+	mTexture->init(_desc, allocators, srcData);
 
+	// TODO sampler
 	//m_GfxTexture->GetPtr()->SetTextureAddress(GFX_TEX_ADDRESS_CLAMP, GFX_TEX_ADDRESS_CLAMP, GFX_TEX_ADDRESS_CLAMP);
 	//m_GfxTexture->GetPtr()->SetTextureFilter(GFX_TEX_FILTER_LINEAR, GFX_TEX_FILTER_LINEAR, GFX_TEX_FILTER_NONE);
 }

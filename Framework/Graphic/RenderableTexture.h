@@ -17,7 +17,7 @@ namespace Framework
 		RenderableTexture() {}
 		virtual ~RenderableTexture() {}
 
-		virtual void						init(const Texture::Description& desc, Allocators *allocators, const U8 *pData);
+		virtual void						init(const Texture::Description& desc, Allocators *allocators, const TextureSourcePixelData *srcData);
 		virtual void						deinit(Allocators *allocators);
 		virtual BaseTargetView *			getTargetView() const { return mTargetView; }
 

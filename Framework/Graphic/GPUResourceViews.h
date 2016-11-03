@@ -52,7 +52,7 @@ namespace Framework
 			U32							mWidth{ 0 };
 			U32							mHeight{ 0 };
 			U32							mPitch{ 0 };
-			U32							mNumSlices{ 1 };
+			U32							mNumSlices{ 1 };			
 			sce::Gnm::NumSamples		mSamples{ sce::Gnm::kNumSamples1 };
 			sce::Gnm::NumFragments		mFragments{ sce::Gnm::kNumFragments1 };
 			sce::Gnm::DataFormat		mColorFormat{ sce::Gnm::kDataFormatInvalid };

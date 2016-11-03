@@ -13,7 +13,7 @@ namespace Framework
 
 		virtual void roll();
 		virtual void reset();
-		virtual void submitAndFlip();
+		virtual void submitAndFlip(bool asynchronous);
 		virtual void appendLabelAtEOPWithInterrupt(void *dstGpuAddr, U64 value);	// writes value and and triggers an interrupt
 		virtual void appendLabelAtEOP(void *dstGpuAddr, U64 value);					// writes value only
 
