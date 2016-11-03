@@ -53,11 +53,13 @@ void Framework::RenderContext::submitAndFlip(bool asynchronous)
 
 void Framework::RenderContext::appendLabelAtEOPWithInterrupt(void *dstGpuAddr, U64 value)
 {
+	SCE_GNM_ASSERT(dstGpuAddr != nullptr);
 	//->writeImmediateAtEndOfPipeWithInterrupt(Gnm::kEopFlushCbDbCaches, dstGpuAddr, value, Gnm::kCacheActionNone);
 }
 
 void Framework::RenderContext::appendLabelAtEOP(void *dstGpuAddr, U64 value)
 {
+	SCE_GNM_ASSERT(dstGpuAddr != nullptr);
 	//->writeImmediateAtEndOfPipe(Gnm::kEopFlushCbDbCaches, dstGpuAddr, value, Gnm::kCacheActionNone);
 }
 

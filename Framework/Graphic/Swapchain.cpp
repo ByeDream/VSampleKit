@@ -10,6 +10,7 @@
 #include "GPUResourceViews.h"
 #include "RenderContext.h"
 #include "GraphicHelpers.h"
+#include "GPUFence.h"
 
 using namespace sce;
 
@@ -168,9 +169,9 @@ void Framework::SwapChain::prepareFrame()
 	mDevice->rollImmediateContext();
 	mDevice->rollDeferreContext();
 
+	GPUFenceManager::getInstance()->flip();
 	// TODO
 	// 	g_PhysMemAllocator->Flip();
-	// 	GPUFenceManager::GetInstance().Flip();
 }
 
 void Framework::SwapChain::advance()

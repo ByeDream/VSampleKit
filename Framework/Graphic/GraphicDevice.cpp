@@ -9,6 +9,7 @@
 #include "RenderSurfaceManager.h"
 #include "RenderSet.h"
 #include "RenderContext.h"
+#include "GPUFence.h"
 
 using namespace sce;
 
@@ -28,12 +29,15 @@ void Framework::GraphicDevice::init()
 	initMem();
 	RenderSurfaceManager::getInstance()->setAllocator(mAllocators);
 	initOutputAndSwapChain();
+	GPUFenceManager::getInstance()->init(mAllocators, mSwapChain->getDescription().mNumSwappedBuffers);
 	initContexts();
 }
 
 void Framework::GraphicDevice::deinit()
 {
 	deinitContexts();
+	GPUFenceManager::getInstance()->deinit(mAllocators);
+	GPUFenceManager::destory();
 	deinitOutputAndSwapChain();
 	RenderSurfaceManager::destory();
 	deinitMem();

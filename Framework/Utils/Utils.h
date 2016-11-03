@@ -12,10 +12,22 @@
 namespace Framework
 {
 	template<typename Src, typename Dest>
-	Dest *typeCast(Src *type)
+	inline Dest *typeCast(Src *type)
 	{
 		Dest *_type = dynamic_cast<Dest *>(type);
 		SCE_GNM_ASSERT_MSG(_type != nullptr, "Invalid type casting");
 		return _type;
+	}
+
+	template<typename T>
+	inline T max(T a, T b)
+	{
+		return (a > b) ? a : b;
+	}
+
+	template<typename T>
+	inline T min(T a, T b)
+	{
+		return (a < b) ? a : b;
 	}
 }

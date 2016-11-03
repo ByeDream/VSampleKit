@@ -4,6 +4,7 @@ namespace Framework
 {
 	class GraphicDevice;
 	class RenderSurface;
+	class GPUFence;
 
 	class RenderContext
 	{
@@ -17,6 +18,8 @@ namespace Framework
 		virtual void appendLabelAtEOPWithInterrupt(void *dstGpuAddr, U64 value);	// writes value and and triggers an interrupt
 		virtual void appendLabelAtEOP(void *dstGpuAddr, U64 value);					// writes value only
 
+
+		inline void attachFence(GPUFence *fence) {}
 
 		void setTextureSurface(U32 soltID, const RenderSurface *surface);
 		void setRenderTargetSurface(U32 soltID, const RenderSurface *surface);
