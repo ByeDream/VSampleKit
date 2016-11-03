@@ -101,6 +101,7 @@ void Framework::Texture::allocMemory(Allocators *allocators)
 
 void Framework::Texture::transferData(const TextureSourcePixelData *srcData)
 {
+	// TODO lock / unlock texture
 	SCE_GNM_ASSERT(srcData != nullptr);
 
 	Gnm::Texture *_texture = mShaderResourceView->getInternalObj();
