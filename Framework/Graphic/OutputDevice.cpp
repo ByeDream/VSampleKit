@@ -64,12 +64,12 @@ void Framework::OutputDevice::registerBufferChain(void * const *addresses, U32 b
 		_width,
 		_height,
 		_pitchInPixel);
-	Result ret = sceVideoOutRegisterBuffers(mHandle, 0, addresses, bufferNum, &_attribute);
-	SCE_GNM_ASSERT_MSG(ret >= 0, "sceVideoOutRegisterBuffers() returned error code %d.", ret);
+	mRegistrationIndex = sceVideoOutRegisterBuffers(mHandle, 0, addresses, bufferNum, &_attribute);
+	SCE_GNM_ASSERT_MSG(mRegistrationIndex >= 0, "sceVideoOutRegisterBuffers() returned error code %d.", mRegistrationIndex);
 }
 
 void Framework::OutputDevice::unregisterBufferChain()
 {
-	Result ret = sceVideoOutUnregisterBuffers(mHandle, 0); //TODO check attributeIndex
-	SCE_GNM_ASSERT_MSG(ret >= 0, "sceVideoOutUnregisterBuffers() returned error code %d.", ret);
+	Result ret = sceVideoOutUnregisterBuffers(mHandle, mRegistrationIndex);
+	SCE_GNM_ASSERT_MSG(ret != SCE_OK, "sceVideoOutUnregisterBuffers() returned error code %d.", ret);
 }

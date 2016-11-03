@@ -36,5 +36,6 @@ namespace Framework
 		Rect					mWindowRect;
 		bool					mIs4K{ false };
 		DeviceHandle			mHandle{ INVAILD_DEV_HANDLE };
+		S32						mRegistrationIndex{ 0 };
 	};
 }
