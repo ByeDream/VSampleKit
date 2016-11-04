@@ -55,6 +55,41 @@ namespace Framework
 		TEX_TYPE_COUNT
 	};
 
+	enum ShaderType
+	{
+		SHADER_VERTEX = 0,
+		SHADER_PIXEL,
+		SHADER_COMPUTE,
+		SHADER_HULL,
+		SHADER_DOMAIN,
+		SHADER_GEOMETRY,
+
+		SHADER_TYPE_COUNT
+	};
+
+	enum SampleStateType
+	{
+		// Order must match bitfield with Framework::SamplingState
+
+		// per texture settings
+		SAMP_STATE_ADDRESSU = 0,
+		SAMP_STATE_ADDRESSV,
+		SAMP_STATE_ADDRESSW,
+		SAMP_STATE_BORDERCOLOR,
+		SAMP_STATE_MAGFILTER,
+		SAMP_STATE_MINFILTER,
+		SAMP_STATE_MIPFILTER,
+		SAMP_STATE_SRGBTEXTURE,
+
+		// global settings
+		SAMP_STATE_ANISOFILTER,
+		SAMP_STATE_MAXANISOTROPY,
+		SAMP_STATE_MIPMAPLODBIAS,
+
+		SAMP_STATE_TYPE_COUNT,
+	};
+	typedef U32 SampleStateValue;
+
 // 	enum RESOURCE_BIND_FLAG
 // 	{
 // 		BIND_VERTEX_BUFFER = 0x1L,
