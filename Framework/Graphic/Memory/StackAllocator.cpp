@@ -21,7 +21,7 @@ void Framework::StackAllocator::init(SceKernelMemoryType type, U32 size)
 {
 	SCE_GNM_ASSERT(false == mIsInitialized);
 
-	const size_t HW_MEM_PAGE_SIZE = 2 * 1024 * 1024;
+	const size_t HW_MEM_PAGE_SIZE = UTIL_MB(2);
 
 	mAllocations = 0;
 	memset(mAllocation, 0, sizeof(mAllocation));

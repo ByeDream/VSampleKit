@@ -6,6 +6,9 @@ namespace Framework
 {
 	struct CommandList;
 	class GPUFence;
+	class Allocators;
+	class RenderContext;
+
 	class RenderContextChunk : public sce::Gnmx::GfxContext
 	{
 		friend class RenderContext;
@@ -13,30 +16,35 @@ namespace Framework
 	public:
 		enum State
 		{
-			Free = 0,
-			InUseDeferred,
-			Pending,
+			FREE = 0,
+			PENDING,
+			INUSE_DEFERRED,
 		};
 
-		void								init(RenderContext *context, U32 id);
-		void								deinit();
+		enum KickingAction
+		{
+			// as bit flag
+			KICK_ONLY			= 0,
+			REQUEST_FLIP		= 1,
+			POST_SYNC			= 2,
+		};
+
+		void								init(RenderContext *context, U32 id, Allocators *allocators);
+		void								deinit(Allocators *allocators);
+		void								prepareToFill();
 
 		void								waitUntilIdle();
 		bool								isBusy() const;
-		void								attachFence(GPUFence* fence);
 		// if strictChecking == false, the context is still empty, but not fresh, may includes some submitted data.
 		bool								isEmpty(bool strictChecking = false) const;
+		inline void							attachFence(GPUFence* fence) { mAttachedFences.push_back(fence); }
 
-		void								submit(bool asynchronous);
-		void								submitAndFlip(bool asynchronous);
 
 		void								beginRecord();
 		CommandList *						endRecord();
+
 		CommandList *						replay(CommandList* cmdList);
-
-		void								prepareToFill();
-		CommandList *						prepareToSubmit(bool flip = false, bool forceRecord = false);
-
+		bool								kickCommandBuffer(const Bitset &actionFlag = Bitset(KICK_ONLY));
 
 
 		//void								flushGPUCaches();
@@ -48,16 +56,15 @@ namespace Framework
 		//static void						dumpBlockingCommandbuffer();
 		//void								validateResult(int result);
 #endif
-
-
 	private:
-		void								updateFenceInCmdBuffer();
-		CommandList *						recodeComandList();
+		CommandList *						internalRecord(bool appendFlipRequest = false, bool forceRecord = false);
+
+		void								shipFences();
 		void								stashPendingCommandList(CommandList* cmdList);
 
-		void								allocCBChunk();
+		void								prepareCommandBuffers();
 
-		void								batchKick(std::vector<CommandList>& cmdListArray, bool flip);
+		void								batchKick(bool flip);
 
 		bool								cmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes);
 		static bool							staticCmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes, void* userData);
@@ -72,6 +79,7 @@ namespace Framework
 
 //#ifdef USING_SEPARATE_CUE_HEAP
 		void *								mCueHeapMemory{ nullptr };
+		sce::Gnm::ResourceHandle			mCueHandle{ sce::Gnm::kInvalidResourceHandle };
 //#endif
 
 		// Internal pointer that we move ourselves to kick sub-part of the command buffer
@@ -82,11 +90,10 @@ namespace Framework
 		GPUFence *							mFence;
 		State								mState;
 
-
+	
 // #ifndef POP_OPTIMIZED
-// 		enum { SubmitArraySize = 4 };
-// 		static Array<void*> ms_SubmitBeginPtr[SubmitArraySize];
-// 		static Array<void*> ms_SubmitCmdPtr[SubmitArraySize];
+// 		static Array<void*> ms_SubmitBeginPtr[NumSwapchainBuffers];
+// 		static Array<void*> ms_SubmitCmdPtr[NumSwapchainBuffers];
 // 		static ubiU32 ms_CurrentSubmitArrayIndex;
 // #endif
 	};

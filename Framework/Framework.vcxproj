@@ -71,6 +71,8 @@
   <ItemGroup>
     <ClCompile Include="dataformat_interpreter.cpp" />
     <ClCompile Include="floating_point.cpp" />
+    <ClCompile Include="Graphic\ChunkBasedRenderContext\RenderContext.cpp" />
+    <ClCompile Include="Graphic\ChunkBasedRenderContext\RenderContextChunk.cpp" />
     <ClCompile Include="Graphic\GPUFence.cpp" />
     <ClCompile Include="Graphic\GPUResourceViews.cpp" />
     <ClCompile Include="Graphic\GraphicDevice.cpp" />
@@ -79,9 +81,8 @@
     <ClCompile Include="Graphic\Memory\StackAllocator.cpp" />
     <ClCompile Include="Graphic\OutputDevice.cpp" />
     <ClCompile Include="Graphic\RenderableTexture.cpp" />
-    <ClCompile Include="Graphic\RenderContext.cpp" />
     <ClCompile Include="Graphic\RenderSet.cpp" />
-    <ClCompile Include="Graphic\RenderStateMgr.cpp" />
+    <ClCompile Include="Graphic\RenderStateManager.cpp" />
     <ClCompile Include="Graphic\RenderSurface.cpp" />
     <ClCompile Include="Graphic\RenderSurfaceManager.cpp" />
     <ClCompile Include="Graphic\ShaderManager.cpp" />
@@ -101,6 +102,9 @@
     <ClInclude Include="dataformat_interpreter.h" />
     <ClInclude Include="floating_point.h" />
     <ClInclude Include="Framework.h" />
+    <ClInclude Include="Graphic\ChunkBasedRenderContext\CommandList.h" />
+    <ClInclude Include="Graphic\ChunkBasedRenderContext\RenderContext.h" />
+    <ClInclude Include="Graphic\ChunkBasedRenderContext\RenderContextChunk.h" />
     <ClInclude Include="Graphic\GPUFence.h" />
     <ClInclude Include="Graphic\GPUResourceViews.h" />
     <ClInclude Include="Graphic\GraphicDevice.h" />
@@ -111,9 +115,8 @@
     <ClInclude Include="Graphic\Memory\StackAllocator.h" />
     <ClInclude Include="Graphic\OutputDevice.h" />
     <ClInclude Include="Graphic\RenderableTexture.h" />
-    <ClInclude Include="Graphic\RenderContext.h" />
     <ClInclude Include="Graphic\RenderSet.h" />
-    <ClInclude Include="Graphic\RenderStateMgr.h" />
+    <ClInclude Include="Graphic\RenderStateManager.h" />
     <ClInclude Include="Graphic\RenderSurface.h" />
     <ClInclude Include="Graphic\RenderSurfaceManager.h" />
     <ClInclude Include="Graphic\ShaderManager.h" />

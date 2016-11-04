@@ -36,8 +36,8 @@ namespace Framework
 	protected:
 		RenderSurface *					mDepthSurface{ nullptr };
 		RenderSurface *					mColorSurfaces[MAX_NUM_COLOR_SURFACE]{ nullptr, nullptr, nullptr, nullptr };
-		RenderSurface::Handle			mDepthHandle{ RenderSurface::kInvalidRenderSurfaceHandle };
-		RenderSurface::Handle			mColorHandle[MAX_NUM_COLOR_SURFACE]{ RenderSurface::kInvalidRenderSurfaceHandle, RenderSurface::kInvalidRenderSurfaceHandle, RenderSurface::kInvalidRenderSurfaceHandle, RenderSurface::kInvalidRenderSurfaceHandle };
+		RenderSurface::Handle			mDepthHandle{ RenderSurface::RENDER_SURFACE_HANDLE_INVALID };
+		RenderSurface::Handle			mColorHandle[MAX_NUM_COLOR_SURFACE]{ RenderSurface::RENDER_SURFACE_HANDLE_INVALID, RenderSurface::RENDER_SURFACE_HANDLE_INVALID, RenderSurface::RENDER_SURFACE_HANDLE_INVALID, RenderSurface::RENDER_SURFACE_HANDLE_INVALID };
 		U32								mNumColorSurfaces{ 0 };
 	};
 }

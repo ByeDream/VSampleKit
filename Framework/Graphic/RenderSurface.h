@@ -13,7 +13,7 @@ namespace Framework
 		typedef U32 Handle;
 		enum
 		{
-			kInvalidRenderSurfaceHandle = MAX_VALUE_32,
+			RENDER_SURFACE_HANDLE_INVALID = MAX_VALUE_32,
 		};
 
 		struct Description
@@ -59,7 +59,7 @@ namespace Framework
 		//TODO for size override operator > >= < <=
 		//TODO inline SurfaceSet GetSurfaceSet() { return mSet; } // or the name is enough
 	protected:
-		Handle								mHandle{ kInvalidRenderSurfaceHandle };
+		Handle								mHandle{ RENDER_SURFACE_HANDLE_INVALID };
 		Texture *							mTexture{ nullptr };
 		sce::Gnm::TileMode					mTileMode{ sce::Gnm::kTileModeThin_2dThin };
 		AntiAliasingType					mAAType{ AA_NONE };

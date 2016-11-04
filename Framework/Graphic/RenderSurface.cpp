@@ -4,7 +4,7 @@
 #include "RenderableTexture.h"
 #include "GraphicHelpers.h"
 #include "GPUResourceViews.h"
-#include "RenderContext.h"
+#include "ChunkBasedRenderContext/RenderContext.h"
 
 using namespace sce;
 

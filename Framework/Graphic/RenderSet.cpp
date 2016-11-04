@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "RenderSet.h"
-#include "RenderContext.h"
+#include "ChunkBasedRenderContext/RenderContext.h"
 #include "Texture.h"
 #include "RenderSurfaceManager.h"
 
@@ -37,7 +37,7 @@ void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface *surface)
 		mNumColorSurfaces--;
 	}
 	mColorSurfaces[slotID] = surface;
-	mColorHandle[slotID] = (surface != nullptr) ? surface->getHandle() : RenderSurface::kInvalidRenderSurfaceHandle;
+	mColorHandle[slotID] = (surface != nullptr) ? surface->getHandle() : RenderSurface::RENDER_SURFACE_HANDLE_INVALID;
 }
 
 void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface::Handle surfaceHandle)
@@ -50,7 +50,7 @@ void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface::Handle sur
 void Framework::RenderSet::setDepthSurface(RenderSurface *surface)
 {
 	mDepthSurface = surface;
-	mDepthHandle = (surface != nullptr) ? surface->getHandle() : RenderSurface::kInvalidRenderSurfaceHandle;
+	mDepthHandle = (surface != nullptr) ? surface->getHandle() : RenderSurface::RENDER_SURFACE_HANDLE_INVALID;
 }
 
 void Framework::RenderSet::setDepthSurface(RenderSurface::Handle surfaceHandle)

@@ -8,7 +8,7 @@
 #include "RenderSet.h"
 #include "Texture.h"
 #include "GPUResourceViews.h"
-#include "RenderContext.h"
+#include "ChunkBasedRenderContext/RenderContext.h"
 #include "GraphicHelpers.h"
 #include "GPUFence.h"
 

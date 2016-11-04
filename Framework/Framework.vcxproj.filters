@@ -25,6 +25,9 @@
     <Filter Include="Utils\DesignPattern">
       <UniqueIdentifier>{a4d636e1-6cfc-4f9d-9992-07c2f9f2a6e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphic\ChunkBasedRenderContext">
+      <UniqueIdentifier>{dae6b3fa-8277-4557-a952-b69a3f8e2d18}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="System\Application.cpp">
@@ -57,12 +60,6 @@
     <ClCompile Include="Graphic\GPUResourceViews.cpp">
       <Filter>Graphic</Filter>
     </ClCompile>
-    <ClCompile Include="Graphic\RenderStateMgr.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\RenderContext.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
     <ClCompile Include="Graphic\GPUFence.cpp">
       <Filter>Graphic</Filter>
     </ClCompile>
@@ -92,6 +89,15 @@
     </ClCompile>
     <ClCompile Include="Graphic\RenderSurfaceManager.cpp">
       <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\RenderStateManager.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ChunkBasedRenderContext\RenderContext.cpp">
+      <Filter>Graphic\ChunkBasedRenderContext</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ChunkBasedRenderContext\RenderContextChunk.cpp">
+      <Filter>Graphic\ChunkBasedRenderContext</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -161,12 +167,6 @@
     <ClInclude Include="Graphic\GPUResourceViews.h">
       <Filter>Graphic</Filter>
     </ClInclude>
-    <ClInclude Include="Graphic\RenderStateMgr.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\RenderContext.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
     <ClInclude Include="Graphic\GPUFence.h">
       <Filter>Graphic</Filter>
     </ClInclude>
@@ -205,6 +205,18 @@
     </ClInclude>
     <ClInclude Include="Graphic\RenderSurfaceManager.h">
       <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderStateManager.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ChunkBasedRenderContext\CommandList.h">
+      <Filter>Graphic\ChunkBasedRenderContext</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ChunkBasedRenderContext\RenderContext.h">
+      <Filter>Graphic\ChunkBasedRenderContext</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ChunkBasedRenderContext\RenderContextChunk.h">
+      <Filter>Graphic\ChunkBasedRenderContext</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

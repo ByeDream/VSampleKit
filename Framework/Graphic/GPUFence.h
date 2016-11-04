@@ -7,6 +7,7 @@ namespace Framework
 	class Allocators;
 	class RenderContext;
 	class EopEventQueue;
+	class RenderContextChunk;
 
 	class GPUFence
 	{
@@ -16,12 +17,13 @@ namespace Framework
 		enum State
 		{
 			IDLE = 0,
-			Pending = 1,
+			PENDING = 1,
 
-			LabelValueStart,
+			LABEL_VALUE_START,
 		};
 
-		void							setPending(RenderContext *context);  //TODO too expensive, to be refactoring
+		void							setPending(RenderContext *context);
+		void							setPending(RenderContextChunk *contextChunk);  //TODO too expensive, to be refactoring
 		inline bool						isBusy();
 		void							waitUntilIdle();
 		inline void						setValue(U64 value) { mValue = value; }
@@ -46,7 +48,7 @@ namespace Framework
 		void							init(Allocators *allocators, U32 poolSize);
 		void							deinit(Allocators *allocators);
 
-		inline void						preset() { mExpectedLabel = Framework::max(mExpectedLabel + 1, (U64)GPUFence::LabelValueStart); }
+		inline void						preset() { mExpectedLabel = Framework::max(mExpectedLabel + 1, (U64)GPUFence::LABEL_VALUE_START); }
 		inline U64						getExpectedLabel() const { return mExpectedLabel; }
 		void							appendLabelToGPU(RenderContext *context, U64 value);
 
@@ -78,7 +80,7 @@ namespace Framework
 bool Framework::GPUFence::isBusy()
 {
 	const volatile U64 *_label = GPUFenceManager::getInstance()->getLabel();
-	bool ret = (mValue == Pending) || (((*_label - mValue) >> 63) != 0);
+	bool ret = (mValue == PENDING) || (((*_label - mValue) >> 63) != 0);
 	if (!ret)
 		mValue = IDLE;
 	return ret;

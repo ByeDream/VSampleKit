@@ -10,6 +10,7 @@ int main(int argc, const char *argv[])
 
 	while (true)
 	{
+		// TODO : hard code everything in the application::frame function at the moment, will move the rendering logic to sample later
 		if (g_app.frame())
 		{
 			break;

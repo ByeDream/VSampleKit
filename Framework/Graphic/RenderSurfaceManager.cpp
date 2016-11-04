@@ -8,7 +8,7 @@ using namespace sce;
 Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(RenderSurface **out_surface, const RenderSurface::Description *desc, const TextureSourcePixelData *srcData /*= nullptr*/)
 {
 	// TODO, mark the status for Surface, first search the one can be reused when create a surface
-	RenderSurface::Handle _handle = RenderSurface::kInvalidRenderSurfaceHandle;
+	RenderSurface::Handle _handle = RenderSurface::RENDER_SURFACE_HANDLE_INVALID;
 	if (out_surface != nullptr && desc != nullptr)
 	{
 		RenderSurface::Handle _handle = genSurfaceHandle();
@@ -65,7 +65,7 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurfaceF
 
 void Framework::RenderSurfaceManager::releaseSurface(RenderSurface::Handle handle)
 {
-	if (handle != RenderSurface::kInvalidRenderSurfaceHandle)
+	if (handle != RenderSurface::RENDER_SURFACE_HANDLE_INVALID)
 	{
 		auto itor = mSurfaceTable.find(handle);
 		if (itor != mSurfaceTable.end())
@@ -78,7 +78,7 @@ void Framework::RenderSurfaceManager::releaseSurface(RenderSurface::Handle handl
 
 void Framework::RenderSurfaceManager::destorySurface(RenderSurface::Handle handle)
 {
-	if (handle != RenderSurface::kInvalidRenderSurfaceHandle)
+	if (handle != RenderSurface::RENDER_SURFACE_HANDLE_INVALID)
 	{
 		auto itor = mSurfaceTable.find(handle);
 		if (itor != mSurfaceTable.end())
@@ -153,7 +153,7 @@ void Framework::RenderSurfaceManager::parseSurface(const U8 *fileBuffer, RenderS
 
 Framework::RenderSurface::Handle Framework::RenderSurfaceManager::genSurfaceHandle()
 {
-	static RenderSurface::Handle _handle = RenderSurface::kInvalidRenderSurfaceHandle;
+	static RenderSurface::Handle _handle = RenderSurface::RENDER_SURFACE_HANDLE_INVALID;
 	_handle++;
 	return _handle;
 }

@@ -16,7 +16,7 @@
 #include "tga_texture_loader.h"
 
 // Set default heap size
-size_t sceLibcHeapSize = 512 * 1024 * 1024; // 512MB for Razor GPU
+size_t sceLibcHeapSize = UTIL_MB(512); // 512MB for Razor GPU
 unsigned int sceLibcHeapExtendedAlloc = 1; // Enable
 //----------------------
 
@@ -343,8 +343,8 @@ bool Framework::Application::terminate()
 void Framework::Application::processCommandLine(int argc, const char* argv[])
 {
 	//TODO
-	mConfig.mOnionMemoryInBytes			= 256 * 1024 * 1024;
-	mConfig.mGarlicMemoryInBytes		= 512 * 1024 * 1024;
+	mConfig.mOnionMemoryInBytes			= UTIL_MB(256);
+	mConfig.mGarlicMemoryInBytes		= UTIL_MB(512);
 	mConfig.mTargetWidth				= 1920;
 	mConfig.mTargetHeight				= 1080;
 

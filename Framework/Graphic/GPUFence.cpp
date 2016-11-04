@@ -1,15 +1,21 @@
 #include "stdafx.h"
 #include "GPUFence.h"
 #include "Memory/Allocators.h"
-#include "RenderContext.h"
+#include "ChunkBasedRenderContext/RenderContext.h"
+#include "ChunkBasedRenderContext/RenderContextChunk.h"
 #include "GraphicHelpers.h"
 
 using namespace sce;
 
 void Framework::GPUFence::setPending(RenderContext *context)
 {
-	mValue = Pending;
-	context->attachFence(this);
+	// TODO
+}
+
+void Framework::GPUFence::setPending(RenderContextChunk *contextChunk)
+{
+	mValue = PENDING;
+	contextChunk->attachFence(this);
 }
 
 void Framework::GPUFence::waitUntilIdle()
@@ -25,7 +31,7 @@ Framework::GPUFence::GPUFence()
 
 Framework::GPUFence::~GPUFence()
 {
-	SCE_GNM_ASSERT(mValue != Pending);
+	SCE_GNM_ASSERT(mValue != PENDING);
 	SAFE_DELETE(mEopEventQueue);
 }
 
@@ -58,7 +64,7 @@ void Framework::GPUFenceManager::appendLabelToGPU(RenderContext *context, U64 va
 
 void Framework::GPUFenceManager::releaseFence(GPUFence *fence)
 {
-	if (fence->mValue == GPUFence::Pending)
+	if (fence->mValue == GPUFence::PENDING)
 	{
 		mPool[mPoolIndex].push_back(fence);
 	}

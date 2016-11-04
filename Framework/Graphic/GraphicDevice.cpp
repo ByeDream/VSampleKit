@@ -8,7 +8,7 @@
 #include "Swapchain.h"
 #include "RenderSurfaceManager.h"
 #include "RenderSet.h"
-#include "RenderContext.h"
+#include "ChunkBasedRenderContext/RenderContext.h"
 #include "GPUFence.h"
 
 using namespace sce;
