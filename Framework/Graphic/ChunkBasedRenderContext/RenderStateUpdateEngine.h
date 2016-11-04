@@ -3,11 +3,11 @@
 namespace Framework
 {
 	class TextureView;
-	class RenderStateManager
+	class RenderStateUpdateEngine
 	{
 	public:
-		RenderStateManager();
-		~RenderStateManager();
+		RenderStateUpdateEngine();
+		~RenderStateUpdateEngine();
 
 		inline void								setVertexShader(VertexShader *shader);
 		inline void								setPixelShader(PixelShader *shader);
