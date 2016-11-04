@@ -11,16 +11,15 @@
 
 using namespace sce;
 
-void Framework::RenderContextChunk::init(RenderContext *context, U32 id, Allocators *allocators)
+void Framework::RenderContextChunk::init(RenderContext *owner, U32 id, Allocators *allocators)
 {
-	mContext = context;
+	mContext = owner;
 	mID = id;
 
 	//#ifdef USING_SEPARATE_CUE_HEAP
 	U32 kNumRingEntries = 16;
 	//#endif
 
-	// TODO MB(1)
 	mDcbChunkSize = UTIL_MB(1);
 	mCcbChunkSize = UTIL_MB(1);
 
@@ -78,7 +77,7 @@ void Framework::RenderContextChunk::prepareToFill()
 	// 	//m_cue.bindCommandBuffers(&m_dcb, &m_ccb, nullptr);
 	// 	m_cue.moveConstantStateAfterAddress(t_cueHeap);
 
-	//@@LRF to be fix, get flicking if use this way, should be I always use 't_cueHeap' as begin address with out kick constant buffer, cause some overwrite!
+	//TODO to be fix, get flicking if use this way, should be I always use 't_cueHeap' as begin address with out kick constant buffer, cause some overwrite!
 	//#endif
 
 	GfxContext::reset();
@@ -94,91 +93,6 @@ bool Framework::RenderContextChunk::isBusy() const
 {
 	return (mFence->isBusy() || (mState != FREE));
 }
-
-bool Framework::RenderContextChunk::isEmpty(bool strictChecking /*= false*/) const
-{
-	bool ret = false;
-	// Every thing has been submitted
-	ret = (mDcbCurrentBeginPtr == m_dcb.m_cmdptr) && (mCcbCurrentBeginPtr == m_ccb.m_cmdptr);
-	if (strictChecking)
-	{
-		// Already reset
-		ret = ret && (m_dcb.m_beginptr == m_dcb.m_cmdptr) && (m_ccb.m_beginptr == m_ccb.m_cmdptr);
-	}
-	return ret;
-}
-
-void Framework::RenderContextChunk::beginRecord()
-{
-	// Make sure our context is empty as expected
-	SCE_GNM_ASSERT(mAttachedFences.empty());
-	SCE_GNM_ASSERT(!isBusy());
-	SCE_GNM_ASSERT(isEmpty(true));
-	mState = INUSE_DEFERRED;
-}
-
-Framework::CommandList * Framework::RenderContextChunk::endRecord()
-{
-	SCE_GNM_ASSERT(mState == INUSE_DEFERRED);
-
-	CommandList* cmdList = internalRecord();
-	if (cmdList == nullptr)
-	{
-		mState = FREE;
-	}
-	else
-	{
-		mState = PENDING;
-	}
-
-	return cmdList;
-}
-
-Framework::CommandList * Framework::RenderContextChunk::replay(CommandList* cmdList)
-{
-	CommandList* ownCmdList = internalRecord();
-	if (ownCmdList != nullptr)
-	{
-		mState = PENDING;
-		stashPendingCommandList(ownCmdList);
-	}
-	stashPendingCommandList(cmdList);
-
-	return ownCmdList;
-}
-
-bool Framework::RenderContextChunk::kickCommandBuffer(const Bitset &actionFlag /*= Bitset(KICK_ONLY)*/)
-{
-	bool _requestFlip = actionFlag.get(REQUEST_FLIP);
-	bool _postSync = actionFlag.get(POST_SYNC);
-
-	// Nothing to kick 
-	if ((!_requestFlip) && isEmpty() && mContext->mPendingCommandLists.empty())
-	{
-		return false;
-	}
-
-	CommandList *ownCmdList = internalRecord(_requestFlip, _postSync);
-
-	bool ret = false;
-	if (ownCmdList != nullptr)
-	{
-		stashPendingCommandList(ownCmdList);
-		mState = PENDING;
-		ret = true;
-	}
-
-	// submit all of pending command list
-	batchKick(_requestFlip);
-
-	if (_postSync)
-	{
-		waitUntilIdle();
-	}
-
-	return ret;
-}
-
 
 Framework::CommandList * Framework::RenderContextChunk::internalRecord(bool appendFlipRequest /*= false*/, bool forceRecord /*= false*/)
 {
@@ -248,15 +162,6 @@ void Framework::RenderContextChunk::shipFences()
 	mAttachedFences.clear();
 }
 
-void Framework::RenderContextChunk::stashPendingCommandList(CommandList* cmdList)
-{
-	// discard empty cmdList
-	if (!cmdList->empty())
-	{
-		mContext->mPendingCommandLists.push_back(cmdList);
-	}
-}
-
 void Framework::RenderContextChunk::prepareCommandBuffers()
 {
 	U32 *_dcbCmdPtr = mContext->getCurrentDcbCmdPtr(mDcbChunkSize);
@@ -273,55 +178,130 @@ void Framework::RenderContextChunk::prepareCommandBuffers()
 	mCcbCurrentBeginPtr = m_ccb.m_beginptr;
 }
 
-void Framework::RenderContextChunk::batchKick(bool flip)
+bool Framework::RenderContextChunk::cmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes)
+{
+	/** @brief Function to call when the command buffer is out of space.
+
+	@param[in,out] cb	Pointer to the CommandBuffer object that is out of space.
+	@param[in] sizeInDwords Size of the unfulfilled CommandBuffer request, in <c>DWORD</c>s.
+	@return <c>true</c> if the requested space is available in cb when the function returns, or <c>false</c> if not.
+	*/
+
+	SCE_GNM_ASSERT_MSG(false, "Command Buffer is full - we need to use a bigger command buffer! extra %d(dwords) is requested", reserveSizeInBytes);
+	// TODO grow command buffer
+	return false;
+}
+
+bool Framework::RenderContextChunk::staticCmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes, void* userData)
+{
+	RenderContextChunk* _self = static_cast<RenderContextChunk *>(userData);
+	SCE_GNM_ASSERT(_self != nullptr);
+	return _self->cmdBufferFullCallback(cb, reserveSizeInBytes);
+}
+
+Framework::CommandList * Framework::ImmediateRenderContextChunk::replay(CommandList* cmdList)
+{
+	CommandList* ownCmdList = internalRecord();
+	if (ownCmdList != nullptr)
+	{
+		mState = PENDING;
+		stashPendingCommandList(ownCmdList);
+	}
+	stashPendingCommandList(cmdList);
+
+	return ownCmdList;
+}
+
+bool Framework::ImmediateRenderContextChunk::kickCommandBuffer(const Bitset &actionFlag /*= Bitset(KICK_ONLY)*/)
+{
+	bool _requestFlip = actionFlag.get(REQUEST_FLIP);
+	bool _postSync = actionFlag.get(POST_SYNC);
+
+	// Nothing to kick 
+	if ((!_requestFlip) && isEmpty() && mContext->mPendingCommandLists.empty())
+	{
+		return false;
+	}
+
+	CommandList *ownCmdList = internalRecord(_requestFlip, _postSync);
+
+	bool ret = false;
+	if (ownCmdList != nullptr)
+	{
+		stashPendingCommandList(ownCmdList);
+		mState = PENDING;
+		ret = true;
+	}
+
+	// submit all of pending command list
+	batchKick(_requestFlip);
+
+	if (_postSync)
+	{
+		waitUntilIdle();
+	}
+
+	return ret;
+}
+
+void Framework::ImmediateRenderContextChunk::stashPendingCommandList(CommandList* cmdList)
+{
+	// discard empty cmdList
+	if (!cmdList->empty())
+	{
+		mContext->mPendingCommandLists.push_back(cmdList);
+	}
+}
+
+void Framework::ImmediateRenderContextChunk::batchKick(bool flip)
 {
 	std::vector<CommandList *> &_pendingCmdLists = mContext->mPendingCommandLists;
 	SCE_GNM_ASSERT(!_pendingCmdLists.empty()); // Shouldn't be empty at here, even for flip, at least we will have a fence CMD.
 	const auto _size = _pendingCmdLists.size();
 
-	void **_dcbGpuAddrs					= (void **)malloc(_size * sizeof(void *));
-	U32 *_dcbSizesInBytes				= (U32 *)malloc(_size * sizeof(U32));
-	void **_ccbGpuAddrs					= (void **)malloc(_size * sizeof(void *));
-	U32 *_ccbSizesInBytes				= (U32 *)malloc(_size * sizeof(U32));
+	void **_dcbGpuAddrs = (void **)malloc(_size * sizeof(void *));
+	U32 *_dcbSizesInBytes = (U32 *)malloc(_size * sizeof(U32));
+	void **_ccbGpuAddrs = (void **)malloc(_size * sizeof(void *));
+	U32 *_ccbSizesInBytes = (U32 *)malloc(_size * sizeof(U32));
 
 	for (auto i = 0; i < _size; i++)
 	{
 		CommandList *_cmdList = _pendingCmdLists[i];
 		SCE_GNM_ASSERT(!_cmdList->empty());
-		SCE_GNM_ASSERT(_cmdList->mSourceChunk->mState == PENDING);
+		SCE_GNM_ASSERT(_cmdList->mSourceChunk->getState() == PENDING);
 #ifndef POP_OPTIMIZED
-// 		ms_SubmitBeginPtr[ms_CurrentSubmitArrayIndex].Add(cmdList->m_BeginDcbPtr);
-// 		ms_SubmitCmdPtr[ms_CurrentSubmitArrayIndex].Add(cmdList->m_EndDcbPtr);
-// 
-// 		if (g_DumpFullFrameCommandBuffer)
-// 		{
-// 			FILE* myFile = fopen("/app0/OrbisCmdBufferDump.txt", "a");
-// 			ubiPtrSize cbNumBytes = (ubiPtrSize)cmdList->m_EndDcbPtr - (ubiPtrSize)cmdList->m_BeginDcbPtr;
-// 			Gnm::Pm4Dump::dumpPm4PacketStream(myFile, (ubiU32*)cmdList->m_BeginDcbPtr, cbNumBytes / 4);
-// 			fclose(myFile);
-// 		}
+		// 		ms_SubmitBeginPtr[ms_CurrentSubmitArrayIndex].Add(cmdList->m_BeginDcbPtr);
+		// 		ms_SubmitCmdPtr[ms_CurrentSubmitArrayIndex].Add(cmdList->m_EndDcbPtr);
+		// 
+		// 		if (g_DumpFullFrameCommandBuffer)
+		// 		{
+		// 			FILE* myFile = fopen("/app0/OrbisCmdBufferDump.txt", "a");
+		// 			ubiPtrSize cbNumBytes = (ubiPtrSize)cmdList->m_EndDcbPtr - (ubiPtrSize)cmdList->m_BeginDcbPtr;
+		// 			Gnm::Pm4Dump::dumpPm4PacketStream(myFile, (ubiU32*)cmdList->m_BeginDcbPtr, cbNumBytes / 4);
+		// 			fclose(myFile);
+		// 		}
 #endif
-		_dcbGpuAddrs[i]					= _cmdList->mBeginDcbPtr;
-		_dcbSizesInBytes[i]				= (_cmdList->mEndDcbPtr - _cmdList->mBeginDcbPtr) * 4;
-		_ccbGpuAddrs[i]					= _cmdList->mBeginCcbPtr;
-		_ccbSizesInBytes[i]				= (_cmdList->mEndCcbPtr - _cmdList->mBeginCcbPtr) * 4;
+		_dcbGpuAddrs[i] = _cmdList->mBeginDcbPtr;
+		_dcbSizesInBytes[i] = (_cmdList->mEndDcbPtr - _cmdList->mBeginDcbPtr) * 4;
+		_ccbGpuAddrs[i] = _cmdList->mBeginCcbPtr;
+		_ccbSizesInBytes[i] = (_cmdList->mEndCcbPtr - _cmdList->mBeginCcbPtr) * 4;
 
 		SCE_GNM_ASSERT(_dcbSizesInBytes[i] > 0);
 		SCE_GNM_ASSERT(_dcbSizesInBytes[i] <= sce::Gnm::kIndirectBufferMaximumSizeInBytes);  // We cannot submit in one call a command buffer bigger than this
 	}
-	
+
 
 	Result ret = SCE_GNM_OK;
 	if (flip)
 	{
-		GraphicDevice *_device					= mContext->mDevice;
-		OutputDevice::DeviceHandle _handle		= _device->getOutput()->getHandle();
-		SceVideoOutFlipMode _flipMode			= _device->getSwapChain()->getDescription().mFilpMode;
-		U32 _displayBufferIndex					= _device->getSwapChain()->getCurrentBufferIndex();
+		GraphicDevice *_device = mContext->mDevice;
+		OutputDevice::DeviceHandle _handle = _device->getOutput()->getHandle();
+		SceVideoOutFlipMode _flipMode = _device->getSwapChain()->getDescription().mFilpMode;
+		U32 _displayBufferIndex = _device->getSwapChain()->getCurrentBufferIndex();
 		// A user - provided argument with no internal meaning.The <c><i>flipArg< / i>< / c> associated with the most recently completed flip is
 		// included in the <c>SceVideoOutFlipStatus< / c> object retrieved by <c>sceVideoOutGetFlipStatus() < / c > ; it could therefore
 		// be used to uniquely identify each flip.
-		U64 _flipArg							= _device->getSwapChain()->getFrameCount();
+		U64 _flipArg = _device->getSwapChain()->getFrameCount();
 
 		ret = Gnm::submitAndFlipCommandBuffers(_size, _dcbGpuAddrs, _dcbSizesInBytes, _ccbGpuAddrs, _ccbSizesInBytes, _handle, _displayBufferIndex, _flipMode, _flipArg);
 	}
@@ -330,37 +310,69 @@ void Framework::RenderContextChunk::batchKick(bool flip)
 		ret = Gnm::submitCommandBuffers(_size, _dcbGpuAddrs, _dcbSizesInBytes, _ccbGpuAddrs, _ccbSizesInBytes);
 	}
 
-	if (flip)
-	{
-#ifndef POP_OPTIMIZED
-		ms_CurrentSubmitArrayIndex = (ms_CurrentSubmitArrayIndex + 1) % SubmitArraySize;
-		ms_SubmitBeginPtr[ms_CurrentSubmitArrayIndex].Clear();
-		ms_SubmitCmdPtr[ms_CurrentSubmitArrayIndex].Clear();
-#endif
-	}
+	// 	if (flip)
+	// 	{
+	// #ifndef POP_OPTIMIZED
+	// 		ms_CurrentSubmitArrayIndex = (ms_CurrentSubmitArrayIndex + 1) % SubmitArraySize;
+	// 		ms_SubmitBeginPtr[ms_CurrentSubmitArrayIndex].Clear();
+	// 		ms_SubmitCmdPtr[ms_CurrentSubmitArrayIndex].Clear();
+	// #endif
+	// 	}
 
-#ifndef POP_OPTIMIZED
-	ValidateResult(ret);
+	validateResult(ret);
+
+	for (auto itor = _pendingCmdLists.begin(); itor != _pendingCmdLists.end(); itor++)
+	{
+		(*itor)->mSourceChunk->setState(FREE);
+		SAFE_DELETE(*itor);
+	}
+	_pendingCmdLists.clear();
+}
+
+void Framework::ImmediateRenderContextChunk::validateResult(Result ret)
+{
+	SCE_GNM_ASSERT_MSG(ret == sce::Gnm::kSubmissionSuccess, "Command buffer validation error.");
 
 	// TODO parse and report the validation error
-	//SCE_GNM_ASSERT_MSG(ret == sce::Gnm::kSubmissionSuccess, "Command buffer validation error.");
-#endif
+	// 	switch (ret)
+	// 	{
+	// 	case 0:										/* no error */																										break;
+	// 	case Gnm::kValidationDiagnosticErrorShaderResource: SCE_GNM_ASSERT(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticErrorShaderResource");      break;
+	// 	case Gnm::kValidationDiagnosticErrorSyncFence:		SCE_GNM_ASSERT(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticErrorSyncFence");			break;
+	// 	case Gnm::kValidationDiagnosticErrorIndexBuffer:    SCE_GNM_ASSERT(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticErrorIndexBuffer");			break;
+	// 	case Gnm::kValidationDiagnosticErrorTesselation:	SCE_GNM_ASSERT(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticErrorTesselation");			break;
+	// 	case Gnm::kValidationDiagnosticErrorDraw:			SCE_GNM_ASSERT(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticErrorDraw");				break;
+	// 	case Gnm::kValidationDiagnosticErrorGeometry:       SCE_GNM_ASSERT(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticErrorGeometry");            break;
+	// 	case Gnm::kValidationDiagnosticErrorShader:			SCE_GNM_ASSERT(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticErrorShader");				break;
+	// 	case Gnm::kValidationDiagnosticWarningRenderTarget: popWarningWithMsg(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticWarningRenderTarget");     break;
+	// 	case Gnm::kValidationDiagnosticWarningDepthTarget:	popWarningWithMsg(0, "GnmContext::KickCommandBuffer: validation failed with kValidationDiagnosticWarningDepthTarget");		break;
+	// 	case SCE_GNM_ERROR_VALIDATION_WARNING:				popWarningWithMsg(0, "GnmContext::KickCommandBuffer: validation failed with SCE_GNM_ERROR_VALIDATION_WARNING");     break;
+	// 	default:											SCE_GNM_ASSERT(0, "GnmContext::KickCommandBuffer: validation failed, error unknown");                             break;
+	// 	}
+}
 
-	for (ubiU32 i = 0; i < cmdListArray.Size(); ++i)
+void Framework::DeferredRenderContextChunk::beginRecord()
+{
+	// Make sure our context is empty as expected
+	SCE_GNM_ASSERT(mAttachedFences.empty());
+	SCE_GNM_ASSERT(!isBusy());
+	SCE_GNM_ASSERT(isEmpty(true));
+	mState = INUSE_DEFERRED;
+}
+
+Framework::CommandList * Framework::DeferredRenderContextChunk::endRecord()
+{
+	SCE_GNM_ASSERT(mState == INUSE_DEFERRED);
+
+	CommandList* cmdList = internalRecord();
+	if (cmdList == nullptr)
 	{
-		GnmCommandList* cmdList = cmdListArray[i];
-		cmdList->m_Context->m_State = GnmContextState::kFree;
-		popSafeDelete(cmdList);
+		mState = FREE;
 	}
-	cmdListArray.Clear();
-}
+	else
+	{
+		mState = PENDING;
+	}
 
-bool Framework::RenderContextChunk::cmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes)
-{
-	return 0;
-}
-
-bool Framework::RenderContextChunk::staticCmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes, void* userData)
-{
-	return 0;
+	return cmdList;
 }

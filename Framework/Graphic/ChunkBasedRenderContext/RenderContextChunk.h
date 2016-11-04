@@ -21,55 +21,45 @@ namespace Framework
 			INUSE_DEFERRED,
 		};
 
-		enum KickingAction
-		{
-			// as bit flag
-			KICK_ONLY			= 0,
-			REQUEST_FLIP		= 1,
-			POST_SYNC			= 2,
-		};
-
-		void								init(RenderContext *context, U32 id, Allocators *allocators);
+		void								init(RenderContext *owner, U32 id, Allocators *allocators);
 		void								deinit(Allocators *allocators);
 		void								prepareToFill();
 
 		void								waitUntilIdle();
 		bool								isBusy() const;
-		// if strictChecking == false, the context is still empty, but not fresh, may includes some submitted data.
-		bool								isEmpty(bool strictChecking = false) const;
 		inline void							attachFence(GPUFence* fence) { mAttachedFences.push_back(fence); }
 
+		inline State						getState() const { return mState; }
+		inline void							setState(State state) { mState = state; }
 
-		void								beginRecord();
-		CommandList *						endRecord();
-
-		CommandList *						replay(CommandList* cmdList);
-		bool								kickCommandBuffer(const Bitset &actionFlag = Bitset(KICK_ONLY));
-
-
+		// TODO
 		//void								flushGPUCaches();
-
-		//bool								insertFence();
-		//bool								isFencePending(U64 fence);
-
-#ifndef POP_OPTIMIZED
 		//static void						dumpBlockingCommandbuffer();
-		//void								validateResult(int result);
-#endif
-	private:
+
+	protected:
+		virtual ~RenderContextChunk() {}
+
 		CommandList *						internalRecord(bool appendFlipRequest = false, bool forceRecord = false);
-
 		void								shipFences();
-		void								stashPendingCommandList(CommandList* cmdList);
-
 		void								prepareCommandBuffers();
-
-		void								batchKick(bool flip);
-
 		bool								cmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes);
 		static bool							staticCmdBufferFullCallback(sce::Gnm::CommandBuffer* cb, U32 reserveSizeInBytes, void* userData);
 
-	private:
+		// if strictChecking == false, the context is still empty, but not fresh, may includes some submitted data.
+		inline bool							isEmpty(bool strictChecking = false) const
+		{
+			bool ret = false;
+			// Every thing has been submitted
+			ret = (mDcbCurrentBeginPtr == m_dcb.m_cmdptr) && (mCcbCurrentBeginPtr == m_ccb.m_cmdptr);
+			if (strictChecking)
+			{
+				// Already reset
+				ret = ret && (m_dcb.m_beginptr == m_dcb.m_cmdptr) && (m_ccb.m_beginptr == m_ccb.m_cmdptr);
+			}
+			return ret;
+		}
+
+	protected:
 		RenderContextChunk *				mNextChunk{ nullptr };
 		RenderContext *						mContext{ nullptr };
 		U32									mID{ 0 };		// A unique handle corresponding to each context
@@ -87,50 +77,42 @@ namespace Framework
 		U32 *								mCcbCurrentBeginPtr{ nullptr };
 
 		std::vector<GPUFence *>				mAttachedFences;
-		GPUFence *							mFence;
-		State								mState;
-
+		GPUFence *							mFence{ nullptr };
+		State								mState{ FREE };
 	
 // #ifndef POP_OPTIMIZED
-// 		static Array<void*> ms_SubmitBeginPtr[NumSwapchainBuffers];
-// 		static Array<void*> ms_SubmitCmdPtr[NumSwapchainBuffers];
-// 		static ubiU32 ms_CurrentSubmitArrayIndex;
+		// for dumpBlockingCommandbuffer
+// 		static Array<void*>					ms_SubmitBeginPtr[NumSwapchainBuffers];
+// 		static Array<void*>					ms_SubmitCmdPtr[NumSwapchainBuffers];
+// 		static U32							ms_CurrentSubmitArrayIndex;
 // #endif
 	};
-}
 
-
-/*
-
-struct GnmCommandList
-{
-	GnmCommandList() : m_BeginDcbPtr(NULL), m_EndDcbPtr(NULL), m_BeginCcbPtr(NULL), m_EndCcbPtr(NULL) {}
-	uint32_t* m_BeginDcbPtr;
-	uint32_t* m_EndDcbPtr;
-	uint32_t* m_BeginCcbPtr;
-	uint32_t* m_EndCcbPtr;
-
-	GnmContext* m_Context;
-
-	bool isEmpty() { return (m_EndDcbPtr == m_BeginDcbPtr) && (m_EndCcbPtr == m_BeginCcbPtr); }
-};
-
-class GnmContext : public sce::Gnmx::GfxContext
-{
-public:
-	enum SubmitFlag
+	class ImmediateRenderContextChunk : public RenderContextChunk
 	{
-		SUBMIT_FLAG_NONE = 0,
-		SUBMIT_AND_FLIP = 1,
-		SUBMIT_AND_WAIT = 2,
+	public:
+		enum KickingAction
+		{
+			// as bit flag
+			KICK_ONLY = 0,
+			REQUEST_FLIP = 1,
+			POST_SYNC = 2,
+		};
+
+		CommandList *						replay(CommandList* cmdList);
+		bool								kickCommandBuffer(const Bitset &actionFlag = Bitset(KICK_ONLY));
+
+	protected:
+		void								stashPendingCommandList(CommandList* cmdList);
+		void								batchKick(bool flip);
+		void								validateResult(Result ret);
+
 	};
 
-
-	
-
-private:
-	
-};
-
-*/
-
+	class DeferredRenderContextChunk : public RenderContextChunk
+	{
+	public:
+		void								beginRecord();
+		CommandList *						endRecord();
+	};
+}

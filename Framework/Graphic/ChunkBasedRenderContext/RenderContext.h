@@ -11,6 +11,7 @@ namespace Framework
 	class RenderContext
 	{
 		friend class RenderContextChunk;
+		friend class ImmediateRenderContextChunk;
 
 	public:
 		RenderContext(GraphicDevice *device);
