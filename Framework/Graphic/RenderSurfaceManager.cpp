@@ -11,7 +11,7 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurface(
 	RenderSurface::Handle _handle = RenderSurface::RENDER_SURFACE_HANDLE_INVALID;
 	if (out_surface != nullptr && desc != nullptr)
 	{
-		RenderSurface::Handle _handle = genSurfaceHandle();
+		_handle = genSurfaceHandle();
 		SCE_GNM_ASSERT(mAllocators != nullptr);
 		SCE_GNM_ASSERT(getSurface(_handle) == nullptr);
 
@@ -53,12 +53,12 @@ Framework::RenderSurface::Handle Framework::RenderSurfaceManager::createSurfaceF
 	_defaultDesc.mAAType	= AA_NONE; // TODO AA for texture
 
 	RenderSurface::Description *_desc = (desc != nullptr) ? desc : &_defaultDesc;
-	U8 *_pixelData = nullptr;
 
 	TextureSourcePixelData _srcData;
-
 	parseSurface(_file.getBuffer(), _desc, &_srcData);
-	SCE_GNM_ASSERT(_pixelData != nullptr);
+	SCE_GNM_ASSERT(_srcData.mDataPtr != nullptr);
+	SCE_GNM_ASSERT(_srcData.mOffsetSolver != nullptr);
+
 	_desc->mName = _file.getName();
 	return createSurface(out_surface, _desc, &_srcData);
 }

@@ -1,22 +1,87 @@
 #pragma once
 
+#include "RenderStates.h"
+
 namespace Framework
 {
+	class RenderContext;
 	class TextureView;
 	class RenderStateUpdateEngine
 	{
 	public:
-		RenderStateUpdateEngine();
+		RenderStateUpdateEngine(RenderContext *owner);
 		~RenderStateUpdateEngine();
 
-		inline void								setVertexShader(VertexShader *shader);
-		inline void								setPixelShader(PixelShader *shader);
+		inline void								setVertexShader(const VertexShader *shader);
+		inline void								setPixelShader(const PixelShader *shader);
+		inline void								setComputeShader(const ComputeShaderView *shader);
 
 		void									setTexture(ShaderType shaderType, U32 slot, TextureView *texture);
 
 		void									setSamplerState(ShaderType shaderType, U32 slot, SampleStateType state, SampleStateValue Value);
 		void									setSamplerStateForAllSamplers(SampleStateType state, SampleStateValue Value);
+	
+		void									setRenderTarget(U32 slot, RenderTargetView *renderTarget);
+		void									SetDepthStencilTarget(DepthStencilView *a_surface);
+
+		void SetViewport(const PlatformGfxViewport& vp);
+		void SetScissorRect(const GFX_RECT& rect);
+
+		void SetVertexDeclaration(PlatformGfxInputLayout* pDecl);
+		void SetVertexBuffer(ubiUInt index, const PlatformGfxBaseBuffer* pBuffer, ubiUInt offset, ubiUInt stride);
+		void SetIndexBuffer(const PlatformGfxBaseBuffer* pBuffer, GFXFORMAT fmt, ubiUInt offset);
+
+		void SetRenderState(GFX_RENDER_STATE_TYPE state, ubiU32 value);
+
+		// Texture filter default value overwrite
+		void SetDefaultLODBias(ubiU32 lodBias);
+		void SetAnisotropicFilteringOverride(ubiBool enabled, ubiU8 anisotropyDegree);
+
+		void CompileStates();
+		void CommitStates(GnmContext* context);
+		void PushRenderStates();
+		void PopRenderStates();
+		void ResetRenderStates();
+
+		inline ubiBool DrawCallGuard() const
+		{
+			ubiBool pass = true;
+			// attempting to draw Color primitives without a PixelShader will cause untrackable GPU exceptions, so don't do it
+			if (((m_RenderTargets[0] != NULL) && ((m_CompressedRenderStates.m_WriteColorMask & 0xf) != 0) && (m_PixelShader == NULL)))
+			{
+				pass = false;
+			}
+			//@@LRF Todo more
+
+			return pass;
+		}
+
+		inline ubiU32 GetCurrentIndexSizeInBytes() const
+		{
+			return m_IndexSizeInBytes;
+		}
+
+		// initialize all dirty flags (sure not to forget any!)
+		void SetAllDirtyFlags()
+		{
+			// reset the DirtyFlags
+			m_dirtyFlags = DIRTY_ALL;
+			m_psSamplerDirtyFlags = ((0x01 << popGetArraySize(m_PSSamplerStates)) - 1);
+			m_vsSamplerDirtyFlags = ((0x01 << popGetArraySize(m_VSSamplerStates)) - 1);
+			m_renderTargetDirtyFlags = ((0x01 << popGetArraySize(m_RenderTargets)) - 1);
+			m_psBufferDirtyFlags = ((0x01 << popGetArraySize(m_PSBuffers)) - 1);
+		}
+
+		//@@LRF for render states dirty flags part only!!
+		void ResetRenderStatesDirtyFlags();
+
+		void FullResetStates();
+		void ResetDefaultStates();
 	private:
+
+		
+
+
 		enum DirtyFlagBit
 		{
 			DIRTY_VIEWPORT						= 1 << 0,
@@ -51,5 +116,7 @@ namespace Framework
 		};
 
 		void									resetSamplerStates();
+
+		static void InitRSDescTable();
 	};
 }

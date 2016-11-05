@@ -5,20 +5,77 @@ public: inline _typename *getInternalObj() { return &mObject; } \
 inline const _typename *getInternalObj() const { return &mObject; } \
 private: _typename mObject
 
-//TODO ptr
-#define INTERNAL_OBJ_PTR(_typename) _typename *mObject{ nullptr }; \
-inline _typename *getInternalObj() const { SCE_GNM_ASSERT(mObject != nullptr); return mObject; } \
-//inline _typename** GetGNMObjectInputPtr() { return &m_GNMResource; }
+#define INTERNAL_OBJ_PTR(_typename) \
+public: inline _typename *getInternalObj() { SCE_GNM_ASSERT(mObject != nullptr); return mObject; } \
+inline const _typename *getInternalObj() const { SCE_GNM_ASSERT(mObject != nullptr); return mObject; } \
+private: _typename *mObject{ nullptr }
 
 namespace Framework
 {
-	// base class
+	// Base class
 	class GPUResourceView
 	{
 	public:
 		virtual ~GPUResourceView() {}
 	};
 
+	// Shaders
+	class BaseShaderView : public GPUResourceView
+	{
+	public:
+		BaseShaderView(const U8 *pData);
+		virtual void assignAddress(void *headerAddr, void *binaryAddr) = 0;
+
+		virtual sce::Gnm::SizeAlign getHeaderSizeAlign() const = 0;
+		virtual sce::Gnm::SizeAlign getBinarySizeAlign() const { return sce::Gnm::SizeAlign(mShaderInfo.m_gpuShaderCodeSize, sce::Gnm::kAlignmentOfShaderInBytes); }
+		virtual const void *getHeaderPtr() const { return mHeaderPtr; }
+		virtual const void *getBinaryPtr() const { return mBinaryPtr; }
+		virtual const sce::Gnmx::InputOffsetsCache *getInputCache() const { return &mInputCache; }
+	
+	protected:
+		sce::Gnmx::ShaderInfo mShaderInfo;
+		const void *mHeaderPtr{ nullptr };
+		const void *mBinaryPtr{ nullptr };
+		sce::Gnmx::InputOffsetsCache mInputCache;
+	};
+
+	class VertexShaderView : public BaseShaderView
+	{
+		INTERNAL_OBJ_PTR(sce::Gnmx::VsShader);
+
+	public:
+		VertexShaderView(const U8 *pData) : BaseShaderView(pData) {}
+		virtual void assignAddress(void *headerAddr, void *binaryAddr);
+		virtual void assignAddress(void *headerAddr, void *binaryAddr, void *fetchAddr);
+
+		virtual sce::Gnm::SizeAlign getHeaderSizeAlign() const;
+		virtual sce::Gnm::SizeAlign getFetchShaderSizeAlign() const;
+	};
+
+	class PixelShaderView : public BaseShaderView
+	{
+		INTERNAL_OBJ_PTR(sce::Gnmx::PsShader);
+
+	public:
+		PixelShaderView(const U8 *pData) : BaseShaderView(pData) {}
+		virtual void assignAddress(void *headerAddr, void *binaryAddr);
+
+		virtual sce::Gnm::SizeAlign getHeaderSizeAlign() const;
+	};
+
+	class ComputeShaderView : public BaseShaderView
+	{
+		INTERNAL_OBJ_PTR(sce::Gnmx::CsShader);
+
+	public:
+		ComputeShaderView(const U8 *pData) : BaseShaderView(pData) {}
+		virtual void assignAddress(void *headerAddr, void *binaryAddr);
+
+		virtual sce::Gnm::SizeAlign getHeaderSizeAlign() const;
+	};
+	// TODO more shader type
+
+	// Texture
 	class TextureView : public GPUResourceView
 	{
 		INTERNAL_OBJ(sce::Gnm::Texture);
@@ -44,6 +101,7 @@ namespace Framework
 		inline sce::Gnm::SizeAlign getSizeAlign() const { return mObject.getSizeAlign(); }
 	};
 
+	// Targets
 	class BaseTargetView : public GPUResourceView
 	{
 	public:

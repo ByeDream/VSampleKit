@@ -5,6 +5,74 @@
 
 using namespace sce;
 
+Framework::BaseShaderView::BaseShaderView(const U8 *pData)
+{
+	SCE_GNM_ASSERT(pData != nullptr);
+	Gnmx::parseShader(&mShaderInfo, pData);
+	mHeaderPtr = mShaderInfo.m_shaderStruct;
+	mBinaryPtr = mShaderInfo.m_gpuShaderCode;
+}
+
+sce::Gnm::SizeAlign Framework::VertexShaderView::getHeaderSizeAlign() const
+{
+	return sce::Gnm::SizeAlign(mShaderInfo.m_vsShader->computeSize(), sce::Gnm::kAlignmentOfShaderInBytes);
+}
+
+
+sce::Gnm::SizeAlign Framework::VertexShaderView::getFetchShaderSizeAlign() const
+{
+	return sce::Gnm::SizeAlign(Gnmx::computeVsFetchShaderSize(mShaderInfo.m_vsShader) sce::Gnm::kAlignmentOfShaderInBytes);
+}
+
+void Framework::VertexShaderView::assignAddress(void *headerAddr, void *binaryAddr)
+{
+	mHeaderPtr = headerAddr;
+	mBinaryPtr = binaryAddr;
+	mObject = static_cast<Gnmx::VsShader *>(mHeaderPtr);
+	mObject->patchShaderGpuAddress(mBinaryPtr);
+
+	Gnmx::generateInputOffsetsCache(&mInputCache, Gnm::kShaderStageVs, mObject);
+}
+
+void Framework::VertexShaderView::assignAddress(void *headerAddr, void *binaryAddr, void *fetchAddr)
+{
+	assignAddress(headerAddr, binaryAddr);
+
+	U32 _shaderModifier;
+	Gnmx::generateVsFetchShader(fetchAddr, &_shaderModifier, mObject, (Gnm::FetchShaderInstancingMode *)nullptr, 0); // Todo table
+	mObject->applyFetchShaderModifier(_shaderModifier);
+}
+
+sce::Gnm::SizeAlign Framework::PixelShaderView::getHeaderSizeAlign() const
+{
+	return sce::Gnm::SizeAlign(mShaderInfo.m_psShader->computeSize(), sce::Gnm::kAlignmentOfShaderInBytes);
+}
+
+void Framework::PixelShaderView::assignAddress(void *headerAddr, void *binaryAddr)
+{
+	mHeaderPtr = headerAddr;
+	mBinaryPtr = binaryAddr;
+	mObject = static_cast<Gnmx::PsShader *>(mHeaderPtr);
+	mObject->patchShaderGpuAddress(mBinaryPtr);
+
+	Gnmx::generateInputOffsetsCache(&mInputCache, Gnm::kShaderStagePs, mObject);
+}
+
+sce::Gnm::SizeAlign Framework::ComputeShaderView::getHeaderSizeAlign() const
+{
+	return sce::Gnm::SizeAlign(mShaderInfo.m_csShader->computeSize(), sce::Gnm::kAlignmentOfShaderInBytes);
+}
+
+void Framework::ComputeShaderView::assignAddress(void *headerAddr, void *binaryAddr)
+{
+	mHeaderPtr = headerAddr;
+	mBinaryPtr = binaryAddr;
+	mObject = static_cast<Gnmx::CsShader *>(mHeaderPtr);
+	mObject->patchShaderGpuAddress(mBinaryPtr);
+
+	Gnmx::generateInputOffsetsCache(&mInputCache, Gnm::kShaderStageCs, mObject);
+}
+
 Framework::TextureView::TextureView(const Description &desc)
 {
 	Gnm::TextureSpec spec;
@@ -101,3 +169,6 @@ void Framework::DepthStencilView::assignAddress(void *depthAddr, void *stencilAd
 		mObject.setHtileAccelerationEnable(true);
 	}
 }
+
+
+
