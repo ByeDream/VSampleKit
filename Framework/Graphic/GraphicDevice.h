@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderSurface.h"
+#include "GPUResource/RenderSurface.h"
 #include <vector>
 
 namespace Framework

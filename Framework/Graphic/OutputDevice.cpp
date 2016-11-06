@@ -2,7 +2,7 @@
 
 #include "OutputDevice.h"
 #include "GraphicHelpers.h"
-#include "GPUResourceViews.h"
+#include "GPUResource/GPUResourceViews.h"
 
 using namespace sce;
 

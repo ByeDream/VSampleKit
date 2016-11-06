@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GPUResource.h"
+
 namespace Framework
 {
 	class Allocators;
@@ -7,16 +9,10 @@ namespace Framework
 	class RenderContext;
 	struct TextureSourcePixelData;
 
-	class RenderSurface
+	class RenderSurface : public BaseGPUResource
 	{
 	public:
-		typedef U32 Handle;
-		enum
-		{
-			RENDER_SURFACE_HANDLE_INVALID = MAX_VALUE_32,
-		};
-
-		struct Description
+		struct Description : public BaseGPUResource::Description
 		{
 			U32								mWidth{ 0 };
 			U32								mHeight{ 0 };
@@ -33,13 +29,15 @@ namespace Framework
 			AntiAliasingType				mAAType{ AA_NONE };
 			sce::GpuAddress::SurfaceType	mType{ sce::GpuAddress::kSurfaceTypeTextureFlat };
 
+			const TextureSourcePixelData *	mSrcData{ nullptr };
+
 			const char *					mName{ nullptr };
 		};
 
 		RenderSurface();
 		virtual ~RenderSurface();
 
-		virtual void						init(const Description& desc, Allocators *allocators, const TextureSourcePixelData *srcData);
+		virtual void						init(const BaseGPUResource::Description *desc, Allocators *allocators);
 		virtual void						deinit(Allocators *allocators);
 
 		virtual void						bindAsSampler(RenderContext *context, U32 soltID) const;
@@ -48,8 +46,6 @@ namespace Framework
 
 		virtual bool						isFormat32() const;
 
-		inline void							setHandle(Handle handle) { mHandle = handle; }
-		inline Handle						getHandle() const { return mHandle; }
 		inline const Texture *				getTexture() const { return mTexture; }
 		inline Texture *					getTexture() { return mTexture; }
 		inline sce::Gnm::TileMode			getTileMode() const { return mTileMode; }
@@ -59,7 +55,6 @@ namespace Framework
 		//TODO for size override operator > >= < <=
 		//TODO inline SurfaceSet GetSurfaceSet() { return mSet; } // or the name is enough
 	protected:
-		Handle								mHandle{ RENDER_SURFACE_HANDLE_INVALID };
 		Texture *							mTexture{ nullptr };
 		sce::Gnm::TileMode					mTileMode{ sce::Gnm::kTileModeThin_2dThin };
 		AntiAliasingType					mAAType{ AA_NONE };

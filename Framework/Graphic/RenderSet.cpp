@@ -2,8 +2,8 @@
 
 #include "RenderSet.h"
 #include "ChunkBasedRenderContext/RenderContext.h"
-#include "Texture.h"
-#include "RenderSurfaceManager.h"
+#include "GPUResource/Texture.h"
+#include "GPUResource/GPUResourceManager.h"
 
 Framework::RenderSet::RenderSet()
 {
@@ -42,7 +42,7 @@ void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface *surface)
 
 void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface::Handle surfaceHandle)
 {
-	RenderSurface *_surface = RenderSurfaceManager::getInstance()->getSurface(surfaceHandle);
+	RenderSurface *_surface = GPUResourceManager::getInstance()->getSurface(surfaceHandle);
 	SCE_GNM_ASSERT(_surface != nullptr);
 	setColorSurface(slotID, _surface);
 }
@@ -55,7 +55,7 @@ void Framework::RenderSet::setDepthSurface(RenderSurface *surface)
 
 void Framework::RenderSet::setDepthSurface(RenderSurface::Handle surfaceHandle)
 {
-	RenderSurface *_surface = RenderSurfaceManager::getInstance()->getSurface(surfaceHandle);
+	RenderSurface *_surface = GPUResourceManager::getInstance()->getSurface(surfaceHandle);
 	SCE_GNM_ASSERT(_surface != nullptr);
 	setDepthSurface(_surface);
 }

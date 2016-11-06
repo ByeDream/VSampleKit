@@ -6,7 +6,7 @@
 #include "Memory/StackAllocator.h"
 #include "OutputDevice.h"
 #include "Swapchain.h"
-#include "RenderSurfaceManager.h"
+#include "GPUResource/GPUResourceManager.h"
 #include "RenderSet.h"
 #include "ChunkBasedRenderContext/RenderContext.h"
 #include "GPUFence.h"
@@ -27,7 +27,7 @@ Framework::GraphicDevice::~GraphicDevice()
 void Framework::GraphicDevice::init()
 {
 	initMem();
-	RenderSurfaceManager::getInstance()->setAllocator(mAllocators);
+	GPUResourceManager::getInstance()->setAllocator(mAllocators);
 	initOutputAndSwapChain();
 	GPUFenceManager::getInstance()->init(mAllocators, mSwapChain->getDescription().mNumSwappedBuffers);
 	initContexts();
@@ -39,7 +39,7 @@ void Framework::GraphicDevice::deinit()
 	GPUFenceManager::getInstance()->deinit(mAllocators);
 	GPUFenceManager::destory();
 	deinitOutputAndSwapChain();
-	RenderSurfaceManager::destory();
+	GPUResourceManager::destory();
 	deinitMem();
 }
 
@@ -51,7 +51,7 @@ void Framework::GraphicDevice::allocRenderSet(RenderSet *renderSet, const Render
 	RenderSurface *_color2	= nullptr;
 	RenderSurface *_color3	= nullptr;
 
-	RenderSurfaceManager *_mgr = RenderSurfaceManager::getInstance();
+	GPUResourceManager *_mgr = GPUResourceManager::getInstance();
 	_mgr->createSurface(&_depth, depth);
 	_mgr->createSurface(&_color0, color0);
 	_mgr->createSurface(&_color1, color1);
@@ -63,7 +63,7 @@ void Framework::GraphicDevice::allocRenderSet(RenderSet *renderSet, const Render
 
 void Framework::GraphicDevice::releaseRenderSet(RenderSet *renderSet)
 {
-	RenderSurfaceManager *_mgr = RenderSurfaceManager::getInstance();
+	GPUResourceManager *_mgr = GPUResourceManager::getInstance();
 	for (auto i = 0; i < RenderSet::MAX_NUM_COLOR_SURFACE; i++)
 	{
 		_mgr->releaseSurface(renderSet->getColorSurfaceHandle(i));

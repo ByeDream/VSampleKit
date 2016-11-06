@@ -13,12 +13,13 @@ Framework::Shader::Shader()
 
 Framework::Shader::~Shader()
 {
-	SCE_GNM_ASSERT_MSG(mHeaderAddr == nullptr && mGpuBaseAddr == nullptr, "deinit me[%s] before destroy me", mDesc.mName);
+	SCE_GNM_ASSERT_MSG(mHeaderAddr == nullptr && mBinaryAddr == nullptr, "deinit me[%s] before destroy me", mDesc.mName);
 }
 
-void Framework::Shader::init(const Description &desc, Allocators *allocators)
+void Framework::Shader::init(const BaseGPUResource::Description *desc, Allocators *allocators)
 {
-	mDesc = desc;
+	const Shader::Description *_desc = typeCast<BaseGPUResource::Description, Shader::Description>(desc);
+	mDesc = *_desc;
 
 	createShaderView();
 	allocMemory(allocators);
@@ -32,8 +33,8 @@ void Framework::Shader::deinit(Allocators *allocators)
 		allocators->release(mFetchShaderAddr, SCE_KERNEL_WC_GARLIC, &mFetchShaderHandle);
 		mFetchShaderAddr = nullptr;
 	}
-	allocators->release(mGpuBaseAddr, SCE_KERNEL_WC_GARLIC, &mHandle);
-	mGpuBaseAddr = nullptr;
+	allocators->release(mBinaryAddr, SCE_KERNEL_WC_GARLIC, &mBinaryHandle);
+	mBinaryAddr = nullptr;
 	allocators->release(mHeaderAddr, SCE_KERNEL_WB_ONION);
 	mHeaderAddr = nullptr;
 
@@ -90,12 +91,12 @@ void Framework::Shader::allocMemory(Allocators *allocators)
 
 	allocators->allocate(&mHeaderAddr, SCE_KERNEL_WB_ONION, _headerAlign);
 	SCE_GNM_ASSERT_MSG(mHeaderAddr != nullptr, "Out of memory");
-	allocators->allocate(&mGpuBaseAddr, SCE_KERNEL_WC_GARLIC, _binaryAlign, Gnm::kAlignmentOfShaderInBytes, &mHandle, mDesc.mName);
-	SCE_GNM_ASSERT_MSG(mGpuBaseAddr != nullptr, "Out of memory");
+	allocators->allocate(&mBinaryAddr, SCE_KERNEL_WC_GARLIC, _binaryAlign, Gnm::kAlignmentOfShaderInBytes, &mBinaryHandle, mDesc.mName);
+	SCE_GNM_ASSERT_MSG(mBinaryAddr != nullptr, "Out of memory");
 
 	// transferData
 	memcpy(mHeaderAddr, mShaderView->getHeaderPtr(), _headerAlign.m_size);
-	memcpy(mGpuBaseAddr, mShaderView->getBinaryPtr(), _binaryAlign.m_size);
+	memcpy(mBinaryAddr, mShaderView->getBinaryPtr(), _binaryAlign.m_size);
 
 	if (mDesc.mType == SHADER_VERTEX)
 	{
@@ -103,10 +104,10 @@ void Framework::Shader::allocMemory(Allocators *allocators)
 		Gnm::SizeAlign _fetchAlign = _vs->getFetchShaderSizeAlign();
 		allocators->allocate(&mFetchShaderAddr, SCE_KERNEL_WC_GARLIC, _fetchAlign, Gnm::kResourceTypeFetchShaderBaseAddress, &mFetchShaderHandle, "%s - fetch shader", mDesc.mName);
 		SCE_GNM_ASSERT_MSG(mFetchShaderAddr != nullptr, "Out of memory");
-		_vs->assignAddress(mHeaderAddr, mGpuBaseAddr, mFetchShaderAddr);
+		_vs->assignAddress(mHeaderAddr, mBinaryAddr, mFetchShaderAddr);
 	}
 	else
 	{
-		mShaderView->assignAddress(mHeaderAddr, mGpuBaseAddr);
+		mShaderView->assignAddress(mHeaderAddr, mBinaryAddr);
 	}
 }

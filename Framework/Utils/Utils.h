@@ -25,6 +25,14 @@ namespace Framework
 		return _type;
 	}
 
+	template<typename Src, typename Dest>
+	inline const Dest *typeCast(const Src *type)
+	{
+		const Dest *_type = dynamic_cast<const Dest *>(type);
+		SCE_GNM_ASSERT_MSG(_type != nullptr, "Invalid type casting");
+		return _type;
+	}
+
 	template<typename T>
 	inline T max(T a, T b)
 	{
