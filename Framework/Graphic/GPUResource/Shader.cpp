@@ -20,7 +20,7 @@ Framework::Shader::~Shader()
 
 void Framework::Shader::init(const BaseGPUResource::Description *desc, Allocators *allocators)
 {
-	const Shader::Description *_desc = typeCast<BaseGPUResource::Description, Shader::Description>(desc);
+	const Description *_desc = typeCast<Description>(desc);
 	mDesc = *_desc;
 
 	createShaderView();
@@ -50,13 +50,13 @@ void Framework::Shader::bindAsShader(RenderContext *context) const
 	switch (mDesc.mType)
 	{
 	case SHADER_VERTEX:
-		context->setVertexShader(typeCast<BaseShaderView, VertexShaderView>(mShaderView));
+		context->setVertexShader(typeCast<VertexShaderView>(mShaderView));
 		break;
 	case SHADER_PIXEL:
-		context->setPixelShader(typeCast<BaseShaderView, PixelShaderView>(mShaderView));
+		context->setPixelShader(typeCast<PixelShaderView>(mShaderView));
 		break;
 	case SHADER_COMPUTE:
-		context->setComputeShader(typeCast<BaseShaderView, ComputeShaderView>(mShaderView));
+		context->setComputeShader(typeCast<ComputeShaderView>(mShaderView));
 		break;
 	default:
 		SCE_GNM_ASSERT_MSG(false, "Not support yet");
@@ -104,7 +104,7 @@ void Framework::Shader::allocMemory(Allocators *allocators)
 
 	if (mDesc.mType == SHADER_VERTEX)
 	{
-		VertexShaderView* _vs = typeCast<BaseShaderView, VertexShaderView>(mShaderView);
+		VertexShaderView* _vs = typeCast<VertexShaderView>(mShaderView);
 		Gnm::SizeAlign _fetchAlign = _vs->getFetchShaderSizeAlign();
 		allocators->allocate(&mFetchShaderAddr, SCE_KERNEL_WC_GARLIC, _fetchAlign, Gnm::kResourceTypeFetchShaderBaseAddress, &mFetchShaderHandle, "%s - fetch shader", mDesc.mName);
 		SCE_GNM_ASSERT_MSG(mFetchShaderAddr != nullptr, "Out of memory");

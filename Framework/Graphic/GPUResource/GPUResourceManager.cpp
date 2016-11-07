@@ -84,7 +84,7 @@ Framework::GPUResourceHandle Framework::GPUResourceManager::createResourceFromFi
 			_defaultDesc.mType = GpuAddress::kSurfaceTypeTextureFlat;
 			_defaultDesc.mAAType = AA_NONE; // TODO AA for RenderSurface
 
-			RenderSurface::Description *_desc = (desc != nullptr) ? typeCast<BaseGPUResource::Description, RenderSurface::Description>(desc) : &_defaultDesc;
+			RenderSurface::Description *_desc = (desc != nullptr) ? typeCast<RenderSurface::Description>(desc) : &_defaultDesc;
 			_desc->mSrcData = new TextureSourcePixelData;
 			parseSurface(_file.getBuffer(), _desc);
 			SCE_GNM_ASSERT(_desc->mSrcData->mDataPtr != nullptr);
@@ -96,7 +96,7 @@ Framework::GPUResourceHandle Framework::GPUResourceManager::createResourceFromFi
 	case Framework::RESOURCE_TYPE_SHADER:
 		{
 			SCE_GNM_ASSERT_MSG(desc != nullptr, "The description must be specified for shader type");
-			Shader::Description *_desc = typeCast<BaseGPUResource::Description, Shader::Description>(desc);
+			Shader::Description *_desc = typeCast<Shader::Description>(desc);
 			_desc->mDataPtr = _file.getBuffer();
 			_desc->mName = _file.getName();
 			_handle = createResource(type, out_resource, _desc);
@@ -212,7 +212,7 @@ namespace
 
 void Framework::GPUResourceManager::parseSurface(const U8 *fileBuffer, BaseGPUResource::Description *out_desc)
 {
-	RenderSurface::Description *_out_desc = typeCast<BaseGPUResource::Description, RenderSurface::Description>(out_desc);
+	RenderSurface::Description *_out_desc = typeCast<RenderSurface::Description>(out_desc);
 	SCE_GNM_ASSERT(fileBuffer != nullptr && _out_desc != nullptr && _out_desc->mSrcData != nullptr);
 
 	// TODO support other format, only support TGA at the moment.

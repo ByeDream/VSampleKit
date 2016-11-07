@@ -20,7 +20,7 @@ Framework::RenderSurface::~RenderSurface()
 
 void Framework::RenderSurface::init(const BaseGPUResource::Description *desc, Allocators *allocators)
 {
-	const RenderSurface::Description *_desc = typeCast<BaseGPUResource::Description, RenderSurface::Description>(desc);
+	const Description *_desc = typeCast<Description>(desc);
 
 	mAAType = _desc->mAAType;
 

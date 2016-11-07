@@ -123,7 +123,7 @@ void Framework::SwapChain::initSwappedBuffers()
 	mCurrentBuffer = mSwapChainRenderSets[mCurrentBufferIndex];
 
 	// register buffer chain to output device
-	RenderTargetView *_view = typeCast<BaseTargetView, RenderTargetView>(mCurrentBuffer->getColorSurface(0)->getTexture()->getTargetView());
+	RenderTargetView *_view = typeCast<RenderTargetView>(mCurrentBuffer->getColorSurface(0)->getTexture()->getTargetView());
 	mDevice->getOutput()->registerBufferChain(mSwappedBuffers, mDesc.mNumSwappedBuffers, _view);
 }
 

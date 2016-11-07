@@ -42,7 +42,7 @@ void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface *surface)
 
 void Framework::RenderSet::setColorSurface(U32 slotID, GPUResourceHandle surfaceHandle)
 {
-	RenderSurface *_surface = typeCast<BaseGPUResource, RenderSurface>(GPUResourceManager::getInstance()->getResource(surfaceHandle));
+	RenderSurface *_surface = typeCast<RenderSurface>(GPUResourceManager::getInstance()->getResource(surfaceHandle));
 	SCE_GNM_ASSERT(_surface != nullptr);
 	setColorSurface(slotID, _surface);
 }
@@ -55,7 +55,7 @@ void Framework::RenderSet::setDepthSurface(RenderSurface *surface)
 
 void Framework::RenderSet::setDepthSurface(GPUResourceHandle surfaceHandle)
 {
-	RenderSurface *_surface = typeCast<BaseGPUResource, RenderSurface>(GPUResourceManager::getInstance()->getResource(surfaceHandle));
+	RenderSurface *_surface = typeCast<RenderSurface>(GPUResourceManager::getInstance()->getResource(surfaceHandle));
 	SCE_GNM_ASSERT(_surface != nullptr);
 	setDepthSurface(_surface);
 }

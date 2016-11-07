@@ -60,11 +60,11 @@ void Framework::GraphicDevice::allocRenderSet(RenderSet *renderSet, const Render
 	_mgr->createResource(RESOURCE_TYPE_SURFACE, &_color2, color2);
 	_mgr->createResource(RESOURCE_TYPE_SURFACE, &_color3, color3);
 
-	RenderSurface *_depthSurface = (_depth != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_depth) : nullptr;
-	RenderSurface *_color0Surface = (_color0 != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_color0) : nullptr;
-	RenderSurface *_color1Surface = (_color1 != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_color1) : nullptr;
-	RenderSurface *_color2Surface = (_color2 != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_color2) : nullptr;
-	RenderSurface *_color3Surface = (_color3 != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_color3) : nullptr;
+	RenderSurface *_depthSurface = (_depth != nullptr) ? typeCast<RenderSurface>(_depth) : nullptr;
+	RenderSurface *_color0Surface = (_color0 != nullptr) ? typeCast<RenderSurface>(_color0) : nullptr;
+	RenderSurface *_color1Surface = (_color1 != nullptr) ? typeCast<RenderSurface>(_color1) : nullptr;
+	RenderSurface *_color2Surface = (_color2 != nullptr) ? typeCast<RenderSurface>(_color2) : nullptr;
+	RenderSurface *_color3Surface = (_color3 != nullptr) ? typeCast<RenderSurface>(_color3) : nullptr;
 
 
 	renderSet->init(_depthSurface, _color0Surface, _color1Surface, _color2Surface, _color3Surface);

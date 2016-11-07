@@ -76,7 +76,7 @@ void Framework::RenderableTextureColor::allocMemory(Allocators *allocators)
 	SCE_GNM_ASSERT(mCMaskGpuMemAddr == nullptr);
 	SCE_GNM_ASSERT(mFMaskGpuMemAddr == nullptr);
 
-	RenderTargetView *_renderTargetView = typeCast<BaseTargetView, RenderTargetView>(mTargetView);
+	RenderTargetView *_renderTargetView = typeCast<RenderTargetView>(mTargetView);
 
 	Gnm::SizeAlign _shaderResourceSizeAlign = mShaderResourceView->getSizeAlign();
 	Gnm::SizeAlign _colorSizeAlign = _renderTargetView->getColorSizeAlign();
@@ -150,7 +150,7 @@ void Framework::RenderableTextureDepthStencil::allocMemory(Allocators *allocator
 	SCE_GNM_ASSERT(mStencilGpuMemAddr == nullptr);
 	SCE_GNM_ASSERT(mHTileGpuMemAddr == nullptr);
 
-	DepthStencilView *_depthStencilView = typeCast<BaseTargetView, DepthStencilView>(mTargetView);
+	DepthStencilView *_depthStencilView = typeCast<DepthStencilView>(mTargetView);
 
 	Gnm::SizeAlign _shaderResourceSizeAlign = mShaderResourceView->getSizeAlign();
 	Gnm::SizeAlign _depthSizeAlign = _depthStencilView->getDepthSizeAlign();

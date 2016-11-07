@@ -63,13 +63,13 @@ void Framework::RenderContext::setTextureSurface(U32 soltID, const RenderSurface
 
 void Framework::RenderContext::setRenderTargetSurface(U32 soltID, const RenderSurface *surface)
 {
-	RenderTargetView *_view = typeCast<BaseTargetView, RenderTargetView>(surface->getTexture()->getTargetView());
+	RenderTargetView *_view = typeCast<RenderTargetView>(surface->getTexture()->getTargetView());
 	SCE_GNM_ASSERT_MSG(_view != nullptr, "failed to get correct view from surface");
 }
 
 void Framework::RenderContext::setDepthStencilTargetSurface(const RenderSurface *surface)
 {
-	DepthStencilView *_view = typeCast<BaseTargetView, DepthStencilView>(surface->getTexture()->getTargetView());
+	DepthStencilView *_view = typeCast<DepthStencilView>(surface->getTexture()->getTargetView());
 	SCE_GNM_ASSERT_MSG(_view != nullptr, "failed to get correct view from surface");
 }
 

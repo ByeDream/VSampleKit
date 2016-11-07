@@ -15,32 +15,40 @@
 #define UTIL_TB(Nb)                     UTIL_GB((Nb)*1024ULL)   ///< Defines for TeraBytes prefix (2 ^ 40)
 #define UTIL_PB(Nb)                     UTIL_TB((Nb)*1024ULL)   ///< Defines for PetaBytes prefix (2 ^ 50)
 
+#define FORCE_INLINE					__attribute__((always_inline))
+
 namespace Framework
 {
-	template<typename Src, typename Dest>
-	inline Dest *typeCast(Src *type)
+	template<typename Dest, typename Src>
+	FORCE_INLINE Dest *typeCast(Src *type)
 	{
 		Dest *_type = dynamic_cast<Dest *>(type);
 		SCE_GNM_ASSERT_MSG(_type != nullptr, "Invalid type casting");
 		return _type;
 	}
 
-	template<typename Src, typename Dest>
-	inline const Dest *typeCast(const Src *type)
+	template<typename Dest, typename Src>
+	FORCE_INLINE const Dest *typeCast(const Src *type)
 	{
 		const Dest *_type = dynamic_cast<const Dest *>(type);
 		SCE_GNM_ASSERT_MSG(_type != nullptr, "Invalid type casting");
 		return _type;
 	}
 
+	template<typename Dest, typename Src>
+	FORCE_INLINE Dest rawCast(const Src &type)
+	{
+		return reinterpret_cast<const Dest&>(type);
+	}
+
 	template<typename T>
-	inline T max(T a, T b)
+	FORCE_INLINE T max(T a, T b)
 	{
 		return (a > b) ? a : b;
 	}
 
 	template<typename T>
-	inline T min(T a, T b)
+	FORCE_INLINE T min(T a, T b)
 	{
 		return (a < b) ? a : b;
 	}
