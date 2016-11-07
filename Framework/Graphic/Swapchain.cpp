@@ -11,6 +11,7 @@
 #include "ChunkBasedRenderContext/RenderContext.h"
 #include "GraphicHelpers.h"
 #include "GPUFence.h"
+#include "GPUResource/GPUResourceManager.h"
 
 using namespace sce;
 
@@ -170,6 +171,7 @@ void Framework::SwapChain::prepareFrame()
 	mDevice->rollDeferreContext();
 
 	GPUFenceManager::getInstance()->flip();
+	GPUResourceManager::getInstance()->flip();
 	// TODO
 	// 	g_PhysMemAllocator->Flip();
 }

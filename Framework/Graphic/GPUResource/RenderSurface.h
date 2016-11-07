@@ -29,7 +29,7 @@ namespace Framework
 			AntiAliasingType				mAAType{ AA_NONE };
 			sce::GpuAddress::SurfaceType	mType{ sce::GpuAddress::kSurfaceTypeTextureFlat };
 
-			const TextureSourcePixelData *	mSrcData{ nullptr };
+			TextureSourcePixelData *		mSrcData{ nullptr };
 
 			const char *					mName{ nullptr };
 		};

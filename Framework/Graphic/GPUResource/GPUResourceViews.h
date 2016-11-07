@@ -13,10 +13,16 @@ private: _typename *mObject{ nullptr }
 namespace Framework
 {
 	// Base class
+	class GPUFence;
 	class GPUResourceView
 	{
 	public:
 		virtual ~GPUResourceView() {}
+
+		inline void assignFence(GPUFence *fence) { mFence = fence; }
+		inline GPUFence *getFence() const { return mFence; }
+	protected:
+		GPUFence *mFence;
 	};
 
 	// Shaders

@@ -8,6 +8,10 @@ namespace Framework
 	class RenderSurface;
 	struct CommandList;
 
+	class VertexShaderView;
+	class PixelShaderView;
+	class ComputeShaderView;
+
 	class RenderContext
 	{
 		friend class RenderContextChunk;
@@ -23,9 +27,9 @@ namespace Framework
 		virtual void appendLabelAtEOPWithInterrupt(void *dstGpuAddr, U64 value);	// writes value and and triggers an interrupt
 		virtual void appendLabelAtEOP(void *dstGpuAddr, U64 value);					// writes value only
 
-		inline void								setVertexShader(const VertexShaderView *shader);
-		inline void								setPixelShader(const PixelShaderView *shader);
-		inline void								setComputeShader(const ComputeShaderView *shader);
+		inline void								setVertexShader(const VertexShaderView *shader) {}
+		inline void								setPixelShader(const PixelShaderView *shader) {}
+		inline void								setComputeShader(const ComputeShaderView *shader) {}
 
 		void setTextureSurface(U32 soltID, const RenderSurface *surface);
 		void setRenderTargetSurface(U32 soltID, const RenderSurface *surface);

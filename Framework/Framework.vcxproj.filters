@@ -28,6 +28,9 @@
     <Filter Include="Graphic\ChunkBasedRenderContext">
       <UniqueIdentifier>{dae6b3fa-8277-4557-a952-b69a3f8e2d18}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphic\GPUResource">
+      <UniqueIdentifier>{d0f73435-2acf-47b2-b1d1-312c4866fac3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="System\Application.cpp">
@@ -40,43 +43,10 @@
     <ClCompile Include="Graphic\Memory\Allocators.cpp">
       <Filter>Graphic\Memory</Filter>
     </ClCompile>
-    <ClCompile Include="Graphic\GraphicDevice.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
     <ClCompile Include="dataformat_interpreter.cpp" />
     <ClCompile Include="floating_point.cpp" />
     <ClCompile Include="Utils\simple_mesh.cpp">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\Swapchain.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\OutputDevice.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\RenderSurface.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\GPUResourceViews.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\GPUFence.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\Texture.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\ShaderManager.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\GraphicHelpers.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\VertexDescription.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\RenderableTexture.cpp">
-      <Filter>Graphic</Filter>
     </ClCompile>
     <ClCompile Include="Utils\IO\FileIO.cpp">
       <Filter>Utils\IO</Filter>
@@ -84,20 +54,56 @@
     <ClCompile Include="Utils\IO\tga_reader.cpp">
       <Filter>Utils\IO</Filter>
     </ClCompile>
-    <ClCompile Include="Graphic\RenderSet.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\RenderSurfaceManager.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphic\RenderStateManager.cpp">
-      <Filter>Graphic</Filter>
-    </ClCompile>
     <ClCompile Include="Graphic\ChunkBasedRenderContext\RenderContext.cpp">
       <Filter>Graphic\ChunkBasedRenderContext</Filter>
     </ClCompile>
     <ClCompile Include="Graphic\ChunkBasedRenderContext\RenderContextChunk.cpp">
       <Filter>Graphic\ChunkBasedRenderContext</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\ChunkBasedRenderContext\RenderStateUpdateEngine.cpp">
+      <Filter>Graphic\ChunkBasedRenderContext</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUResource\GPUResource.cpp">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUResource\GPUResourceManager.cpp">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUResource\GPUResourceViews.cpp">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUResource\RenderableTexture.cpp">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUResource\RenderSurface.cpp">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUResource\Shader.cpp">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUResource\Texture.cpp">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GPUFence.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GraphicDevice.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\GraphicHelpers.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\OutputDevice.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\RenderSet.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Swapchain.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\VertexDescription.cpp">
+      <Filter>Graphic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,9 +119,6 @@
     </ClInclude>
     <ClInclude Include="Graphic\Memory\Allocators.h">
       <Filter>Graphic\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\GraphicDevice.h">
-      <Filter>Graphic</Filter>
     </ClInclude>
     <ClInclude Include="System\ConfigData.h">
       <Filter>System</Filter>
@@ -155,59 +158,17 @@
     <ClInclude Include="Utils\simple_mesh.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Graphic\Swapchain.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\OutputDevice.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\RenderSurface.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\GPUResourceViews.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\GPUFence.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\Texture.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\ShaderManager.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\IncludedShaders.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\GraphicHelpers.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\VertexDescription.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\RenderableTexture.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\IO\FileIO.h">
       <Filter>Utils\IO</Filter>
     </ClInclude>
     <ClInclude Include="Utils\IO\tga_reader.h">
       <Filter>Utils\IO</Filter>
     </ClInclude>
-    <ClInclude Include="Graphic\RenderSet.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\DesignPattern\Factory.h">
       <Filter>Utils\DesignPattern</Filter>
     </ClInclude>
     <ClInclude Include="Utils\DesignPattern\Singleton.h">
       <Filter>Utils\DesignPattern</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\RenderSurfaceManager.h">
-      <Filter>Graphic</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphic\RenderStateManager.h">
-      <Filter>Graphic</Filter>
     </ClInclude>
     <ClInclude Include="Graphic\ChunkBasedRenderContext\CommandList.h">
       <Filter>Graphic\ChunkBasedRenderContext</Filter>
@@ -217,6 +178,57 @@
     </ClInclude>
     <ClInclude Include="Graphic\ChunkBasedRenderContext\RenderContextChunk.h">
       <Filter>Graphic\ChunkBasedRenderContext</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ChunkBasedRenderContext\RenderStates.h">
+      <Filter>Graphic\ChunkBasedRenderContext</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\ChunkBasedRenderContext\RenderStateUpdateEngine.h">
+      <Filter>Graphic\ChunkBasedRenderContext</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResource\EmbeddedShaders.h">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResource\GPUResource.h">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResource\GPUResourceManager.h">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResource\GPUResourceViews.h">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResource\RenderableTexture.h">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResource\RenderSurface.h">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResource\Shader.h">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUResource\Texture.h">
+      <Filter>Graphic\GPUResource</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GPUFence.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GraphicDevice.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\GraphicHelpers.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\OutputDevice.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderSet.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Swapchain.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\VertexDescription.h">
+      <Filter>Graphic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

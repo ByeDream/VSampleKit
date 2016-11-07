@@ -15,21 +15,21 @@ Framework::BaseShaderView::BaseShaderView(const U8 *pData)
 
 sce::Gnm::SizeAlign Framework::VertexShaderView::getHeaderSizeAlign() const
 {
-	return sce::Gnm::SizeAlign(mShaderInfo.m_vsShader->computeSize(), sce::Gnm::kAlignmentOfShaderInBytes);
+	return Gnm::SizeAlign(mShaderInfo.m_vsShader->computeSize(), Gnm::kAlignmentOfShaderInBytes);
 }
 
 
 sce::Gnm::SizeAlign Framework::VertexShaderView::getFetchShaderSizeAlign() const
 {
-	return sce::Gnm::SizeAlign(Gnmx::computeVsFetchShaderSize(mShaderInfo.m_vsShader) sce::Gnm::kAlignmentOfShaderInBytes);
+	return Gnm::SizeAlign(Gnmx::computeVsFetchShaderSize(mShaderInfo.m_vsShader), Gnm::kAlignmentOfShaderInBytes);
 }
 
 void Framework::VertexShaderView::assignAddress(void *headerAddr, void *binaryAddr)
 {
 	mHeaderPtr = headerAddr;
 	mBinaryPtr = binaryAddr;
-	mObject = static_cast<Gnmx::VsShader *>(mHeaderPtr);
-	mObject->patchShaderGpuAddress(mBinaryPtr);
+	mObject = (Gnmx::VsShader *)mHeaderPtr;
+	mObject->patchShaderGpuAddress((void *)mBinaryPtr);
 
 	Gnmx::generateInputOffsetsCache(&mInputCache, Gnm::kShaderStageVs, mObject);
 }
@@ -52,8 +52,8 @@ void Framework::PixelShaderView::assignAddress(void *headerAddr, void *binaryAdd
 {
 	mHeaderPtr = headerAddr;
 	mBinaryPtr = binaryAddr;
-	mObject = static_cast<Gnmx::PsShader *>(mHeaderPtr);
-	mObject->patchShaderGpuAddress(mBinaryPtr);
+	mObject = (Gnmx::PsShader *)mHeaderPtr;
+	mObject->patchShaderGpuAddress((void *)mBinaryPtr);
 
 	Gnmx::generateInputOffsetsCache(&mInputCache, Gnm::kShaderStagePs, mObject);
 }
@@ -67,8 +67,8 @@ void Framework::ComputeShaderView::assignAddress(void *headerAddr, void *binaryA
 {
 	mHeaderPtr = headerAddr;
 	mBinaryPtr = binaryAddr;
-	mObject = static_cast<Gnmx::CsShader *>(mHeaderPtr);
-	mObject->patchShaderGpuAddress(mBinaryPtr);
+	mObject = (Gnmx::CsShader *)mHeaderPtr;
+	mObject->patchShaderGpuAddress((void *)mBinaryPtr);
 
 	Gnmx::generateInputOffsetsCache(&mInputCache, Gnm::kShaderStageCs, mObject);
 }

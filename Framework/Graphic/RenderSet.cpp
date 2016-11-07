@@ -37,12 +37,12 @@ void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface *surface)
 		mNumColorSurfaces--;
 	}
 	mColorSurfaces[slotID] = surface;
-	mColorHandle[slotID] = (surface != nullptr) ? surface->getHandle() : RenderSurface::RENDER_SURFACE_HANDLE_INVALID;
+	mColorHandle[slotID] = (surface != nullptr) ? surface->getHandle() : RESOURCE_HANDLE_INVALID;
 }
 
-void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface::Handle surfaceHandle)
+void Framework::RenderSet::setColorSurface(U32 slotID, GPUResourceHandle surfaceHandle)
 {
-	RenderSurface *_surface = GPUResourceManager::getInstance()->getSurface(surfaceHandle);
+	RenderSurface *_surface = typeCast<BaseGPUResource, RenderSurface>(GPUResourceManager::getInstance()->getResource(surfaceHandle));
 	SCE_GNM_ASSERT(_surface != nullptr);
 	setColorSurface(slotID, _surface);
 }
@@ -50,12 +50,12 @@ void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface::Handle sur
 void Framework::RenderSet::setDepthSurface(RenderSurface *surface)
 {
 	mDepthSurface = surface;
-	mDepthHandle = (surface != nullptr) ? surface->getHandle() : RenderSurface::RENDER_SURFACE_HANDLE_INVALID;
+	mDepthHandle = (surface != nullptr) ? surface->getHandle() : RESOURCE_HANDLE_INVALID;
 }
 
-void Framework::RenderSet::setDepthSurface(RenderSurface::Handle surfaceHandle)
+void Framework::RenderSet::setDepthSurface(GPUResourceHandle surfaceHandle)
 {
-	RenderSurface *_surface = GPUResourceManager::getInstance()->getSurface(surfaceHandle);
+	RenderSurface *_surface = typeCast<BaseGPUResource, RenderSurface>(GPUResourceManager::getInstance()->getResource(surfaceHandle));
 	SCE_GNM_ASSERT(_surface != nullptr);
 	setDepthSurface(_surface);
 }

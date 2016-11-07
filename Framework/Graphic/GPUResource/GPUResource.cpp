@@ -10,6 +10,16 @@ Framework::BaseGPUResource::BaseGPUResource()
 
 Framework::BaseGPUResource::~BaseGPUResource()
 {
-	GPUFenceManager::getInstance()->allocFence(mFence);
+	GPUFenceManager::getInstance()->releaseFence(mFence);
 	mFence = nullptr;
+}
+
+bool Framework::BaseGPUResource::isBusy()
+{
+	return mFence->isBusy();
+}
+
+void Framework::BaseGPUResource::waitUntilIdle()
+{
+	mFence->waitUntilIdle();
 }

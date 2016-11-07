@@ -6,6 +6,8 @@
 #include "GPUResourceViews.h"
 #include "ChunkBasedRenderContext/RenderContext.h"
 
+using namespace sce;
+
 Framework::Shader::Shader()
 {
 
@@ -23,6 +25,8 @@ void Framework::Shader::init(const BaseGPUResource::Description *desc, Allocator
 
 	createShaderView();
 	allocMemory(allocators);
+
+	mShaderView->assignFence(mFence);
 }
 
 void Framework::Shader::deinit(Allocators *allocators)
@@ -91,7 +95,7 @@ void Framework::Shader::allocMemory(Allocators *allocators)
 
 	allocators->allocate(&mHeaderAddr, SCE_KERNEL_WB_ONION, _headerAlign);
 	SCE_GNM_ASSERT_MSG(mHeaderAddr != nullptr, "Out of memory");
-	allocators->allocate(&mBinaryAddr, SCE_KERNEL_WC_GARLIC, _binaryAlign, Gnm::kAlignmentOfShaderInBytes, &mBinaryHandle, mDesc.mName);
+	allocators->allocate(&mBinaryAddr, SCE_KERNEL_WC_GARLIC, _binaryAlign, Gnm::kResourceTypeShaderBaseAddress, &mBinaryHandle, mDesc.mName);
 	SCE_GNM_ASSERT_MSG(mBinaryAddr != nullptr, "Out of memory");
 
 	// transferData

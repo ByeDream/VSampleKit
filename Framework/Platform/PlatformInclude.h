@@ -34,6 +34,7 @@
 #include <gnmx.h>
 
 #include <video_out.h>
+#include <gnmx/shader_parser.h>
 
 #ifdef _MSC_VER
 #             pragma warning(push)

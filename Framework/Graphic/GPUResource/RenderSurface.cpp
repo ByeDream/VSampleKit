@@ -122,6 +122,12 @@ void Framework::RenderSurface::init(const BaseGPUResource::Description *desc, Al
 
 	mTexture->init(_textureDesc, allocators, _desc->mSrcData);
 
+	// assignFence
+	mTexture->getShaderResourceView()->assignFence(mFence);
+	if (mTexture->getTargetView() != nullptr)
+		mTexture->getTargetView()->assignFence(mFence);
+
+
 	// TODO sampler
 	//m_GfxTexture->GetPtr()->SetTextureAddress(GFX_TEX_ADDRESS_CLAMP, GFX_TEX_ADDRESS_CLAMP, GFX_TEX_ADDRESS_CLAMP);
 	//m_GfxTexture->GetPtr()->SetTextureFilter(GFX_TEX_FILTER_LINEAR, GFX_TEX_FILTER_LINEAR, GFX_TEX_FILTER_NONE);

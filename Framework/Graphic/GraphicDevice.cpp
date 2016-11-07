@@ -27,38 +27,47 @@ Framework::GraphicDevice::~GraphicDevice()
 void Framework::GraphicDevice::init()
 {
 	initMem();
-	GPUResourceManager::getInstance()->setAllocator(mAllocators);
+	GPUFenceManager::getInstance()->init(mAllocators, mApp->getConfig()->mNumberOfSwappedBuffers);
+	GPUResourceManager::getInstance()->init(mAllocators, mApp->getConfig()->mNumberOfSwappedBuffers);
 	initOutputAndSwapChain();
-	GPUFenceManager::getInstance()->init(mAllocators, mSwapChain->getDescription().mNumSwappedBuffers);
 	initContexts();
 }
 
 void Framework::GraphicDevice::deinit()
 {
 	deinitContexts();
+	
+	deinitOutputAndSwapChain();
+	GPUResourceManager::getInstance()->deinit(mAllocators);
+	GPUResourceManager::destory();
 	GPUFenceManager::getInstance()->deinit(mAllocators);
 	GPUFenceManager::destory();
-	deinitOutputAndSwapChain();
-	GPUResourceManager::destory();
 	deinitMem();
 }
 
 void Framework::GraphicDevice::allocRenderSet(RenderSet *renderSet, const RenderSurface::Description *depth, const RenderSurface::Description *color0, const RenderSurface::Description *color1 /*= nullptr*/, const RenderSurface::Description *color2 /*= nullptr*/, const RenderSurface::Description *color3 /*= nullptr*/)
 {
-	RenderSurface *_depth	= nullptr;
-	RenderSurface *_color0	= nullptr;
-	RenderSurface *_color1	= nullptr;
-	RenderSurface *_color2	= nullptr;
-	RenderSurface *_color3	= nullptr;
+	BaseGPUResource *_depth		= nullptr;
+	BaseGPUResource *_color0	= nullptr;
+	BaseGPUResource *_color1	= nullptr;
+	BaseGPUResource *_color2	= nullptr;
+	BaseGPUResource *_color3	= nullptr;
 
 	GPUResourceManager *_mgr = GPUResourceManager::getInstance();
-	_mgr->createSurface(&_depth, depth);
-	_mgr->createSurface(&_color0, color0);
-	_mgr->createSurface(&_color1, color1);
-	_mgr->createSurface(&_color2, color2);
-	_mgr->createSurface(&_color3, color3);
+	_mgr->createResource(RESOURCE_TYPE_SURFACE, &_depth, depth);
+	_mgr->createResource(RESOURCE_TYPE_SURFACE, &_color0, color0);
+	_mgr->createResource(RESOURCE_TYPE_SURFACE, &_color1, color1);
+	_mgr->createResource(RESOURCE_TYPE_SURFACE, &_color2, color2);
+	_mgr->createResource(RESOURCE_TYPE_SURFACE, &_color3, color3);
 
-	renderSet->init(_depth, _color0, _color1, _color2, _color3);
+	RenderSurface *_depthSurface = (_depth != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_depth) : nullptr;
+	RenderSurface *_color0Surface = (_color0 != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_color0) : nullptr;
+	RenderSurface *_color1Surface = (_color1 != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_color1) : nullptr;
+	RenderSurface *_color2Surface = (_color2 != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_color2) : nullptr;
+	RenderSurface *_color3Surface = (_color3 != nullptr) ? typeCast<BaseGPUResource, RenderSurface>(_color3) : nullptr;
+
+
+	renderSet->init(_depthSurface, _color0Surface, _color1Surface, _color2Surface, _color3Surface);
 }
 
 void Framework::GraphicDevice::releaseRenderSet(RenderSet *renderSet)
@@ -66,9 +75,9 @@ void Framework::GraphicDevice::releaseRenderSet(RenderSet *renderSet)
 	GPUResourceManager *_mgr = GPUResourceManager::getInstance();
 	for (auto i = 0; i < RenderSet::MAX_NUM_COLOR_SURFACE; i++)
 	{
-		_mgr->releaseSurface(renderSet->getColorSurfaceHandle(i));
+		_mgr->releaseResource(renderSet->getColorSurfaceHandle(i));
 	}
-	_mgr->releaseSurface(renderSet->getDepthSurfaceHandle());
+	_mgr->releaseResource(renderSet->getDepthSurfaceHandle());
 }
 
 void Framework::GraphicDevice::rollImmediateContext()

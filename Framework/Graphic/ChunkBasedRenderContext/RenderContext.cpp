@@ -2,9 +2,9 @@
 
 #include "RenderContext.h"
 #include "GraphicDevice.h"
-#include "GPUResourceViews.h"
-#include "RenderSurface.h"
-#include "RenderableTexture.h"
+#include "GPUResource/GPUResourceViews.h"
+#include "GPUResource/RenderSurface.h"
+#include "GPUResource/RenderableTexture.h"
 
 
 Framework::RenderContext::RenderContext(GraphicDevice *device)

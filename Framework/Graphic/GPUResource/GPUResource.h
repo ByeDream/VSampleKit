@@ -29,7 +29,9 @@ namespace Framework
 	class BaseGPUResource
 	{
 	public:
-		struct Description {};
+		struct Description {
+			virtual ~Description() {}  // make it polymorphic
+		};
 
 		BaseGPUResource();
 		virtual ~BaseGPUResource();
@@ -44,7 +46,8 @@ namespace Framework
 		inline GPUResourceType				getType() const { return mType; }
 
 		inline GPUFence *					getFence() const { return mFence; }
-
+		bool								isBusy();
+		void								waitUntilIdle();
 	protected:
 		GPUResourceType						mType{ RESOURCE_TYPE_SURFACE };
 		GPUResourceHandle					mHandle{ RESOURCE_HANDLE_INVALID };
