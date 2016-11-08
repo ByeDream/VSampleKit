@@ -12,6 +12,8 @@ namespace Framework
 	class PixelShaderView;
 	class ComputeShaderView;
 
+	class RenderContextChunk;
+
 	class RenderContext
 	{
 		friend class RenderContextChunk;
@@ -49,6 +51,10 @@ namespace Framework
 
 		U32 *getCurrentDcbCmdPtr(U32 allocationPlan);
 		U32 *getCurrentCcbCmdPtr(U32 allocationPlan);
+
+		// Chunk management
+		RenderContextChunk *				getCurrentChunk();
+		const RenderContextChunk *			getCurrentChunk() const;
 	protected:
 		GraphicDevice *						mDevice{ nullptr };
 		bool								mIsDeferred{ false };

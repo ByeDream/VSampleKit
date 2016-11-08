@@ -97,7 +97,7 @@ namespace Framework
 		bool									mStencilClearEnable				{ false };
 		U8										mStencilClearValue				{ 0 };
 		// Alpha Test
-		bool									mAlphaTestEnabled				{ false };
+		bool									mAlphaTestEnable				{ false };
 		U8										mAlphaRef						{ 0 };
 		sce::Gnm::CompareFunc					mAlphaFunc						{ sce::Gnm::kCompareFuncAlways };
 		// Blending
@@ -165,5 +165,10 @@ namespace Framework
 			mBlendControl.setAlphaEquation(mBlendAlphaSrcMultiplier, mBlendAlphaFunc, mBlendAlphaDestMultiplier);
 		}
 		
+	};
+
+	struct CompleteRenderStates
+	{
+		RenderStates							mRenderStates;
 	};
 }

@@ -50,9 +50,41 @@ namespace Framework
 // 		void SetAnisotropicFilteringOverride(ubiBool enabled, ubiU8 anisotropyDegree);
 // 
 // 		void CompileStates();
-// 		void CommitStates(GnmContext* context);
-// 		void PushRenderStates();
-// 		void PopRenderStates();
+ 		void									commit();
+		inline void								reset()
+		{
+			mStackLevel = 0;
+			memcpy(&mStatesStack[mStackLevel], &mDefaultStates, sizeof(CompleteRenderStates));
+			mDirtyFlag.fullset();
+		}
+
+		inline void								push()
+		{
+			U32 _nextLevel = mStackLevel + 1;
+			if (_nextLevel < STACK_SIZE)
+			{
+				memcpy(&mStatesStack[_nextLevel], &mStatesStack[mStackLevel], sizeof(CompleteRenderStates));
+				mStackLevel = _nextLevel;
+			}
+			else
+			{
+				SCE_GNM_ASSERT_MSG(false, "Out of Render states stack range");
+			}
+		}
+
+		inline void								pop()
+		{
+			U32 _prevLevel = mStackLevel - 1;
+			if (_prevLevel > 0)
+			{
+				mStackLevel = _prevLevel;
+				mDirtyFlag.fullset();
+			}
+			else
+			{
+				SCE_GNM_ASSERT_MSG(false, "Out of Render states stack range");
+			}
+		}
 // 		void ResetRenderStates();
 // 
 // 		inline ubiBool DrawCallGuard() const
@@ -90,22 +122,21 @@ namespace Framework
 		void FullResetStates();
 		void ResetDefaultStates();
 	private:
-
 		
 
 
 		enum DirtyFlagBit
 		{
 			// render states
-			DIRTY_PRIMITIVE_SETUP = 1 << 47,
-			DIRTY_CLIP_CONTROL,
-			DIRTY_COLOR_WRITE,
-			DIRTY_DEPTH_STENCIL_CONTROL,
-			DIRTY_DB_RENDER_CONTROL = 1 << 48,
-			DIRTY_STENCIL_CONTROL = 1 << 42,
-			DIRTY_STENCIL_OP_CONTROL = 1 << 43,
-			DIRTY_ALPHA_TEST = 1 << 46,
-			DIRTY_BLEND_CONTROL = 1 << 40,
+			DIRTY_PRIMITIVE_SETUP				= 1 << 0,
+			DIRTY_CLIP_CONTROL					= 1 << 1,
+			DIRTY_COLOR_WRITE					= 1 << 2,
+			DIRTY_DEPTH_STENCIL_CONTROL			= 1 << 3,
+			DIRTY_DB_RENDER_CONTROL				= 1 << 4,
+			DIRTY_STENCIL_CONTROL				= 1 << 5,
+			DIRTY_STENCIL_OP_CONTROL			= 1 << 6,
+			DIRTY_ALPHA_TEST					= 1 << 7,
+			DIRTY_BLEND_CONTROL					= 1 << 8,
 
 
 
@@ -134,12 +165,22 @@ namespace Framework
 
 		};
 
+		enum
+		{
+			STACK_SIZE = 8,
+		};
+
+
 		void									resetSamplerStates();
 
 		static void								InitRSDescTable();
 
 	private:
-		RenderStates							mRenderStates;
+		RenderContext *							mContext{ nullptr };
+
+		CompleteRenderStates					mStatesStack[STACK_SIZE];
+		U32										mStackLevel{ 0 };
+		const CompleteRenderStates				mDefaultStates;
 		Bitset									mDirtyFlag;
 	};
 }
