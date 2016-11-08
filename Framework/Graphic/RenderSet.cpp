@@ -26,7 +26,7 @@ void Framework::RenderSet::init(RenderSurface *depth, RenderSurface *color0, Ren
 
 void Framework::RenderSet::setColorSurface(U32 slotID, RenderSurface *surface)
 {
-	SCE_GNM_ASSERT(slotID >= 0 && slotID < MAX_NUM_COLOR_SURFACE);
+	SCE_GNM_ASSERT(slotID >= 0 && slotID < MAX_NUM_RENDER_TARGETS);
 	if (mColorSurfaces[slotID] == nullptr && surface != nullptr)
 	{
 		mNumColorSurfaces++;
@@ -66,7 +66,7 @@ void Framework::RenderSet::bindToPipeline(RenderContext *context) const
 	RenderSurface* _referenceSurface = nullptr;
 
 	// render target
-	for (auto i = 0; i < MAX_NUM_COLOR_SURFACE; i++)
+	for (auto i = 0; i < MAX_NUM_RENDER_TARGETS; i++)
 	{
 		if (mColorSurfaces[i] != nullptr)
 		{

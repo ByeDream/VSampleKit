@@ -7,11 +7,6 @@
 
 using namespace sce;
 
-void Framework::GPUFence::setPending(RenderContext *context)
-{
-	// TODO
-}
-
 void Framework::GPUFence::setPending(RenderContextChunk *contextChunk)
 {
 	mValue = PENDING;

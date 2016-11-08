@@ -62,7 +62,6 @@ namespace Framework
 		RS_TYPE_COUNT
 	};
 
-
 	struct RenderStates
 	{
 		//										STATE							DEFAULT VALUE
@@ -114,61 +113,70 @@ namespace Framework
 		sce::Gnm::BlendMultiplier				mBlendAlphaSrcMultiplier		{ sce::Gnm::kBlendMultiplierOne };
 		sce::Gnm::BlendMultiplier				mBlendAlphaDestMultiplier		{ sce::Gnm::kBlendMultiplierZero };
 		sce::Gnm::BlendFunc						mBlendAlphaFunc					{ sce::Gnm::kBlendFuncAdd };
+	};
 
-		// gnm state controls
-		sce::Gnm::PrimitiveSetup				mPrimitiveSetup;
-		sce::Gnm::ClipControl					mClipControl;
-		sce::Gnm::DepthStencilControl			mDepthStencilControl;
-		sce::Gnm::DbRenderControl				mDbRenderControl;
-		sce::Gnm::StencilControl				mStencilControl;
-		sce::Gnm::StencilOpControl				mStencilOpControl;
-		sce::Gnm::BlendControl					mBlendControl;
+	enum SamplerStateType
+	{
+		// per texture settings
+		SS_ADDRESS_U = 0,
+		SS_ADDRESS_V,
+		SS_ADDRESS_W,
+		SS_BORDER_COLOR,
+		SS_MAG_FILTER,
+		SS_MIN_FILTER,
+		SS_MIP_FILTER,
+		SS_Z_FILTER,
+		SS_ANISO_RATIO,
+//		SAMP_STATE_SRGBTEXTURE,		// TODO
 
-		RenderStates() {
-			// init gnm state controls
-			mPrimitiveSetup.init();
-			mPrimitiveSetup.setPolygonMode(mPolygonMode, mPolygonMode);
-			mPrimitiveSetup.setCullFace(mCullFaceMode);
-			mPrimitiveSetup.setFrontFace(mFrontFace);
-			if (mPolygonOffsetScale == 0.0f && mPolygonOffsetOffset == 0.0f)
-				mPrimitiveSetup.setPolygonOffsetEnable(sce::Gnm::kPrimitiveSetupPolygonOffsetDisable, sce::Gnm::kPrimitiveSetupPolygonOffsetDisable);
-			else
-				mPrimitiveSetup.setPolygonOffsetEnable(sce::Gnm::kPrimitiveSetupPolygonOffsetEnable, sce::Gnm::kPrimitiveSetupPolygonOffsetEnable);
+		// global settings
+// 		SAMP_STATE_ANISOFILTER,
+// 		SAMP_STATE_MAXANISOTROPY,
+// 		SAMP_STATE_MIPMAPLODBIAS,
 
-			mClipControl.init();
-			mClipControl.setClipSpace(mClipSpace);
+		SS_TYPE_COUNT
+	};
 
-			mDepthStencilControl.init();
-			mDepthStencilControl.setDepthEnable(mDepthEnable);
-			mDepthStencilControl.setDepthControl(mDepthWriteEnable ? sce::Gnm::kDepthControlZWriteEnable : sce::Gnm::kDepthControlZWriteDisable, mDepthCompareFunc);
-			mDepthStencilControl.setStencilEnable(mStencilEnable);
-			mDepthStencilControl.setStencilFunction(mStencilCompareFunc);
+	//											STATE							DEFAULT VALUE
+	struct SamplerStates
+	{
+		sce::Gnm::WrapMode						mAddrModeU						{ sce::Gnm::kWrapModeWrap };
+		sce::Gnm::WrapMode						mAddrModeV						{ sce::Gnm::kWrapModeWrap };
+		sce::Gnm::WrapMode						mAddrModeW						{ sce::Gnm::kWrapModeWrap };
+		sce::Gnm::BorderColor					mBorderColor					{ sce::Gnm::kBorderColorTransBlack };
+		sce::Gnm::FilterMode					mMagFilter						{ sce::Gnm::kFilterModeBilinear };
+		sce::Gnm::FilterMode					mMinFilter						{ sce::Gnm::kFilterModeBilinear };
+		sce::Gnm::MipFilterMode					mMipFilter						{ sce::Gnm::kMipFilterModeLinear };
+		sce::Gnm::ZFilterMode					mZFilter						{ sce::Gnm::kZFilterModeLinear };
+		sce::Gnm::AnisotropyRatio				mAnisotropyRatio				{ sce::Gnm::kAnisotropyRatio1 };
+	};
 
-			mDbRenderControl.init();
-			mDbRenderControl.setDepthClearEnable(mDepthClearEnable);
-			mDbRenderControl.setStencilClearEnable(mStencilClearEnable);
-			//mDbRenderControl.setForceDepthDecompressEnable(true);
+	class BaseShaderView;
+	class TextureView;
+	struct ResouceBinding
+	{
+		// shaders
+		BaseShaderView *						mShaders[sce::Gnm::kShaderStageCount];
 
-			mStencilControl.init();
-			mStencilControl.m_testVal = mStencilTestValue;
-			mStencilControl.m_mask = mStencilMask;
-			mStencilControl.m_writeMask = mStencilWriteMask;
-			mStencilControl.m_opVal = mStencilOpValue;
-
-			mStencilOpControl.init();
-			mStencilOpControl.setStencilOps(mStencilFailOp, mStencilZPassOp, mStencilZFailOp);
-
-			mBlendControl.init();
-			mBlendControl.setBlendEnable(mBlendEnable);
-			mBlendControl.setColorEquation(mBlendSrcMultiplier, mBlendFunc, mBlendDestMultiplier);
-			mBlendControl.setSeparateAlphaEnable(mBlendSeperateAlphaEnable);
-			mBlendControl.setAlphaEquation(mBlendAlphaSrcMultiplier, mBlendAlphaFunc, mBlendAlphaDestMultiplier);
+		// samplers
+		TextureView *							mTextures[sce::Gnm::kShaderStageCount][MAX_NUM_SAMPLERS];
+		SamplerStates							mSamplerStates[sce::Gnm::kShaderStageCount][MAX_NUM_SAMPLERS];
+		ResouceBinding()
+		{
+			for (auto i = 0; i < sce::Gnm::kShaderStageCount; i++)
+			{
+				mShaders[i] = nullptr;
+				for (auto j = 0; j < MAX_NUM_SAMPLERS; j++)
+				{
+					mTextures[i][j] = nullptr;
+				}
+			}
 		}
-		
 	};
 
 	struct CompleteRenderStates
 	{
 		RenderStates							mRenderStates;
+		ResouceBinding							mResourceBinding;
 	};
 }

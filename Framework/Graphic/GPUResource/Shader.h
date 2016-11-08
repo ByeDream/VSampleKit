@@ -13,7 +13,7 @@ namespace Framework
 	public:
 		struct Description : public BaseGPUResource::Description
 		{
-			ShaderType						mType{ SHADER_TYPE_COUNT };
+			sce::Gnm::ShaderStage			mType{ sce::Gnm::kShaderStageCount };
 			const U8 *						mDataPtr{ nullptr };
 			const char *					mName{ nullptr };
 		};

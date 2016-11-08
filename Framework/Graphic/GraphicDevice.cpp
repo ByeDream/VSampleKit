@@ -73,7 +73,7 @@ void Framework::GraphicDevice::allocRenderSet(RenderSet *renderSet, const Render
 void Framework::GraphicDevice::releaseRenderSet(RenderSet *renderSet)
 {
 	GPUResourceManager *_mgr = GPUResourceManager::getInstance();
-	for (auto i = 0; i < RenderSet::MAX_NUM_COLOR_SURFACE; i++)
+	for (auto i = 0; i < MAX_NUM_RENDER_TARGETS; i++)
 	{
 		_mgr->releaseResource(renderSet->getColorSurfaceHandle(i));
 	}

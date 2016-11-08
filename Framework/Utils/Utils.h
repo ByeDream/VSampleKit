@@ -65,5 +65,6 @@ namespace Framework
 		inline void unset(U64 bit) { mBits &= ~bit; }
 		inline void fullset() { mBits = MAX_VALUE_64; }
 		inline void clear() { mBits = 0; }
+		inline bool empty() const { return (0 == mBits); }
 	};
 }

@@ -32,7 +32,7 @@ void Framework::Shader::init(const BaseGPUResource::Description *desc, Allocator
 void Framework::Shader::deinit(Allocators *allocators)
 {
 	SCE_GNM_ASSERT(allocators != nullptr);
-	if (mDesc.mType == SHADER_VERTEX)
+	if (mDesc.mType == Gnm::kShaderStageVs)
 	{
 		allocators->release(mFetchShaderAddr, SCE_KERNEL_WC_GARLIC, &mFetchShaderHandle);
 		mFetchShaderAddr = nullptr;
@@ -49,13 +49,13 @@ void Framework::Shader::bindAsShader(RenderContext *context) const
 {
 	switch (mDesc.mType)
 	{
-	case SHADER_VERTEX:
+	case Gnm::kShaderStageVs:
 		context->setVertexShader(typeCast<VertexShaderView>(mShaderView));
 		break;
-	case SHADER_PIXEL:
+	case Gnm::kShaderStagePs:
 		context->setPixelShader(typeCast<PixelShaderView>(mShaderView));
 		break;
-	case SHADER_COMPUTE:
+	case Gnm::kShaderStageCs:
 		context->setComputeShader(typeCast<ComputeShaderView>(mShaderView));
 		break;
 	default:
@@ -66,17 +66,17 @@ void Framework::Shader::bindAsShader(RenderContext *context) const
 
 void Framework::Shader::createShaderView()
 {
-	SCE_GNM_ASSERT(mDesc.mType < SHADER_TYPE_COUNT);
+	SCE_GNM_ASSERT(mDesc.mType < Gnm::kShaderStageCount);
 	SCE_GNM_ASSERT(mDesc.mDataPtr != nullptr);
 	switch (mDesc.mType)
 	{
-	case SHADER_VERTEX:
+	case Gnm::kShaderStageVs:
 		mShaderView = new VertexShaderView(mDesc.mDataPtr);
 		break;
-	case SHADER_PIXEL:
+	case Gnm::kShaderStagePs:
 		mShaderView = new PixelShaderView(mDesc.mDataPtr);
 		break;
-	case SHADER_COMPUTE:
+	case Gnm::kShaderStageCs:
 		mShaderView = new ComputeShaderView(mDesc.mDataPtr);
 		break;
 	default:
@@ -102,7 +102,7 @@ void Framework::Shader::allocMemory(Allocators *allocators)
 	memcpy(mHeaderAddr, mShaderView->getHeaderPtr(), _headerAlign.m_size);
 	memcpy(mBinaryAddr, mShaderView->getBinaryPtr(), _binaryAlign.m_size);
 
-	if (mDesc.mType == SHADER_VERTEX)
+	if (mDesc.mType == Gnm::kShaderStageVs)
 	{
 		VertexShaderView* _vs = typeCast<VertexShaderView>(mShaderView);
 		Gnm::SizeAlign _fetchAlign = _vs->getFetchShaderSizeAlign();

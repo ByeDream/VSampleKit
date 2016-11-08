@@ -56,6 +56,12 @@ namespace Framework
 
 		virtual sce::Gnm::SizeAlign getHeaderSizeAlign() const;
 		virtual sce::Gnm::SizeAlign getFetchShaderSizeAlign() const;
+
+		inline U32 getModifier() const { return mModifier; }
+		inline void *getFetchAddr() const { return mFetchAddr; }
+	protected:
+		U32 mModifier{ 0 };
+		void *mFetchAddr{ nullptr };
 	};
 
 	class PixelShaderView : public BaseShaderView

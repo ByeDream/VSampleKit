@@ -4,6 +4,8 @@
 #include "RenderContext.h"
 #include "RenderContextChunk.h"
 #include "RenderSet.h"
+#include "GPUResource/GPUResourceViews.h"
+#include "GPUFence.h"
 
 using namespace sce;
 
@@ -11,7 +13,23 @@ Framework::RenderStateUpdateEngine::RenderStateUpdateEngine(RenderContext *owner
 	: mContext(owner)
 	, mDefaultStates()
 {
+	mPrimitiveSetup.init();
+	mClipControl.init();
+	mDepthStencilControl.init();
+	mDbRenderControl.init();
+	mStencilControl.init();
+	mStencilOpControl.init();
+	mBlendControl.init();
 
+	for (auto i = 0; i < Gnm::kShaderStageCount; i++)
+	{
+		for (auto j = 0; j < MAX_NUM_SAMPLERS; j++)
+		{
+			mSamplerObjs[i][j].init();
+		}
+	}
+
+	fullsetDirtyFlags();
 }
 
 Framework::RenderStateUpdateEngine::~RenderStateUpdateEngine()
@@ -28,39 +46,27 @@ void Framework::RenderStateUpdateEngine::setRenderState(RenderStateType state, U
 		// IA
 	case Framework::RS_POLYGON_MODE:
 		_renderStates.mPolygonMode = (Gnm::PrimitiveSetupPolygonMode)value;
-		_renderStates.mPrimitiveSetup.setPolygonMode(_renderStates.mPolygonMode, _renderStates.mPolygonMode);
 		mDirtyFlag.set(DIRTY_PRIMITIVE_SETUP);
 		break;
 	case Framework::RS_CULL_FACE_MODE:
 		_renderStates.mCullFaceMode = (Gnm::PrimitiveSetupCullFaceMode)value;
-		_renderStates.mPrimitiveSetup.setCullFace(_renderStates.mCullFaceMode);
 		mDirtyFlag.set(DIRTY_PRIMITIVE_SETUP);
 		break;
 	case Framework::RS_FRONT_FACE:
 		_renderStates.mFrontFace = (Gnm::PrimitiveSetupFrontFace)value;
-		_renderStates.mPrimitiveSetup.setFrontFace(_renderStates.mFrontFace);
 		mDirtyFlag.set(DIRTY_PRIMITIVE_SETUP);
 		break;
 	case Framework::RS_POLYGON_OFFSET_SCALE:
 		_renderStates.mPolygonOffsetScale = rawCast<Float32>(value);
-		if (_renderStates.mPolygonOffsetScale == 0.0f && _renderStates.mPolygonOffsetOffset == 0.0f)
-			_renderStates.mPrimitiveSetup.setPolygonOffsetEnable(Gnm::kPrimitiveSetupPolygonOffsetDisable, Gnm::kPrimitiveSetupPolygonOffsetDisable);
-		else
-			_renderStates.mPrimitiveSetup.setPolygonOffsetEnable(Gnm::kPrimitiveSetupPolygonOffsetEnable, Gnm::kPrimitiveSetupPolygonOffsetEnable);
 		mDirtyFlag.set(DIRTY_PRIMITIVE_SETUP);
 		break;
 	case Framework::RS_POLYGON_OFFSET_OFFSET:
 		_renderStates.mPolygonOffsetOffset = rawCast<Float32>(value);
-		if (_renderStates.mPolygonOffsetScale == 0.0f && _renderStates.mPolygonOffsetOffset == 0.0f)
-			_renderStates.mPrimitiveSetup.setPolygonOffsetEnable(Gnm::kPrimitiveSetupPolygonOffsetDisable, Gnm::kPrimitiveSetupPolygonOffsetDisable);
-		else
-			_renderStates.mPrimitiveSetup.setPolygonOffsetEnable(Gnm::kPrimitiveSetupPolygonOffsetEnable, Gnm::kPrimitiveSetupPolygonOffsetEnable);
 		mDirtyFlag.set(DIRTY_PRIMITIVE_SETUP);
 		break;
 		// Clipping
 	case Framework::RS_CLIP_SPACE:
 		_renderStates.mClipSpace = (Gnm::ClipControlClipSpace)value;
-		_renderStates.mClipControl.setClipSpace(_renderStates.mClipSpace);
 		mDirtyFlag.set(DIRTY_CLIP_CONTROL);
 		break;
 		// --- Rasterizer
@@ -84,22 +90,18 @@ void Framework::RenderStateUpdateEngine::setRenderState(RenderStateType state, U
 		// Depth Test
 	case Framework::RS_DEPTH_ENABLE:
 		_renderStates.mDepthEnable = value;
-		_renderStates.mDepthStencilControl.setDepthEnable(_renderStates.mDepthEnable);
 		mDirtyFlag.set(DIRTY_DEPTH_STENCIL_CONTROL);
 		break;
 	case Framework::RS_DEPTH_WRITE_ENABLE:
 		_renderStates.mDepthWriteEnable = value;
-		_renderStates.mDepthStencilControl.setDepthControl(_renderStates.mDepthWriteEnable ? Gnm::kDepthControlZWriteEnable : Gnm::kDepthControlZWriteDisable, _renderStates.mDepthCompareFunc);
 		mDirtyFlag.set(DIRTY_DEPTH_STENCIL_CONTROL);
 		break;
 	case Framework::RS_DEPTH_COMPARE_FUNC:
 		_renderStates.mDepthCompareFunc = (Gnm::CompareFunc)value;
-		_renderStates.mDepthStencilControl.setDepthControl(_renderStates.mDepthWriteEnable ? Gnm::kDepthControlZWriteEnable : Gnm::kDepthControlZWriteDisable, _renderStates.mDepthCompareFunc);
 		mDirtyFlag.set(DIRTY_DEPTH_STENCIL_CONTROL);
 		break;
 	case Framework::RS_DEPTH_CLEAR_ENABLE:
 		_renderStates.mDepthClearEnable = value;
-		_renderStates.mDbRenderControl.setDepthClearEnable(_renderStates.mDepthClearEnable);
 		mDirtyFlag.set(DIRTY_DB_RENDER_CONTROL);
 		break;
 	case Framework::RS_DEPTH_CLEAR_VALUE:
@@ -109,52 +111,42 @@ void Framework::RenderStateUpdateEngine::setRenderState(RenderStateType state, U
 		// Stencil Test
 	case Framework::RS_STENCIL_ENABLE:
 		_renderStates.mStencilEnable = value;
-		_renderStates.mDepthStencilControl.setStencilEnable(_renderStates.mStencilEnable);
 		mDirtyFlag.set(DIRTY_DEPTH_STENCIL_CONTROL);
 		break;
 	case Framework::RS_STENCIL_COMPARE_FUNC:
 		_renderStates.mStencilCompareFunc = Gnm::CompareFunc(value);
-		_renderStates.mDepthStencilControl.setStencilFunction(_renderStates.mStencilCompareFunc);
 		mDirtyFlag.set(DIRTY_DEPTH_STENCIL_CONTROL);
 		break;
 	case Framework::RS_STENCIL_TEST_VALUE:
 		_renderStates.mStencilTestValue = (U8)value;
-		_renderStates.mStencilControl.m_testVal = _renderStates.mStencilTestValue;
 		mDirtyFlag.set(DIRTY_STENCIL_CONTROL);
 		break;
 	case Framework::RS_STENCIL_MASK:
 		_renderStates.mStencilMask = (U8)value;
-		_renderStates.mStencilControl.m_mask = _renderStates.mStencilMask;
 		mDirtyFlag.set(DIRTY_STENCIL_CONTROL);
 		break;
 	case Framework::RS_STENCIL_WRITE_MASK:
 		_renderStates.mStencilWriteMask = (U8)value;
-		_renderStates.mStencilControl.m_writeMask = _renderStates.mStencilWriteMask;
 		mDirtyFlag.set(DIRTY_STENCIL_CONTROL);
 		break;
 	case Framework::RS_STENCIL_OP_VALUE:
 		_renderStates.mStencilOpValue = (U8)value;
-		_renderStates.mStencilControl.m_opVal = _renderStates.mStencilOpValue;
 		mDirtyFlag.set(DIRTY_STENCIL_CONTROL);
 		break;
 	case Framework::RS_STENCIL_FAIL_OP:
 		_renderStates.mStencilFailOp = (Gnm::StencilOp)value;
-		_renderStates.mStencilOpControl.setStencilOps(_renderStates.mStencilFailOp, _renderStates.mStencilZPassOp, _renderStates.mStencilZFailOp);
 		mDirtyFlag.set(DIRTY_STENCIL_OP_CONTROL);
 		break;
 	case Framework::RS_STENCIL_ZPASS_OP:
 		_renderStates.mStencilZPassOp = (Gnm::StencilOp)value;
-		_renderStates.mStencilOpControl.setStencilOps(_renderStates.mStencilFailOp, _renderStates.mStencilZPassOp, _renderStates.mStencilZFailOp);
 		mDirtyFlag.set(DIRTY_STENCIL_OP_CONTROL);
 		break;
 	case Framework::RS_STENCIL_ZFAIL_OP:
 		_renderStates.mStencilZFailOp = (Gnm::StencilOp)value;
-		_renderStates.mStencilOpControl.setStencilOps(_renderStates.mStencilFailOp, _renderStates.mStencilZPassOp, _renderStates.mStencilZFailOp);
 		mDirtyFlag.set(DIRTY_STENCIL_OP_CONTROL);
 		break;
 	case Framework::RS_STENCIL_CLEAR_ENABLE:
 		_renderStates.mStencilClearEnable = value;
-		_renderStates.mDbRenderControl.setStencilClearEnable(_renderStates.mStencilClearEnable);
 		mDirtyFlag.set(DIRTY_DB_RENDER_CONTROL);
 		break;
 	case Framework::RS_STENCIL_CLEAR_VALUE:
@@ -177,7 +169,6 @@ void Framework::RenderStateUpdateEngine::setRenderState(RenderStateType state, U
 		// Blending
 	case Framework::RS_BLEND_ENABLE:
 		_renderStates.mBlendEnable = value;
-		_renderStates.mBlendControl.setBlendEnable(_renderStates.mBlendEnable);
 		mDirtyFlag.set(DIRTY_BLEND_CONTROL);
 		break;
 	case Framework::RS_BLEND_COLOR:
@@ -190,37 +181,30 @@ void Framework::RenderStateUpdateEngine::setRenderState(RenderStateType state, U
 		break;
 	case Framework::RS_BLEND_SRCMUL:
 		_renderStates.mBlendSrcMultiplier = (Gnm::BlendMultiplier)value;
-		_renderStates.mBlendControl.setColorEquation(_renderStates.mBlendSrcMultiplier, _renderStates.mBlendFunc, _renderStates.mBlendDestMultiplier);
 		mDirtyFlag.set(DIRTY_BLEND_CONTROL);
 		break;
 	case Framework::RS_BLEND_DESTMUL:
 		_renderStates.mBlendDestMultiplier = (Gnm::BlendMultiplier)value;
-		_renderStates.mBlendControl.setColorEquation(_renderStates.mBlendSrcMultiplier, _renderStates.mBlendFunc, _renderStates.mBlendDestMultiplier);
 		mDirtyFlag.set(DIRTY_BLEND_CONTROL);
 		break;
 	case Framework::RS_BLEND_FUNC:
 		_renderStates.mBlendFunc = (Gnm::BlendFunc)value;
-		_renderStates.mBlendControl.setColorEquation(_renderStates.mBlendSrcMultiplier, _renderStates.mBlendFunc, _renderStates.mBlendDestMultiplier);
 		mDirtyFlag.set(DIRTY_BLEND_CONTROL);
 		break;
 	case Framework::RS_BLEND_SEPARATE_ALPHA_ENABLE:
 		_renderStates.mBlendSeperateAlphaEnable = value;
-		_renderStates.mBlendControl.setSeparateAlphaEnable(_renderStates.mBlendSeperateAlphaEnable);
 		mDirtyFlag.set(DIRTY_BLEND_CONTROL);
 		break;
 	case Framework::RS_BLEND_ALPHA_SRCMUL:
 		_renderStates.mBlendAlphaSrcMultiplier = (Gnm::BlendMultiplier)value;
-		_renderStates.mBlendControl.setAlphaEquation(_renderStates.mBlendAlphaSrcMultiplier, _renderStates.mBlendAlphaFunc, _renderStates.mBlendAlphaDestMultiplier);
 		mDirtyFlag.set(DIRTY_BLEND_CONTROL);
 		break;
 	case Framework::RS_BLEND_ALPHA_DESTMUL:
 		_renderStates.mBlendAlphaDestMultiplier = (Gnm::BlendMultiplier)value;
-		_renderStates.mBlendControl.setAlphaEquation(_renderStates.mBlendAlphaSrcMultiplier, _renderStates.mBlendAlphaFunc, _renderStates.mBlendAlphaDestMultiplier);
 		mDirtyFlag.set(DIRTY_BLEND_CONTROL);
 		break;
 	case Framework::RS_BLEND_ALPHA_FUNC:
 		_renderStates.mBlendAlphaFunc = (Gnm::BlendFunc)value;
-		_renderStates.mBlendControl.setAlphaEquation(_renderStates.mBlendAlphaSrcMultiplier, _renderStates.mBlendAlphaFunc, _renderStates.mBlendAlphaDestMultiplier);
 		mDirtyFlag.set(DIRTY_BLEND_CONTROL);
 		break;
 	default:
@@ -366,15 +350,96 @@ Framework::U32 Framework::RenderStateUpdateEngine::getRenderState(RenderStateTyp
 	return ret;
 }
 
+void Framework::RenderStateUpdateEngine::compile()
+{
+	// render states
+	const RenderStates &_renderStates = mStatesStack[mStackLevel].mRenderStates;
+
+	if (mDirtyFlag.get(DIRTY_PRIMITIVE_SETUP))
+	{
+		mPrimitiveSetup.setPolygonMode(_renderStates.mPolygonMode, _renderStates.mPolygonMode);
+		mPrimitiveSetup.setCullFace(_renderStates.mCullFaceMode);
+		mPrimitiveSetup.setFrontFace(_renderStates.mFrontFace);
+		if (_renderStates.mPolygonOffsetScale == 0.0f && _renderStates.mPolygonOffsetOffset == 0.0f)
+			mPrimitiveSetup.setPolygonOffsetEnable(sce::Gnm::kPrimitiveSetupPolygonOffsetDisable, sce::Gnm::kPrimitiveSetupPolygonOffsetDisable);
+		else
+			mPrimitiveSetup.setPolygonOffsetEnable(sce::Gnm::kPrimitiveSetupPolygonOffsetEnable, sce::Gnm::kPrimitiveSetupPolygonOffsetEnable);
+	}
+
+	if (mDirtyFlag.get(DIRTY_CLIP_CONTROL))
+	{
+		mClipControl.setClipSpace(_renderStates.mClipSpace);
+	}
+
+	if (mDirtyFlag.get(DIRTY_DEPTH_STENCIL_CONTROL))
+	{
+		mDepthStencilControl.setDepthEnable(_renderStates.mDepthEnable);
+		mDepthStencilControl.setDepthControl(_renderStates.mDepthWriteEnable ? sce::Gnm::kDepthControlZWriteEnable : sce::Gnm::kDepthControlZWriteDisable, _renderStates.mDepthCompareFunc);
+		mDepthStencilControl.setStencilEnable(_renderStates.mStencilEnable);
+		mDepthStencilControl.setStencilFunction(_renderStates.mStencilCompareFunc);
+	}
+
+	if (mDirtyFlag.get(DIRTY_DB_RENDER_CONTROL))
+	{
+		mDbRenderControl.setDepthClearEnable(_renderStates.mDepthClearEnable);
+		mDbRenderControl.setStencilClearEnable(_renderStates.mStencilClearEnable);
+		//mDbRenderControl.setForceDepthDecompressEnable(true);
+	}
+
+	if (mDirtyFlag.get(DIRTY_STENCIL_CONTROL))
+	{
+		mStencilControl.m_testVal = _renderStates.mStencilTestValue;
+		mStencilControl.m_mask = _renderStates.mStencilMask;
+		mStencilControl.m_writeMask = _renderStates.mStencilWriteMask;
+		mStencilControl.m_opVal = _renderStates.mStencilOpValue;
+	}
+
+	if (mDirtyFlag.get(DIRTY_STENCIL_OP_CONTROL))
+	{
+		mStencilOpControl.setStencilOps(_renderStates.mStencilFailOp, _renderStates.mStencilZPassOp, _renderStates.mStencilZFailOp);
+	}
+
+	if (mDirtyFlag.get(DIRTY_BLEND_CONTROL))
+	{
+		mBlendControl.setBlendEnable(_renderStates.mBlendEnable);
+		mBlendControl.setColorEquation(_renderStates.mBlendSrcMultiplier, _renderStates.mBlendFunc, _renderStates.mBlendDestMultiplier);
+		mBlendControl.setSeparateAlphaEnable(_renderStates.mBlendSeperateAlphaEnable);
+		mBlendControl.setAlphaEquation(_renderStates.mBlendAlphaSrcMultiplier, _renderStates.mBlendAlphaFunc, _renderStates.mBlendAlphaDestMultiplier);
+	}
+
+	// sampler states
+	if (mDirtyFlag.get(DIRTY_SAMPLERS))
+	{
+		for (auto i = 0; i < Gnm::kShaderStageCount; i++)
+		{
+			for (auto j = 0; j < MAX_NUM_SAMPLERS; j++)
+			{
+				if (mDelegateSamplerDirtyFlag[i].get(1 << j))
+				{
+					Gnm::Sampler &_samplerObj = mSamplerObjs[i][j];
+					const SamplerStates &_samplerStates = getCurrentResourceBinding().mSamplerStates[i][j];
+					_samplerObj.setWrapMode(_samplerStates.mAddrModeU, _samplerStates.mAddrModeV, _samplerStates.mAddrModeW);
+					_samplerObj.setBorderColor(_samplerStates.mBorderColor);
+					// TODO AnisoFilter
+					_samplerObj.setXyFilterMode(_samplerStates.mMagFilter, _samplerStates.mMinFilter);
+					_samplerObj.setMipFilterMode(_samplerStates.mMipFilter);
+					_samplerObj.setZFilterMode(_samplerStates.mZFilter);
+					_samplerObj.setAnisotropyRatio(_samplerStates.mAnisotropyRatio);
+				}
+			}
+		}
+	}
+}
+
 void Framework::RenderStateUpdateEngine::commit()
 {
 	RenderContextChunk *_chunk = mContext->getCurrentChunk();
-	RenderStates &_renderStates = mStatesStack[mStackLevel].mRenderStates;
+	const RenderStates &_renderStates = mStatesStack[mStackLevel].mRenderStates;
 
 	// --- render states
 	if (mDirtyFlag.get(DIRTY_PRIMITIVE_SETUP))
 	{
-		_chunk->setPrimitiveSetup(_renderStates.mPrimitiveSetup);
+		_chunk->setPrimitiveSetup(mPrimitiveSetup);
 
 		_chunk->setPolygonOffsetZFormat(Gnm::kZFormat32Float); // TODO, get correct format from current depth target.
 		_chunk->setPolygonOffsetFront(_renderStates.mPolygonOffsetScale, _renderStates.mPolygonOffsetOffset);
@@ -383,7 +448,7 @@ void Framework::RenderStateUpdateEngine::commit()
 
 	if (mDirtyFlag.get(DIRTY_CLIP_CONTROL))
 	{
-		_chunk->setClipControl(_renderStates.mClipControl);
+		_chunk->setClipControl(mClipControl);
 	}
 
 	if (mDirtyFlag.get(DIRTY_COLOR_WRITE))
@@ -394,24 +459,24 @@ void Framework::RenderStateUpdateEngine::commit()
 
 	if (mDirtyFlag.get(DIRTY_DEPTH_STENCIL_CONTROL))
 	{
-		_chunk->setDepthStencilControl(_renderStates.mDepthStencilControl);
+		_chunk->setDepthStencilControl(mDepthStencilControl);
 	}
 
 	if (mDirtyFlag.get(DIRTY_DB_RENDER_CONTROL))
 	{
 		_chunk->setDepthClearValue(_renderStates.mDepthClearValue);
 		_chunk->setStencilClearValue(_renderStates.mStencilClearValue);
-		_chunk->setDbRenderControl(_renderStates.mDbRenderControl);
+		_chunk->setDbRenderControl(mDbRenderControl);
 	}
 
 	if (mDirtyFlag.get(DIRTY_STENCIL_CONTROL))
 	{
-		_chunk->setStencil(_renderStates.mStencilControl);
+		_chunk->setStencil(mStencilControl);
 	}
 
 	if (mDirtyFlag.get(DIRTY_STENCIL_OP_CONTROL))
 	{
-		_chunk->setStencilOpControl(_renderStates.mStencilOpControl);
+		_chunk->setStencilOpControl(mStencilOpControl);
 	}
 
 	if (mDirtyFlag.get(DIRTY_ALPHA_TEST))
@@ -437,8 +502,155 @@ void Framework::RenderStateUpdateEngine::commit()
 
 	if (mDirtyFlag.get(DIRTY_BLEND_CONTROL))
 	{
-		for (U32 i = 0; i < RenderSet::MAX_NUM_COLOR_SURFACE; ++i)
-			_chunk->setBlendControl(i, _renderStates.mBlendControl);
+		for (U32 i = 0; i < MAX_NUM_RENDER_TARGETS; ++i)
+			_chunk->setBlendControl(i, mBlendControl);
 		_chunk->setBlendColor(_renderStates.mBlendColorR, _renderStates.mBlendColorG, _renderStates.mBlendColorB, _renderStates.mBlendColorA);
 	}
+
+	// --- resource binding
+	ResouceBinding &_binding = getCurrentResourceBinding();
+	if (mDirtyFlag.get(DIRTY_SHADERS))
+	{
+		_chunk->setActiveShaderStages(Gnm::kActiveShaderStagesVsPs);  // TODO fix me with real usage
+
+		if (_binding.mShaders[Gnm::kShaderStageVs] != nullptr)
+		{
+			const VertexShaderView *_vs = typeCast<VertexShaderView>(_binding.mShaders[Gnm::kShaderStageVs]);
+			_chunk->setVsShader(_vs->getInternalObj(), _vs->getModifier(), _vs->getFetchAddr(), _vs->getInputCache());
+			_vs->getFence()->setPending(mContext->getCurrentChunk());
+		}
+		else
+		{
+			_chunk->setVsShader(nullptr, 0, nullptr, nullptr);
+		}
+
+		if (_binding.mShaders[Gnm::kShaderStagePs] != nullptr)
+		{
+			const PixelShaderView *_ps = typeCast<PixelShaderView>(_binding.mShaders[Gnm::kShaderStagePs]);
+			_chunk->setPsShader(_ps->getInternalObj(), _ps->getInputCache());
+			_ps->getFence()->setPending(mContext->getCurrentChunk());
+		}
+		else
+		{
+			_chunk->setPsShader(nullptr, nullptr);
+		}
+
+		if (_binding.mShaders[Gnm::kShaderStageCs] != nullptr)
+		{
+			const ComputeShaderView *_cs = typeCast<ComputeShaderView>(_binding.mShaders[Gnm::kShaderStageCs]);
+			_chunk->setCsShader(_cs->getInternalObj(), _cs->getInputCache());
+			_cs->getFence()->setPending(mContext->getCurrentChunk());
+		}
+		else
+		{
+			_chunk->setCsShader(nullptr, nullptr);
+		}
+
+		// TODO more shader type
+	}
+
+	if (mDirtyFlag.get(DIRTY_TEXTURES))
+	{
+		for (auto shaderType = 0; shaderType < Gnm::kShaderStageCount; shaderType++)
+		{
+			for (auto slot = 0; slot < MAX_NUM_SAMPLERS; slot++)
+			{
+				TextureView *_texture = _binding.mTextures[shaderType][slot];
+			}
+			
+
+			if (!mDelegateSamplerDirtyFlag[shaderType].empty())
+			{
+				_chunk->setTextures((Gnm::ShaderStage)shaderType, 0, MAX_NUM_SAMPLERS, mSamplerObjs[shaderType]);
+			}
+		}
+	}
+
+	if (mDirtyFlag.get(DIRTY_SAMPLERS))
+	{
+		for (auto shaderType = 0; shaderType < Gnm::kShaderStageCount; shaderType++)
+		{
+			if (!mDelegateSamplerDirtyFlag[shaderType].empty())
+			{
+				_chunk->setSamplers((Gnm::ShaderStage)shaderType, 0, MAX_NUM_SAMPLERS, mSamplerObjs[shaderType]);
+			}
+		}
+	}
+
+}
+
+void Framework::RenderStateUpdateEngine::internalSetSamplerState(SamplerStates &sampler, SamplerStateType state, U32 value)
+{
+	switch (state)
+	{
+	case Framework::SS_ADDRESS_U:
+		sampler.mAddrModeU = (Gnm::WrapMode)value;
+		break;
+	case Framework::SS_ADDRESS_V:
+		sampler.mAddrModeV = (Gnm::WrapMode)value;
+		break;
+	case Framework::SS_ADDRESS_W:
+		sampler.mAddrModeW = (Gnm::WrapMode)value;
+		break;
+	case Framework::SS_BORDER_COLOR:
+		sampler.mBorderColor = (Gnm::BorderColor)value;
+		break;
+	case Framework::SS_MAG_FILTER:
+		sampler.mMagFilter = (Gnm::FilterMode)value;
+		break;
+	case Framework::SS_MIN_FILTER:
+		sampler.mMinFilter = (Gnm::FilterMode)value;
+		break;
+	case Framework::SS_MIP_FILTER:
+		sampler.mMipFilter = (Gnm::MipFilterMode)value;
+		break;
+	case Framework::SS_Z_FILTER:
+		sampler.mZFilter = (Gnm::ZFilterMode)value;
+		break;
+	case Framework::SS_ANISO_RATIO:
+		sampler.mAnisotropyRatio = (Gnm::AnisotropyRatio)value;
+		break;
+	default:
+		SCE_GNM_ASSERT_MSG(false, "Not support yet");
+		break;
+	}
+}
+
+Framework::U32 Framework::RenderStateUpdateEngine::internalGetSamplerState(const SamplerStates &sampler, SamplerStateType state) const
+{
+	U32 ret = MAX_VALUE_32;
+	switch (state)
+	{
+	case Framework::SS_ADDRESS_U:
+		ret = sampler.mAddrModeU;
+		break;
+	case Framework::SS_ADDRESS_V:
+		ret = sampler.mAddrModeV;
+		break;
+	case Framework::SS_ADDRESS_W:
+		ret = sampler.mAddrModeW;
+		break;
+	case Framework::SS_BORDER_COLOR:
+		ret = sampler.mBorderColor;
+		break;
+	case Framework::SS_MAG_FILTER:
+		ret = sampler.mMagFilter;
+		break;
+	case Framework::SS_MIN_FILTER:
+		ret = sampler.mMinFilter;
+		break;
+	case Framework::SS_MIP_FILTER:
+		ret = sampler.mMipFilter;
+		break;
+	case Framework::SS_Z_FILTER:
+		ret = sampler.mZFilter;
+		break;
+	case Framework::SS_ANISO_RATIO:
+		ret = sampler.mAnisotropyRatio;
+		break;
+	default:
+		SCE_GNM_ASSERT_MSG(false, "Not support yet");
+		break;
+	}
+	return ret;
 }

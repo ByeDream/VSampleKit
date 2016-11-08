@@ -6,10 +6,7 @@ namespace Framework
 {
 	class RenderContext;
 
-	class VertexShaderView;
-	class PixelShaderView;
-	class ComputeShaderView;
-
+	class BaseShaderView;
 	class TextureView;
 	class RenderTargetView;
 	class DepthStencilView;
@@ -25,13 +22,13 @@ namespace Framework
 		U32										getRenderState(RenderStateType state) const;
 		inline Float32							getRenderStateFloat(RenderStateType state) const { return rawCast<Float32>(getRenderState(state)); }
 
-		inline void								setVertexShader(const VertexShaderView *shader);
-		inline void								setPixelShader(const PixelShaderView *shader);
-		inline void								setComputeShader(const ComputeShaderView *shader);
-
-		void									setTexture(ShaderType shaderType, U32 slot, TextureView *texture);
-		void									setSamplerState(ShaderType shaderType, U32 slot, SampleStateType state, SampleStateValue Value);
-		void									setSamplerStateForAllSamplers(SampleStateType state, SampleStateValue Value);
+		inline void								setShader(sce::Gnm::ShaderStage shaderType, BaseShaderView *shader) { getCurrentResourceBinding().mShaders[shaderType] = shader; mDirtyFlag.set(DIRTY_SHADERS); }
+		inline BaseShaderView *					getShader(sce::Gnm::ShaderStage shaderType) const { return getCurrentResourceBinding().mShaders[shaderType]; }
+		inline void								setTexture(sce::Gnm::ShaderStage shaderType, U32 slot, TextureView *texture) { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); getCurrentResourceBinding().mTextures[shaderType][slot] = texture; mDirtyFlag.set(DIRTY_TEXTURES); }
+		inline TextureView *					getTexture(sce::Gnm::ShaderStage shaderType, U32 slot) const { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); return getCurrentResourceBinding().mTextures[shaderType][slot]; }
+		inline void								setSamplerState(sce::Gnm::ShaderStage shaderType, U32 slot, SamplerStateType state, U32 value) { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); internalSetSamplerState(getCurrentResourceBinding().mSamplerStates[shaderType][slot], state, value); mDirtyFlag.set(DIRTY_SAMPLERS); mDelegateSamplerDirtyFlag[shaderType].set(1 << slot); }
+		inline U32								getSamplerState(sce::Gnm::ShaderStage shaderType, U32 slot, SamplerStateType state) const { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); return internalGetSamplerState(getCurrentResourceBinding().mSamplerStates[shaderType][slot], state); }
+		void									setSamplerStateForAllSamplers(SamplerStateType state, U32 Value);
 	
 		void									setRenderTarget(U32 slot, RenderTargetView *renderTarget);
 		void									SetDepthStencilTarget(DepthStencilView *a_surface);
@@ -49,13 +46,13 @@ namespace Framework
 // 		void SetDefaultLODBias(ubiU32 lodBias);
 // 		void SetAnisotropicFilteringOverride(ubiBool enabled, ubiU8 anisotropyDegree);
 // 
-// 		void CompileStates();
+ 		void									compile();
  		void									commit();
 		inline void								reset()
 		{
 			mStackLevel = 0;
 			memcpy(&mStatesStack[mStackLevel], &mDefaultStates, sizeof(CompleteRenderStates));
-			mDirtyFlag.fullset();
+			fullsetDirtyFlags();
 		}
 
 		inline void								push()
@@ -78,7 +75,7 @@ namespace Framework
 			if (_prevLevel > 0)
 			{
 				mStackLevel = _prevLevel;
-				mDirtyFlag.fullset();
+				fullsetDirtyFlags();
 			}
 			else
 			{
@@ -138,15 +135,17 @@ namespace Framework
 			DIRTY_ALPHA_TEST					= 1 << 7,
 			DIRTY_BLEND_CONTROL					= 1 << 8,
 
-
-
+			// resource binding
+			DIRTY_SHADERS						= 1 << 20,
+			DIRTY_TEXTURES						= 1 << 21,
+			DIRTY_SAMPLERS						= 1 << 22,
 
 
 
 // 			DIRTY_VIEWPORT						= 1 << 0,
 // 			DIRTY_SCISSORRECT					= 1 << 1,
 // 			DIRTY_PIXELSHADER					= 1 << 2,
-// 			DIRTY_VERTEXSHADER					= 1 << 3,
+// 			
 // 			DIRTY_VERTEX_BUFFER					= 1 << 4,
 // 			DIRTY_INDEX_BUFFER					= 1 << 5,
 // 			DIRTY_DEPTH_STENCIL					= 1 << 6,
@@ -170,17 +169,49 @@ namespace Framework
 			STACK_SIZE = 8,
 		};
 
+		inline void								fullsetDirtyFlags()
+		{
+			mDirtyFlag.fullset();
+			for (auto i = 0; i < sce::Gnm::kShaderStageCount; i++)
+				mDelegateSamplerDirtyFlag[i].fullset();
+		}
+
+		inline void								clearDirtyFlags()
+		{
+			mDirtyFlag.clear();
+			for (auto i = 0; i < sce::Gnm::kShaderStageCount; i++)
+				mDelegateSamplerDirtyFlag[i].clear();
+		}
 
 		void									resetSamplerStates();
 
 		static void								InitRSDescTable();
 
+		void									internalSetSamplerState(SamplerStates &sampler, SamplerStateType state, U32 value);
+		U32										internalGetSamplerState(const SamplerStates &sampler, SamplerStateType state) const;
+
+		inline ResouceBinding &					getCurrentResourceBinding() { return mStatesStack[mStackLevel].mResourceBinding; }
+		inline const ResouceBinding &			getCurrentResourceBinding() const { return mStatesStack[mStackLevel].mResourceBinding; }
+
 	private:
 		RenderContext *							mContext{ nullptr };
 
 		CompleteRenderStates					mStatesStack[STACK_SIZE];
+		Bitset									mDirtyFlag;
 		U32										mStackLevel{ 0 };
 		const CompleteRenderStates				mDefaultStates;
-		Bitset									mDirtyFlag;
+
+		// render states controls
+		sce::Gnm::PrimitiveSetup				mPrimitiveSetup;
+		sce::Gnm::ClipControl					mClipControl;
+		sce::Gnm::DepthStencilControl			mDepthStencilControl;
+		sce::Gnm::DbRenderControl				mDbRenderControl;
+		sce::Gnm::StencilControl				mStencilControl;
+		sce::Gnm::StencilOpControl				mStencilOpControl;
+		sce::Gnm::BlendControl					mBlendControl;
+
+		// sampler objects
+		sce::Gnm::Sampler						mSamplerObjs[sce::Gnm::kShaderStageCount][MAX_NUM_SAMPLERS];
+		Bitset									mDelegateSamplerDirtyFlag[sce::Gnm::kShaderStageCount];	// As the sampler objects need to be compiled and could be time-consuming
 	};
 }

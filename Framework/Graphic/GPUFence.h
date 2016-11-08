@@ -22,7 +22,6 @@ namespace Framework
 			LABEL_VALUE_START,
 		};
 
-		void							setPending(RenderContext *context);
 		void							setPending(RenderContextChunk *contextChunk);  //TODO too expensive, to be refactoring
 		inline bool						isBusy();
 		void							waitUntilIdle();

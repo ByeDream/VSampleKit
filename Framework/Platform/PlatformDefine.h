@@ -22,11 +22,19 @@ namespace Framework
 	typedef U64						TID;        //< Thread ID
 	typedef S32						Result;		//< Functions return
 
-#	define	MAX_VALUE_8				0xFF
-#	define	MAX_VALUE_16			0xFFFF
-#	define	MAX_VALUE_32			0xFFFFFFFF
-#	define	MAX_VALUE_64			0xFFFFFFFFFFFFFFFF 
+	enum
+	{
+		MAX_VALUE_8					= 0xFF,
+		MAX_VALUE_16				= 0xFFFF,
+		MAX_VALUE_32				= 0xFFFFFFFF,
+		MAX_VALUE_64				= 0xFFFFFFFFFFFFFFFF
+	};
 
+	enum
+	{
+		MAX_NUM_SAMPLERS			= 16,
+		MAX_NUM_RENDER_TARGETS		= 4,
+	};
 
 	typedef struct __Rect
 	{
@@ -54,42 +62,7 @@ namespace Framework
 
 		TEX_TYPE_COUNT
 	};
-
-	enum ShaderType
-	{
-		SHADER_VERTEX = 0,
-		SHADER_PIXEL,
-		SHADER_COMPUTE,
-		SHADER_HULL,
-		SHADER_DOMAIN,
-		SHADER_GEOMETRY,
-
-		SHADER_TYPE_COUNT
-	};
-
-	enum SampleStateType
-	{
-		// Order must match bitfield with Framework::SamplingState
-
-		// per texture settings
-		SAMP_STATE_ADDRESSU = 0,
-		SAMP_STATE_ADDRESSV,
-		SAMP_STATE_ADDRESSW,
-		SAMP_STATE_BORDERCOLOR,
-		SAMP_STATE_MAGFILTER,
-		SAMP_STATE_MINFILTER,
-		SAMP_STATE_MIPFILTER,
-		SAMP_STATE_SRGBTEXTURE,
-
-		// global settings
-		SAMP_STATE_ANISOFILTER,
-		SAMP_STATE_MAXANISOTROPY,
-		SAMP_STATE_MIPMAPLODBIAS,
-
-		SAMP_STATE_TYPE_COUNT,
-	};
-	typedef U32 SampleStateValue;
-
+	
 // 	enum RESOURCE_BIND_FLAG
 // 	{
 // 		BIND_VERTEX_BUFFER = 0x1L,

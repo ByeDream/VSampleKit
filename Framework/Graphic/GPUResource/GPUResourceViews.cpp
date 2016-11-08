@@ -37,10 +37,9 @@ void Framework::VertexShaderView::assignAddress(void *headerAddr, void *binaryAd
 void Framework::VertexShaderView::assignAddress(void *headerAddr, void *binaryAddr, void *fetchAddr)
 {
 	assignAddress(headerAddr, binaryAddr);
-
-	U32 _shaderModifier;
-	Gnmx::generateVsFetchShader(fetchAddr, &_shaderModifier, mObject, (Gnm::FetchShaderInstancingMode *)nullptr, 0); // Todo table
-	mObject->applyFetchShaderModifier(_shaderModifier);
+	mFetchAddr = fetchAddr;
+	Gnmx::generateVsFetchShader(mFetchAddr, &mModifier, mObject, (Gnm::FetchShaderInstancingMode *)nullptr, 0); // Todo table
+	mObject->applyFetchShaderModifier(mModifier);
 }
 
 sce::Gnm::SizeAlign Framework::PixelShaderView::getHeaderSizeAlign() const
