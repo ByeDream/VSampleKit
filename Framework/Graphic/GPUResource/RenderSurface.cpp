@@ -123,7 +123,7 @@ void Framework::RenderSurface::init(const BaseGPUResource::Description *desc, Al
 	mTexture->init(_textureDesc, allocators, _desc->mSrcData);
 
 	// assignFence
-	mTexture->getShaderResourceView()->assignFence(mFence);
+	mTexture->getTextureView()->assignFence(mFence);
 	if (mTexture->getTargetView() != nullptr)
 		mTexture->getTargetView()->assignFence(mFence);
 
@@ -173,5 +173,5 @@ bool Framework::RenderSurface::isFormat32() const
 void * Framework::RenderSurface::getBaseAddress() const
 {
 	SCE_GNM_ASSERT(mTexture != nullptr);
-	return mTexture->getShaderResourceView()->getInternalObj()->getBaseAddress();
+	return mTexture->getTextureView()->getInternalObj()->getBaseAddress();
 }

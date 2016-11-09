@@ -69,7 +69,7 @@ void Framework::RenderableTextureColor::allocMemory(Allocators *allocators)
 {
 	SCE_GNM_ASSERT(allocators != nullptr);
 
-	SCE_GNM_ASSERT(mShaderResourceView != nullptr);
+	SCE_GNM_ASSERT(mTextureView != nullptr);
 	SCE_GNM_ASSERT(mGpuBaseAddr != nullptr);
 
 	SCE_GNM_ASSERT(mTargetView != nullptr);
@@ -78,10 +78,10 @@ void Framework::RenderableTextureColor::allocMemory(Allocators *allocators)
 
 	RenderTargetView *_renderTargetView = typeCast<RenderTargetView>(mTargetView);
 
-	Gnm::SizeAlign _shaderResourceSizeAlign = mShaderResourceView->getSizeAlign();
+	Gnm::SizeAlign _textureSizeAlign = mTextureView->getSizeAlign();
 	Gnm::SizeAlign _colorSizeAlign = _renderTargetView->getColorSizeAlign();
 
-	SCE_GNM_ASSERT(_colorSizeAlign.m_size == _shaderResourceSizeAlign.m_size && _colorSizeAlign.m_align == _shaderResourceSizeAlign.m_align);
+	SCE_GNM_ASSERT(_colorSizeAlign.m_size == _textureSizeAlign.m_size && _colorSizeAlign.m_align == _textureSizeAlign.m_align);
 
 	if (_renderTargetView->isUsingCMask())
 	{
@@ -143,7 +143,7 @@ void Framework::RenderableTextureDepthStencil::allocMemory(Allocators *allocator
 {
 	SCE_GNM_ASSERT(allocators != nullptr);
 
-	SCE_GNM_ASSERT(mShaderResourceView != nullptr);
+	SCE_GNM_ASSERT(mTextureView != nullptr);
 	SCE_GNM_ASSERT(mGpuBaseAddr != nullptr);
 
 	SCE_GNM_ASSERT(mTargetView != nullptr);
@@ -152,10 +152,10 @@ void Framework::RenderableTextureDepthStencil::allocMemory(Allocators *allocator
 
 	DepthStencilView *_depthStencilView = typeCast<DepthStencilView>(mTargetView);
 
-	Gnm::SizeAlign _shaderResourceSizeAlign = mShaderResourceView->getSizeAlign();
+	Gnm::SizeAlign _textureSizeAlign = mTextureView->getSizeAlign();
 	Gnm::SizeAlign _depthSizeAlign = _depthStencilView->getDepthSizeAlign();
 
-	SCE_GNM_ASSERT(_depthSizeAlign.m_size == _shaderResourceSizeAlign.m_size && _depthSizeAlign.m_align == _shaderResourceSizeAlign.m_align);
+	SCE_GNM_ASSERT(_depthSizeAlign.m_size == _textureSizeAlign.m_size && _depthSizeAlign.m_align == _textureSizeAlign.m_align);
 
 	if (_depthStencilView->isUsingStencil())
 	{

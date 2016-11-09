@@ -175,4 +175,24 @@ namespace Framework
 		bool					mUseStencil{ false };
 		bool					mUseHTile{ false };
 	};
+
+	class BufferView : public GPUResourceView
+	{
+		INTERNAL_OBJ(sce::Gnm::Buffer);
+	};
+
+	class VertexBufferView : public BufferView
+	{
+
+	};
+
+	class DataBufferView : public BufferView
+	{
+
+	};
+
+	class ConstantBufferView : public BufferView
+	{
+
+	};
 }

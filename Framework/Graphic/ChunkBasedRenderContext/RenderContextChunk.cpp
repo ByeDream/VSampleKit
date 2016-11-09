@@ -15,7 +15,7 @@ void Framework::RenderContextChunk::init(RenderContext *owner, U32 id, Allocator
 {
 	mContext = owner;
 	mID = id;
-	setScanModeControl
+
 	//#ifdef USING_SEPARATE_CUE_HEAP
 	U32 kNumRingEntries = 16;
 	//#endif
@@ -201,6 +201,7 @@ bool Framework::RenderContextChunk::staticCmdBufferFullCallback(sce::Gnm::Comman
 
 Framework::CommandList * Framework::ImmediateRenderContextChunk::replay(CommandList* cmdList)
 {
+	// TODO : auto lock
 	CommandList* ownCmdList = internalRecord();
 	if (ownCmdList != nullptr)
 	{

@@ -34,20 +34,20 @@ namespace Framework
 		virtual void				init(const Description& desc, Allocators *allocators, const TextureSourcePixelData *srcData);
 		virtual void				deinit(Allocators *allocators);
 
-		virtual TextureView *		getShaderResourceView() const { return mShaderResourceView; }
+		virtual TextureView *		getTextureView() const { return mTextureView; }
 		virtual BaseTargetView *	getTargetView() const { return nullptr; }
 
 		inline const Description &	getDescription() const { return mDesc; }
 		inline U32					getTotalNumSlices() const;
 
 	protected:
-		void						createShaderResourceView();
+		void						createTextureView();
 		void						allocMemory(Allocators *allocators);
 		void						transferData(const TextureSourcePixelData *srcData);
 
 	protected:
 		Description					mDesc;
-		TextureView *				mShaderResourceView{ nullptr };
+		TextureView *				mTextureView{ nullptr };
 		sce::Gnm::ResourceHandle	mHandle{ sce::Gnm::kInvalidResourceHandle };
 		SceKernelMemoryType			mGpuMemType{ SCE_KERNEL_WC_GARLIC };
 		void *						mGpuBaseAddr{ nullptr };

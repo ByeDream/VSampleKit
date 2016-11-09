@@ -57,7 +57,7 @@ void Framework::RenderContext::appendLabelAtEOP(void *dstGpuAddr, U64 value)
 
 void Framework::RenderContext::setTextureSurface(U32 soltID, const RenderSurface *surface)
 {
-	TextureView *_view = surface->getTexture()->getShaderResourceView();
+	TextureView *_view = surface->getTexture()->getTextureView();
 	SCE_GNM_ASSERT_MSG(_view != nullptr, "failed to get correct view from surface");
 }
 

@@ -21,7 +21,7 @@ void Framework::Texture::init(const Description& desc, Allocators *allocators, c
 {
 	mDesc = desc;
 	
-	createShaderResourceView();
+	createTextureView();
 	allocMemory(allocators);
 	if (srcData != nullptr)
 	{
@@ -34,7 +34,7 @@ void Framework::Texture::deinit(Allocators *allocators)
 	SCE_GNM_ASSERT(allocators != nullptr);
 	allocators->release(mGpuBaseAddr, mGpuMemType, &mHandle);
 	mGpuBaseAddr = nullptr;
-	SAFE_DELETE(mShaderResourceView);
+	SAFE_DELETE(mTextureView);
 }
 
 Framework::U32 Framework::Texture::getTotalNumSlices() const
@@ -64,7 +64,7 @@ Framework::U32 Framework::Texture::getTotalNumSlices() const
 	return ret;
 }
 
-void Framework::Texture::createShaderResourceView()
+void Framework::Texture::createTextureView()
 {
 	SCE_GNM_ASSERT(mDesc.mWidth > 0 && mDesc.mHeight > 0 && mDesc.mDepth > 0);
 	SCE_GNM_ASSERT(mDesc.mMipLevels > 0);
@@ -82,21 +82,21 @@ void Framework::Texture::createShaderResourceView()
 	_desc.mTileMode		= mDesc.mTileMode;
 	_desc.mTexType		= mDesc.mTexType;
 
-	mShaderResourceView = new TextureView(_desc);
+	mTextureView = new TextureView(_desc);
 }
 
 void Framework::Texture::allocMemory(Allocators *allocators)
 {
-	SCE_GNM_ASSERT(mShaderResourceView != nullptr);
+	SCE_GNM_ASSERT(mTextureView != nullptr);
 	SCE_GNM_ASSERT(allocators != nullptr);
 
-	Gnm::SizeAlign _gpuMemAlign = mShaderResourceView->getSizeAlign();
+	Gnm::SizeAlign _gpuMemAlign = mTextureView->getSizeAlign();
 
 	mGpuMemType = mDesc.mIsDynamic ? SCE_KERNEL_WB_ONION : SCE_KERNEL_WC_GARLIC;
 	allocators->allocate(&mGpuBaseAddr, mGpuMemType, _gpuMemAlign, Gnm::kResourceTypeTextureBaseAddress, &mHandle, mDesc.mName);
 	SCE_GNM_ASSERT_MSG(mGpuBaseAddr != nullptr, "Out of memory");
 
-	mShaderResourceView->assignAddress(mGpuBaseAddr);
+	mTextureView->assignAddress(mGpuBaseAddr);
 }
 
 void Framework::Texture::transferData(const TextureSourcePixelData *srcData)
@@ -104,7 +104,7 @@ void Framework::Texture::transferData(const TextureSourcePixelData *srcData)
 	// TODO lock / unlock texture
 	SCE_GNM_ASSERT(srcData != nullptr);
 
-	Gnm::Texture *_texture = mShaderResourceView->getInternalObj();
+	Gnm::Texture *_texture = mTextureView->getInternalObj();
 
 	U32 _totalNumSlices = getTotalNumSlices();
 	GpuAddress::TilingParameters _tilingParam;
