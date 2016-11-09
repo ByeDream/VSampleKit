@@ -31,9 +31,11 @@ namespace Framework
 		inline BaseTargetView *					getRenderTarget(U32 slot) const { SCE_GNM_ASSERT(slot < MAX_NUM_RENDER_TARGETS); return getCurrentResourceBinding().mRenderTargets[slot]; }
 		inline void								setDepthStencilTarget(BaseTargetView *target) { getCurrentResourceBinding().mDepthStencilTarget = target; mDirtyFlag.set(DIRTY_DEPTH_STENCIL_TARGET); }
 		inline BaseTargetView *					getDepthStencilTarget() const { return getCurrentResourceBinding().mDepthStencilTarget; }
-
-// 		void SetViewport(const PlatformGfxViewport& vp);
-// 		void SetScissorRect(const GFX_RECT& rect);
+		
+		inline void								setViewport(const Viewport& viewport) { mStatesStack[mStackLevel].mViewport = viewport; mDirtyFlag.set(DIRTY_VIEWPORT); }
+		inline const Viewport&					getViewport() const { return mStatesStack[mStackLevel].mViewport; }
+		inline void								setScissorRect(const Rect& rect) { mStatesStack[mStackLevel].mScissorRect = rect; mDirtyFlag.set(DIRTY_SCISSOR_RECT); }
+		inline const Rect&						getScissorRect() const { return mStatesStack[mStackLevel].mScissorRect; }
 // 
 // 		void SetVertexDeclaration(PlatformGfxInputLayout* pDecl);
 // 		void SetVertexBuffer(ubiUInt index, const PlatformGfxBaseBuffer* pBuffer, ubiUInt offset, ubiUInt stride);
@@ -141,9 +143,8 @@ namespace Framework
 			DIRTY_RENDER_TARGETS				= 1 << 23,
 			DIRTY_DEPTH_STENCIL_TARGET			= 1 << 24,
 
-
-// 			DIRTY_VIEWPORT						= 1 << 0,
-// 			DIRTY_SCISSORRECT					= 1 << 1,
+ 			DIRTY_VIEWPORT						= 1 << 40,
+ 			DIRTY_SCISSOR_RECT					= 1 << 41,
 // 			DIRTY_PIXELSHADER					= 1 << 2,
 // 			
 // 			DIRTY_VERTEX_BUFFER					= 1 << 4,

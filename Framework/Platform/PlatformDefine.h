@@ -38,10 +38,10 @@ namespace Framework
 
 	typedef struct __Rect
 	{
-		S64	left;
-		S64 top;
-		S64 right;
-		S64 bottom;
+		S64	left{ 0 };
+		S64 top{ 0 };
+		S64 right{ 0 };
+		S64 bottom{ 0 };
 	} Rect, *PRect;
 
 	enum AntiAliasingType

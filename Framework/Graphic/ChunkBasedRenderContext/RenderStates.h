@@ -185,9 +185,26 @@ namespace Framework
 		}
 	};
 
+	struct Viewport
+	{
+		U32 x{ 0 };
+		U32 y{ 0 };
+		U32 width{ 0 };
+		U32 height{ 0 };
+		Float32 minDepth{ 0.0f };
+		Float32 maxDepth{ 1.0f };
+
+		Viewport() {}
+		Viewport(U32 _x, U32 _y, U32 _width, U32 _height, Float32 _minDepth = 0.0f, Float32 _maxDepth = 1.0f)
+			: x(_x), y(_y), width(_width), height(_height), minDepth(_minDepth), maxDepth(_maxDepth)
+		{}
+	};
+
 	struct CompleteRenderStates
 	{
 		RenderStates							mRenderStates;
 		ResouceBinding							mResourceBinding;
+		Viewport								mViewport;			//TODO only support 1 viewport and 1 scissor rect for the moment, need to update if gonna to use geometry shader
+		Rect									mScissorRect;
 	};
 }

@@ -642,6 +642,26 @@ void Framework::RenderStateUpdateEngine::commit()
 		}
 	}
 
+	// View-port and scissor rect
+	if (mDirtyFlag.get(DIRTY_VIEWPORT))
+	{
+		const Viewport& _viewport = mStatesStack[mStackLevel].mViewport;
+		Rect _rect;
+		_rect.left = _viewport.x;
+		_rect.top = _viewport.y;
+		_rect.right = _viewport.width + _viewport.x;
+		_rect.bottom = _viewport.height + _viewport.y;
+		_chunk->setupScreenViewport(_rect.left, _rect.top, _rect.right, _rect.bottom, _viewport.maxDepth - _viewport.minDepth, _viewport.minDepth);
+		// sync scissor rect
+		setScissorRect(_rect);
+	}
+
+	if (mDirtyFlag.get(DIRTY_SCISSOR_RECT))
+	{
+		const Rect& _rect = mStatesStack[mStackLevel].mScissorRect;
+		_chunk->setScreenScissor(_rect.left, _rect.top, _rect.right, _rect.bottom);
+	}
+
 	clearDirtyFlags();
 }
 
