@@ -153,6 +153,7 @@ namespace Framework
 
 	class BaseShaderView;
 	class TextureView;
+	class BaseTargetView;
 	struct ResouceBinding
 	{
 		// shaders
@@ -161,6 +162,11 @@ namespace Framework
 		// samplers
 		TextureView *							mTextures[sce::Gnm::kShaderStageCount][MAX_NUM_SAMPLERS];
 		SamplerStates							mSamplerStates[sce::Gnm::kShaderStageCount][MAX_NUM_SAMPLERS];
+
+		// targets
+		BaseTargetView *						mRenderTargets[MAX_NUM_RENDER_TARGETS];
+		BaseTargetView *						mDepthStencilTarget{ nullptr };
+
 		ResouceBinding()
 		{
 			for (auto i = 0; i < sce::Gnm::kShaderStageCount; i++)
@@ -170,6 +176,11 @@ namespace Framework
 				{
 					mTextures[i][j] = nullptr;
 				}
+			}
+
+			for (auto i = 0; i < MAX_NUM_RENDER_TARGETS; i++)
+			{
+				mRenderTargets[i] = nullptr;
 			}
 		}
 	};

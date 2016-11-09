@@ -5,11 +5,9 @@
 namespace Framework
 {
 	class RenderContext;
-
 	class BaseShaderView;
 	class TextureView;
-	class RenderTargetView;
-	class DepthStencilView;
+	class BaseTargetView;
 
 	class RenderStateUpdateEngine
 	{
@@ -22,16 +20,17 @@ namespace Framework
 		U32										getRenderState(RenderStateType state) const;
 		inline Float32							getRenderStateFloat(RenderStateType state) const { return rawCast<Float32>(getRenderState(state)); }
 
-		inline void								setShader(sce::Gnm::ShaderStage shaderType, BaseShaderView *shader) { getCurrentResourceBinding().mShaders[shaderType] = shader; mDirtyFlag.set(DIRTY_SHADERS); }
-		inline BaseShaderView *					getShader(sce::Gnm::ShaderStage shaderType) const { return getCurrentResourceBinding().mShaders[shaderType]; }
-		inline void								setTexture(sce::Gnm::ShaderStage shaderType, U32 slot, TextureView *texture) { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); getCurrentResourceBinding().mTextures[shaderType][slot] = texture; mDirtyFlag.set(DIRTY_TEXTURES); }
-		inline TextureView *					getTexture(sce::Gnm::ShaderStage shaderType, U32 slot) const { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); return getCurrentResourceBinding().mTextures[shaderType][slot]; }
-		inline void								setSamplerState(sce::Gnm::ShaderStage shaderType, U32 slot, SamplerStateType state, U32 value) { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); internalSetSamplerState(getCurrentResourceBinding().mSamplerStates[shaderType][slot], state, value); mDirtyFlag.set(DIRTY_SAMPLERS); mDelegateSamplerDirtyFlag[shaderType].set(1 << slot); }
-		inline U32								getSamplerState(sce::Gnm::ShaderStage shaderType, U32 slot, SamplerStateType state) const { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); return internalGetSamplerState(getCurrentResourceBinding().mSamplerStates[shaderType][slot], state); }
-		void									setSamplerStateForAllSamplers(SamplerStateType state, U32 Value);
-	
-		void									setRenderTarget(U32 slot, RenderTargetView *renderTarget);
-		void									SetDepthStencilTarget(DepthStencilView *a_surface);
+		inline void								setShader(sce::Gnm::ShaderStage shaderStage, BaseShaderView *shader) { getCurrentResourceBinding().mShaders[shaderStage] = shader; mDirtyFlag.set(DIRTY_SHADERS); }
+		inline BaseShaderView *					getShader(sce::Gnm::ShaderStage shaderStage) const { return getCurrentResourceBinding().mShaders[shaderStage]; }
+		inline void								setTexture(sce::Gnm::ShaderStage shaderStage, U32 slot, TextureView *texture) { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); getCurrentResourceBinding().mTextures[shaderStage][slot] = texture; mDirtyFlag.set(DIRTY_TEXTURES); mDelegateTextureDirtyFlag[shaderStage].set(1 << slot); }
+		inline TextureView *					getTexture(sce::Gnm::ShaderStage shaderStage, U32 slot) const { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); return getCurrentResourceBinding().mTextures[shaderStage][slot]; }
+		inline void								setSamplerState(sce::Gnm::ShaderStage shaderStage, U32 slot, SamplerStateType state, U32 value) { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); internalSetSamplerState(getCurrentResourceBinding().mSamplerStates[shaderStage][slot], state, value); mDirtyFlag.set(DIRTY_SAMPLERS); mDelegateSamplerDirtyFlag[shaderStage].set(1 << slot); }
+		inline U32								getSamplerState(sce::Gnm::ShaderStage shaderStage, U32 slot, SamplerStateType state) const { SCE_GNM_ASSERT(slot < MAX_NUM_SAMPLERS); return internalGetSamplerState(getCurrentResourceBinding().mSamplerStates[shaderStage][slot], state); }
+		void									setSamplerStateForAllSamplers(SamplerStateType state, U32 value);
+		inline void								setRenderTarget(U32 slot, BaseTargetView *target) { SCE_GNM_ASSERT(slot < MAX_NUM_RENDER_TARGETS); getCurrentResourceBinding().mRenderTargets[slot] = target; mDirtyFlag.set(DIRTY_RENDER_TARGETS); }
+		inline BaseTargetView *					getRenderTarget(U32 slot) const { SCE_GNM_ASSERT(slot < MAX_NUM_RENDER_TARGETS); return getCurrentResourceBinding().mRenderTargets[slot]; }
+		inline void								setDepthStencilTarget(BaseTargetView *target) { getCurrentResourceBinding().mDepthStencilTarget = target; mDirtyFlag.set(DIRTY_DEPTH_STENCIL_TARGET); }
+		inline BaseTargetView *					getDepthStencilTarget() const { return getCurrentResourceBinding().mDepthStencilTarget; }
 
 // 		void SetViewport(const PlatformGfxViewport& vp);
 // 		void SetScissorRect(const GFX_RECT& rect);
@@ -139,7 +138,8 @@ namespace Framework
 			DIRTY_SHADERS						= 1 << 20,
 			DIRTY_TEXTURES						= 1 << 21,
 			DIRTY_SAMPLERS						= 1 << 22,
-
+			DIRTY_RENDER_TARGETS				= 1 << 23,
+			DIRTY_DEPTH_STENCIL_TARGET			= 1 << 24,
 
 
 // 			DIRTY_VIEWPORT						= 1 << 0,
@@ -149,7 +149,7 @@ namespace Framework
 // 			DIRTY_VERTEX_BUFFER					= 1 << 4,
 // 			DIRTY_INDEX_BUFFER					= 1 << 5,
 // 			DIRTY_DEPTH_STENCIL					= 1 << 6,
-// 			DIRTY_RENDER_TARGETS				= 1 << 7,
+// 			
 // 			DIRTY_VS_SAMPLER					= 1 << 8,
 // 			DIRTY_VS_TEXTURE					= 1 << 9,
 // 			DIRTY_PS_SAMPLER					= 1 << 10,
@@ -173,14 +173,20 @@ namespace Framework
 		{
 			mDirtyFlag.fullset();
 			for (auto i = 0; i < sce::Gnm::kShaderStageCount; i++)
+			{
+				mDelegateTextureDirtyFlag[i].fullset();
 				mDelegateSamplerDirtyFlag[i].fullset();
+			}
 		}
 
 		inline void								clearDirtyFlags()
 		{
 			mDirtyFlag.clear();
 			for (auto i = 0; i < sce::Gnm::kShaderStageCount; i++)
+			{
+				mDelegateTextureDirtyFlag[i].clear();
 				mDelegateSamplerDirtyFlag[i].clear();
+			}
 		}
 
 		void									resetSamplerStates();
@@ -197,9 +203,12 @@ namespace Framework
 		RenderContext *							mContext{ nullptr };
 
 		CompleteRenderStates					mStatesStack[STACK_SIZE];
-		Bitset									mDirtyFlag;
 		U32										mStackLevel{ 0 };
 		const CompleteRenderStates				mDefaultStates;
+
+		Bitset									mDirtyFlag;
+		Bitset									mDelegateTextureDirtyFlag[sce::Gnm::kShaderStageCount];
+		Bitset									mDelegateSamplerDirtyFlag[sce::Gnm::kShaderStageCount];	// As the sampler objects need to be compiled and could be time-consuming
 
 		// render states controls
 		sce::Gnm::PrimitiveSetup				mPrimitiveSetup;
@@ -212,6 +221,8 @@ namespace Framework
 
 		// sampler objects
 		sce::Gnm::Sampler						mSamplerObjs[sce::Gnm::kShaderStageCount][MAX_NUM_SAMPLERS];
-		Bitset									mDelegateSamplerDirtyFlag[sce::Gnm::kShaderStageCount];	// As the sampler objects need to be compiled and could be time-consuming
+
+		// render targets mask
+		U16										mRenderTargetsMask{ 0 };
 	};
 }

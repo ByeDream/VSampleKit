@@ -350,6 +350,19 @@ Framework::U32 Framework::RenderStateUpdateEngine::getRenderState(RenderStateTyp
 	return ret;
 }
 
+void Framework::RenderStateUpdateEngine::setSamplerStateForAllSamplers(SamplerStateType state, U32 value)
+{
+	for (auto shaderStage = 0; shaderStage < Gnm::kShaderStageCount; shaderStage++)
+	{
+		for (auto slot = 0; slot < MAX_NUM_SAMPLERS; slot++)
+		{
+			internalSetSamplerState(getCurrentResourceBinding().mSamplerStates[shaderStage][slot], state, value);
+		}
+		mDelegateSamplerDirtyFlag[shaderStage].fullset();
+	}
+	mDirtyFlag.set(DIRTY_SAMPLERS);
+}
+
 void Framework::RenderStateUpdateEngine::compile()
 {
 	// render states
@@ -410,14 +423,14 @@ void Framework::RenderStateUpdateEngine::compile()
 	// sampler states
 	if (mDirtyFlag.get(DIRTY_SAMPLERS))
 	{
-		for (auto i = 0; i < Gnm::kShaderStageCount; i++)
+		for (auto shaderStage = 0; shaderStage < Gnm::kShaderStageCount; shaderStage++)
 		{
-			for (auto j = 0; j < MAX_NUM_SAMPLERS; j++)
+			for (auto slot = 0; slot < MAX_NUM_SAMPLERS; slot++)
 			{
-				if (mDelegateSamplerDirtyFlag[i].get(1 << j))
+				if (mDelegateSamplerDirtyFlag[shaderStage].get(1 << slot))
 				{
-					Gnm::Sampler &_samplerObj = mSamplerObjs[i][j];
-					const SamplerStates &_samplerStates = getCurrentResourceBinding().mSamplerStates[i][j];
+					Gnm::Sampler &_samplerObj = mSamplerObjs[shaderStage][slot];
+					const SamplerStates &_samplerStates = getCurrentResourceBinding().mSamplerStates[shaderStage][slot];
 					_samplerObj.setWrapMode(_samplerStates.mAddrModeU, _samplerStates.mAddrModeV, _samplerStates.mAddrModeW);
 					_samplerObj.setBorderColor(_samplerStates.mBorderColor);
 					// TODO AnisoFilter
@@ -427,6 +440,19 @@ void Framework::RenderStateUpdateEngine::compile()
 					_samplerObj.setAnisotropyRatio(_samplerStates.mAnisotropyRatio);
 				}
 			}
+		}
+	}
+
+	// render targets mask
+	for (auto slot = 0; slot < MAX_NUM_RENDER_TARGETS; slot++)
+	{
+		if (getCurrentResourceBinding().mRenderTargets[slot] != nullptr)
+		{
+			mRenderTargetsMask |= (0xf << (slot * 4));
+		}
+		else
+		{
+			mRenderTargetsMask &= ~(0xf << (slot * 4));
 		}
 	}
 }
@@ -453,7 +479,6 @@ void Framework::RenderStateUpdateEngine::commit()
 
 	if (mDirtyFlag.get(DIRTY_COLOR_WRITE))
 	{
-		U16 mRenderTargetsMask = MAX_VALUE_16; // TODO update it with real Render target setting.
 		_chunk->setRenderTargetMask(_renderStates.mWriteColorMask & mRenderTargetsMask);
 	}
 
@@ -551,32 +576,73 @@ void Framework::RenderStateUpdateEngine::commit()
 
 	if (mDirtyFlag.get(DIRTY_TEXTURES))
 	{
-		for (auto shaderType = 0; shaderType < Gnm::kShaderStageCount; shaderType++)
+		for (auto shaderStage = 0; shaderStage < Gnm::kShaderStageCount; shaderStage++)
 		{
-			for (auto slot = 0; slot < MAX_NUM_SAMPLERS; slot++)
+			if (!mDelegateTextureDirtyFlag[shaderStage].empty())
 			{
-				TextureView *_texture = _binding.mTextures[shaderType][slot];
-			}
-			
-
-			if (!mDelegateSamplerDirtyFlag[shaderType].empty())
-			{
-				_chunk->setTextures((Gnm::ShaderStage)shaderType, 0, MAX_NUM_SAMPLERS, mSamplerObjs[shaderType]);
+				for (auto slot = 0; slot < MAX_NUM_SAMPLERS; slot++)
+				{
+					if (mDelegateTextureDirtyFlag[shaderStage].get(1 << slot))
+					{
+						TextureView *_texture = _binding.mTextures[shaderStage][slot];
+						if (_texture != nullptr)
+						{
+							_chunk->setTextures((Gnm::ShaderStage)shaderStage, slot, 1, _texture->getInternalObj());
+							_texture->getFence()->setPending(mContext->getCurrentChunk());
+						}
+						else
+						{
+							_chunk->setTextures((Gnm::ShaderStage)shaderStage, slot, 1, nullptr);
+						}
+					}
+				}
 			}
 		}
 	}
 
 	if (mDirtyFlag.get(DIRTY_SAMPLERS))
 	{
-		for (auto shaderType = 0; shaderType < Gnm::kShaderStageCount; shaderType++)
+		for (auto shaderStage = 0; shaderStage < Gnm::kShaderStageCount; shaderStage++)
 		{
-			if (!mDelegateSamplerDirtyFlag[shaderType].empty())
+			if (!mDelegateSamplerDirtyFlag[shaderStage].empty())
 			{
-				_chunk->setSamplers((Gnm::ShaderStage)shaderType, 0, MAX_NUM_SAMPLERS, mSamplerObjs[shaderType]);
+				_chunk->setSamplers((Gnm::ShaderStage)shaderStage, 0, MAX_NUM_SAMPLERS, mSamplerObjs[shaderStage]);
 			}
 		}
 	}
 
+	if (mDirtyFlag.get(DIRTY_RENDER_TARGETS))
+	{
+		for (auto slot = 0; slot < MAX_NUM_RENDER_TARGETS; slot++)
+		{
+			if (_binding.mRenderTargets[slot] != nullptr)
+			{
+				RenderTargetView *_rt = typeCast<RenderTargetView>(_binding.mRenderTargets[slot]);
+				_chunk->setRenderTarget(slot, _rt->getInternalObj());
+				_rt->getFence()->setPending(mContext->getCurrentChunk());
+			}
+			else
+			{
+				_chunk->setRenderTarget(slot, nullptr);
+			}
+		}
+	}
+
+	if (mDirtyFlag.get(DIRTY_DEPTH_STENCIL_TARGET))
+	{
+		if (_binding.mDepthStencilTarget != nullptr)
+		{
+			DepthStencilView *_dt = typeCast<DepthStencilView>(_binding.mDepthStencilTarget);
+			_chunk->setDepthRenderTarget(_dt->getInternalObj());
+			_dt->getFence()->setPending(mContext->getCurrentChunk());
+		}
+		else
+		{
+			_chunk->setDepthRenderTarget(nullptr);
+		}
+	}
+
+	clearDirtyFlags();
 }
 
 void Framework::RenderStateUpdateEngine::internalSetSamplerState(SamplerStates &sampler, SamplerStateType state, U32 value)
