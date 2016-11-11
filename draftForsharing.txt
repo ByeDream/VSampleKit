@@ -1,0 +1,119 @@
+
+一个Chain的速度决定于它最弱的一环。 
+真的吗？
+考虑下渲染速度的计算with V sync flipping。
+因此，严格的讲，我们还需要Count加上同步的消耗
+
+什么是同步：
+	作为逻辑的控制中心和一个processing的发起者，CPU决定何时进入下一个processing的策略及为同步策略
+
+同步策略的设计目的：
+	尽可能的减少等待的时间，在一个Chain的每个stage之间， 一个良好的设计会要尽可能的做到，每个stage会把工作结果交给下一个一旦下一个准备好了。 从而使整个Chain的效率无限逼近最慢的那一个环节的时浩这个理想值
+
+优化的步骤：
+	优化总是从调整同步策略开始，这包括了发生在CPU多线程之间的并行，也包括了CPU与GPU之间的协同工作，至于GPU上的并行，大部分不是你可以控制的。
+	这个步骤完成后，你才考试考虑优化效率最低的哪一环，但这会更困难。。因为，job总在那里你不能去减少它。 但幸运的是，一般情况下在你决定继续之前我们的FPS已经可以达到一个还不错的值。
+
+
+The clasic 同步策略
+
+* CPU 与 GPU 按照顺序工作以避免资源访问竞争
+* 少量的同步需求 ： 检查GPU对back buffer的绘制是否结束， 检查Output 对 front buffer的preset 是否结束。
+	如果是， swap/flip buffers , 安全地进入下一帧。
+
+
+伪代码
+讲解硬等待和中断查询
+
+同步的单位是 Frame.
+低效。
+简单而安全，通常保留为debug目的
+
+
+如何让CPU和GPU也并行起来，就想他们和OutPut之间那样。
+通过观察，这是通过使用多个Swapchain Buffer做到的。
+
+我们同样与CPU 和 GPU一起工作的Buffer们也变成多个。 使他们并行
+图
+
+	双Buffer 变成 三Buffer,  因为同步总是发生在并行的CPU GPU output 两两之间。
+		它们是
+		A在使用的Buffer / B在使用的Buffer / 下一个Buffer(B使用过的，准备被A使用的)
+
+	与GPU同步的检测目标， 由Back Buffer变成了 下一个Buffer
+
+	这些被交换的commander buffer的容器，即是context
+
+	很容易地切换为策略A, 仅仅更换同步目标的ID，像我之前所说，为了Debug, 
+		伪代码 
+
+
+三Buffer 或更多?
+	没有必要更多： 因为
+		不同同步单元的速度比通常不会大到两倍之多。
+		假设极限情况，GPU很忙CPU无限快。即使发生，CPU多余的更新结果可以被考虑成无意义的而被简单地丢弃掉。 
+
+
+至此，就是我们在Heavy Rain中的同步策略，它很好，但不够好，因为同步的单位仍然是frame
+当CPU和GPU都变得更加繁忙，你很难在整块的处理中很好的控制尽可能少的等待时间。
+
+
+从HearyRain 到 AC
+
+事情变的更加复杂， commande buffer是被分为很多次提交给给GPU的，在同一frame之中。
+
+CPU :
+	fill batch of render commands
+	commit
+	fill batch of render commands
+	commit
+	....
+	commit and flip
+
+为了让这些子过程也并行起来。
+更多的context
+与同步的单位从Frame 变成了 submision. 同步的目标变成了next 子context.
+Contexts 以 growable 的Node list 存在，
+在flip的时候 开始从头重用context (并 sync)
+我放弃使用ringbuffer并试图在同一frame里就开始尝试重用context, 即使这样会更节约内存。
+	因为：
+		Jugen建议： 简单就是好。
+		这样的设计我们无法应用后面我会谈到的chunk based context 技术
+
+
+好了，这个设计看起来可以工作。 让我们来继续解决一些问题，make it beter
+
+优化1. GPU fence.
+
+问题， 我们有许多的context 需要GPU来写label, 考虑到多线程渲染，每个context 实际上分布在物理线程上以一个立即contexts和多个延迟context存在的。
+在考虑到我们还需要有大量的资源被同步。
+GPU 不能写那么多label给我们在实际的实现中， 如果你那么做，这件事将会非常耗时
+
+Fence 和 Fence Manager的伪码
+
+设置Fence和提交fence的伪代码
+
+优化2 . Command chunks.
+问题
+在AC的实际情况中，我们有大量的小提交，例如 4 byte ，一个draw command like clear
+我们有极少量的 大提交， 比如 1M左右，比如final pass.
+而 context 的CMD bufer size 总是被固定分配的。 而且需要试用与最大的usage.
+考虑到我们数百个context存在。这造成了大量的浪费。
+
+解决，我们回滚到 三个swapped context的实现，引入command buffer chunk来解决问题。
+
+图
+
+伪代码			context->dcb->fill()  ->  context->currentChunk->dcb->fill()
+
+	* 对于使用者，CPU drawing 和 GPU shading， 这些逻辑是不可见， 他们每次都像假装在使用一个固定大小为1M的 command buffer context. 而不是一个chunk.
+	每次准备一个新的chunk的时候，我们并不真的alloc的CMD buffer， 而是从它的owner context中取出一片来，尺寸是固定的，但起点总是上一次的结束点。
+	By this way, 我们实际上组合了 新旧设计
+
+
+最后，在MTR下 应用这个设计
+
+伪代码
+
+QA
+
